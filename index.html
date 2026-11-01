@@ -130,7 +130,18 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .sw { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.15); cursor: pointer; padding: 0; }
 .sw[aria-pressed="true"] { border-color: var(--text); box-shadow: inset 0 0 0 2px #fff; }
 .ammo { display: none; position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: rgba(13,15,18,0.78); padding: 8px 12px; border-radius: 6px; gap: 6px; align-items: center; color: #fff; font-size: 12px; letter-spacing: 0.1em; }
-.screen.duel .ammo { display: flex; }
+.screen.duel .ammo, .screen.gallery .ammo { display: flex; }
+.ghud { display: none; position: absolute; left: 50%; top: 14px; transform: translateX(-50%); gap: 10px; align-items: stretch; }
+.screen.gallery .ghud { display: flex; }
+.gside { background: rgba(13,15,18,0.78); padding: 6px 14px; border-radius: 6px; display: grid; justify-items: center; min-width: 92px; color: #fff; }
+.gside span { font-size: 11px; letter-spacing: 0.14em; color: #b9c2ff; }
+.gside.foe span { color: #ffb0a8; }
+.gside b { font-family: var(--display); font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.gside.lead b { color: var(--tech); }
+.gmid { display: grid; gap: 6px; align-content: center; justify-items: center; background: rgba(255,255,255,0.86); color: var(--ink); padding: 6px 14px; border-radius: 6px; min-width: 150px; font-size: 11px; letter-spacing: 0.1em; }
+.gbar { display: block; width: 130px; height: 5px; border-radius: 3px; background: #c9cfd6; overflow: hidden; }
+.gbar i { display: block; height: 100%; width: 0; background: var(--ink); }
+.screen.gallery .tl, .screen.gallery .tr, .screen.gallery .status, .screen.gallery .banner, .screen.gallery .gstat, .screen.gallery .health, .screen.gallery .abil { display: none; }
 .ammo i { width: 9px; height: 18px; border-radius: 3px; background: rgba(255,255,255,0.18); display: block; }
 .ammo i.on { background: #ffd27a; }
 .ammo b { margin-left: 6px; font-weight: 600; }
@@ -172,6 +183,9 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .lname input { flex: 1; min-width: 160px; font: inherit; color: var(--text); background: #171a1f; border: 1px solid var(--wall); border-radius: 4px; padding: 8px 10px; }
 .lname input:focus-visible { outline: 2px solid var(--ghost); outline-offset: 1px; }
 .lbtns { justify-content: flex-start; }
+.lmode { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 4px; }
+.lmode span { font-size: 12px; color: var(--dim); margin-right: 4px; }
+.lmode .rbtn[aria-pressed="true"] { color: var(--ink); background: var(--ghost); border-color: var(--ghost); }
 .llist { display: grid; gap: 8px; max-height: 260px; overflow: auto; }
 .lrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--wall); border-radius: 6px; background: #15181c; }
 .linfo { display: grid; min-width: 0; }
@@ -203,11 +217,11 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v19</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v20</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
-    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
+    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">Hallway vs AI</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
     <div class="rooms" id="rooms" role="group" aria-label="Choose a room"></div>
     <label class="sens"><span class="clbl">Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>
     <div class="colors" id="colors" role="group" aria-label="Your color"><span class="clbl">Color</span></div>
@@ -243,21 +257,27 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
           <div class="dmid"><b id="dScore">0 – 0</b><span id="dArena">First to 5</span></div>
           <div class="dside foe"><div class="dlbl"><span>RIVAL</span><b id="dBHp">100 / 100</b></div><div class="dbar"><i id="dBFill"></i></div><div class="dcards" id="dBCards"></div></div>
         </div>
+        <div class="ghud" id="gHud">
+          <div class="gside"><span>YOU</span><b id="gMe">0</b></div>
+          <div class="gmid"><span class="gbar"><i id="gProg"></i></span><span id="gLeft">TARGETS 0 / 0</span></div>
+          <div class="gside foe"><span id="gFoeName">RIVAL</span><b id="gFoe">0</b></div>
+        </div>
         <div class="dbig" id="dBig" hidden></div>
         <div class="ammo" id="dAmmo"></div>
       </div>
       <div class="lobby" id="lobby" hidden>
         <div class="lcard">
           <div id="lBrowse">
-            <p class="eyebrow">Online · Duel</p>
+            <p class="eyebrow">Online</p>
             <h2>Lobbies</h2>
             <div class="lname"><label for="lName">Your name</label><input id="lName" maxlength="16" placeholder="Freebird" autocomplete="off"></div>
+            <div class="lmode" role="group" aria-label="Mode for your lobby"><span>Host mode</span><button type="button" class="rbtn" id="lmDuel" aria-pressed="true">Duel · first to 5</button><button type="button" class="rbtn" id="lmGal" aria-pressed="false">Hallway · most kills</button></div>
             <div class="btns lbtns"><button type="button" class="play" id="lHost">Host a lobby</button><button type="button" class="play alt" id="lBack">Back</button></div>
             <h3>Open lobbies</h3>
             <div class="llist" id="lList"></div>
           </div>
           <div id="lWait" hidden>
-            <p class="eyebrow">Online · Duel · first to 5</p>
+            <p class="eyebrow" id="wEye">Online · Duel · first to 5</p>
             <h2 id="wTitle">Lobby</h2>
             <p class="wtext" id="wText"></p>
             <div class="btns lbtns"><button type="button" class="play" id="wStart">Start match</button><button type="button" class="play alt" id="wLeave">Leave lobby</button></div>
@@ -304,7 +324,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v19</span>
+    <span class="ver">v20</span>
   </div>
 </div>
 
@@ -1096,12 +1116,14 @@ function showOverlay(kind) {
   ov.hidden = false; ovAlt.hidden = true; ovAlt.textContent = 'Replay room';
   $('ovEyebrow').textContent = 'Room 0' + (levelIdx + 1) + ' · ' + RM.loops + ' loops of ' + RM.loopSec + ' seconds';
   if (kind === 'intro') { $('ovTitle').textContent = RM.name; ovBody.innerHTML = RM.brief; ovBtn.textContent = 'Click to play'; ovAction = 'start'; }
-  if (kind === 'pause') { $('ovTitle').textContent = 'Paused'; ovBody.innerHTML = (mode === 'duel' ? 'The match is paused.' : 'The loop timer is stopped.') + '<label class="psens"><span>Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>'; syncSens(); ovBtn.textContent = 'Resume'; ovAction = 'resume'; }
+  if (kind === 'pause') { $('ovTitle').textContent = 'Paused'; ovBody.innerHTML = (mode !== 'campaign' ? 'The match is paused.' : 'The loop timer is stopped.') + '<label class="psens"><span>Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>'; syncSens(); ovBtn.textContent = 'Resume'; ovAction = 'resume'; }
   if (kind === 'won') {
     $('ovTitle').textContent = RM.name + ' cleared';
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
+  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Hallway · vs AI'; $('ovTitle').textContent = 'Hallway'; ovBody.innerHTML = 'You and a rival walk down side-by-side hallways at the same pace, split by a glass wall. Soldiers pop out of the <b>doorways and windows</b> in your lane for a moment, then duck back in. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Most kills by the end of the hallway wins. Both lanes get the exact same targets. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Hallway · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.plan.length + ' targets each. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and throw up a quick <b>shield</b> with <b>Q</b> to block bullets. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelOver') { const won = D.score[0] > D.score[1]; $('ovEyebrow').textContent = 'Duel · match over'; $('ovTitle').textContent = won ? 'You win the match' : 'The rival wins'; ovBody.innerHTML = 'Final score <b>' + D.score[0] + ' – ' + D.score[1] + '</b>. Your cards: <b>' + (P.cards.join(', ') || 'none') + '</b>. Rival cards: <b>' + (B.cards.join(', ') || 'none') + '</b>.'; ovBtn.textContent = 'Rematch'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'lost') { $('ovTitle').textContent = 'Out of loops'; ovBody.innerHTML = (lastWhy === 'early' ? 'You ended the final loop without getting out.' : 'Time ran out on the final loop.') + ' Plan the runs as one: who holds the plate, who clears the guards, who covers your ghosts from hunters, and who makes the dash.'; ovBtn.textContent = 'Restart room'; ovAction = 'start'; }
@@ -1112,12 +1134,13 @@ function begin(fresh) {
   ov.hidden = true; $('rewind').hidden = true; state = 'play'; requestLock();
 }
 ovBtn.addEventListener('click', () => {
+  if (ovAction === 'galStart') { unlockAudio(); ov.hidden = true; startGallery((Math.random() * 1e9) | 0, false); requestLock(); return; }
   if (ovAction === 'duelStart') { unlockAudio(); ov.hidden = true; startMatch(); requestLock(); return; }
   if (ovAction === 'next') { pickRoom(levelIdx + 1); return; }
   if (ovAction === 'resume') { unlockAudio(); ov.hidden = true; state = pausedFrom; requestLock(); return; }
   begin(true);
 });
-ovAlt.addEventListener('click', () => { if (mode === 'duel') { leaveDuel(); return; } begin(true); });
+ovAlt.addEventListener('click', () => { if (mode === 'duel' || mode === 'gallery') { leaveDuel(); return; } begin(true); });
 
 function requestLock() {
   if (fallback) return;
@@ -1314,7 +1337,7 @@ function render() {
   kick *= 0.82; swayX *= 0.88; swayY *= 0.88;
   rifle.position.set(VM_BASE.x + Math.cos(P.bob) * 0.012 * sp - swayX * 0.02, VM_BASE.y + Math.abs(Math.sin(P.bob)) * 0.012 * sp + swayY * 0.012, VM_BASE.z + kick * 0.06);
   rifle.rotation.set(kick * 0.09, -swayX * 0.04, swayX * 0.03);
-  const duelGun = mode === 'duel'; rifle.visible = !duelGun; revolver.visible = duelGun;
+  const duelGun = mode !== 'campaign'; rifle.visible = !duelGun; revolver.visible = duelGun;
   if (duelGun) {
     const rmax = (P.stats && P.stats.reload) || 50, rk = P.rl > 0 ? Math.sin(Math.PI * Math.min(1, 1 - P.rl / rmax)) : 0;
     revolver.position.set(rifle.position.x, rifle.position.y - rk * 0.06, rifle.position.z);
@@ -1348,7 +1371,7 @@ function render() {
 
   const chips = ghosts.map(g => { let c = '', t = 'ACTIVE'; if (!g.alive) { c = 'down'; t = 'DOWN'; } else if (g.inv > 0) { c = 'hit'; t = 'HIT'; } else if (plates.some(p => onPlate(g.x, g.z, p))) { c = 'plate'; t = 'ON PLATE'; } else if (tick >= g.frames.length) { c = 'wait'; t = 'WAITING'; } return '<span class="chip ' + c + '">L' + (g.id + 1) + ' · ' + t + '</span>'; }).join('');
   if (chips !== lastChips) { $('gstat').innerHTML = chips; lastChips = chips; }
-  if (mode === 'duel') renderDuel();
+  if (mode === 'duel') renderDuel(); else if (mode === 'gallery') galRender();
   $('abDashF').style.width = (100 * (1 - P.dashCd / (P.dashMax || DASH_CD))) + '%'; $('abDash').classList.toggle('ready', !P.dashCd);
   const abl = mode === 'duel' ? 'SHIELD' : 'PUSH', abEl = $('abPush').querySelector('.abt span'); if (abEl.textContent !== abl) abEl.textContent = abl;
   $('abPushF').style.width = (100 * (1 - P.pushCd / (P.pushMax || PUSH_CD))) + '%'; $('abPush').classList.toggle('ready', !P.pushCd);
@@ -1771,10 +1794,15 @@ function renderDuel() {
   }
   for (const s of dShots) s.mesh.position.set(s.x, s.y, s.z);
   renderDuelHud(false);
+  renderAmmo();
+}
+function renderAmmo() {
   const ak = (P.ammo ?? 6) + '|' + (P.rl > 0) + '|' + (P.stats?.mag || 6);
   if (ak !== lastAmmo) { lastAmmo = ak; const el = $('dAmmo'); el.classList.toggle('rl', P.rl > 0); el.innerHTML = Array.from({ length: P.stats?.mag || 6 }, (_, i) => '<i class="' + (i < P.ammo ? 'on' : '') + '"></i>').join('') + '<b>' + (P.rl > 0 ? 'RELOADING' : 'R · RELOAD') + '</b>'; }
 }
 function enterDuel() {
+  if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); }
+  if ($('modeGallery')) $('modeGallery').setAttribute('aria-pressed', 'false');
   mode = 'duel'; state = 'title'; screenEl.classList.add('duel'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true;
   $('modeCampaign').setAttribute('aria-pressed', 'false'); $('modeDuel').setAttribute('aria-pressed', 'true');
   clearActors(); clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } D = { score: [0, 0], round: 0, arena: '' }; P.stats = baseStats(); P.ammo = 6; P.rl = 0;
@@ -1784,6 +1812,8 @@ function enterDuel() {
   if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
 }
 function leaveDuel() {
+  if (mode === 'gallery') clearGallery();
+  screenEl.classList.remove('gallery'); if ($('modeGallery')) $('modeGallery').setAttribute('aria-pressed', 'false');
   for (const m of bubbles) m.visible = false;
   mode = 'campaign'; screenEl.classList.remove('duel'); $('rooms').hidden = false; $('cards').hidden = true; bigText('');
   $('modeCampaign').setAttribute('aria-pressed', 'true'); $('modeDuel').setAttribute('aria-pressed', 'false');
@@ -1793,6 +1823,248 @@ function leaveDuel() {
 }
 $('modeCampaign').addEventListener('click', e => { if (mode !== 'campaign') leaveDuel(); e.currentTarget.blur(); });
 $('modeDuel').addEventListener('click', e => { if (mode !== 'duel') enterDuel(); e.currentTarget.blur(); });
+// ===== Hallway mode: side-by-side shooting gallery, most kills wins =====
+const GZ0 = 7, GZEND = -86, GSPEED = 2.4 / 60, GWALL = 7, GLANE = 1.7;
+let G = null;
+function galRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function gBox(x, y0, y1, z, w, d, color, opts = {}) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, y1 - y0, d), opts.mat || mat(color));
+  m.position.set(x, (y0 + y1) / 2, z); m.castShadow = !opts.noShadow; m.receiveShadow = true; roomGroup.add(m);
+  if (!opts.noRay) G.rayObjs.push(m);
+  return m;
+}
+function galPlan(seed) {
+  const r = galRng(seed), out = [];
+  let z = -3;
+  for (let i = 0; z > GZEND + 8; i++) {
+    const late = i / 18;
+    out.push({ z, type: r() < 0.5 ? 'door' : 'window', ahead: 8 + r() * 6, up: Math.round(125 - late * 40 + r() * 30), dir: r() < 0.5 ? 1 : -1 });
+    z -= 4 + r() * 2.2;
+  }
+  return out;
+}
+function buildGallery(seed) {
+  for (const ch of [...roomGroup.children]) { roomGroup.remove(ch); ch.geometry?.dispose(); }
+  solids = []; shootables = []; plates = [];
+  G.rayObjs = [];
+  const len = GZ0 + 3 - (GZEND - 8), cz = (GZ0 + 3 + GZEND - 8) / 2;
+  floorTex.repeat.set(22, len);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, len), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.9 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.z = cz; floor.receiveShadow = true; roomGroup.add(floor); G.rayObjs.push(floor);
+  gBox(0, 0, 3.2, GZ0 + 3, 22, 0.4, COL.wall); gBox(0, 0, 3.2, GZEND - 6, 22, 0.4, COL.wall);
+  // glass divider between the two lanes
+  const glass = new THREE.MeshStandardMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.16, roughness: 0.1, depthWrite: false });
+  gBox(0, 0, 3.0, cz, 0.12, len, 0, { mat: glass, noShadow: true });
+  gBox(0, 0, 0.12, cz, 0.2, len, COL.gunLite, { noShadow: true });
+  const frameMat = mat(COL.turret), dark = mat(0x2a2f36), roof = mat(0x3a4048);
+  G.plan = galPlan(seed);
+  for (const s of [-1, 1]) {
+    const wx = s * GWALL, back = s * (GWALL + 2.6);
+    let cursor = GZ0 + 3;
+    for (const o of G.plan) {
+      const w = 1.8, top = o.z + w / 2;
+      if (cursor - top > 0.01) gBox(wx, 0, 3.2, (cursor + top) / 2, 0.4, cursor - top, COL.wall);
+      cursor = o.z - w / 2;
+      const lintel = o.type === 'door' ? 2.4 : 2.25;
+      gBox(wx, lintel, 3.2, o.z, 0.4, w, COL.wall);
+      if (o.type === 'window') gBox(wx, 0, 0.95, o.z, 0.4, w, COL.wall);
+      // orange frame so openings read at a glance
+      gBox(wx - s * 0.21, lintel - 0.06, lintel, o.z, 0.04, w, 0, { mat: frameMat, noShadow: true, noRay: true });
+      for (const e of [-1, 1]) gBox(wx - s * 0.21, o.type === 'window' ? 0.95 : 0, lintel, o.z + e * (w / 2 - 0.03), 0.04, 0.06, 0, { mat: frameMat, noShadow: true, noRay: true });
+      if (o.type === 'window') gBox(wx - s * 0.21, 0.95, 1.0, o.z, 0.06, w, 0, { mat: frameMat, noShadow: true, noRay: true });
+      // dark room behind each opening
+      gBox(back, 0, 3.2, o.z, 0.2, 4.4, 0, { mat: dark });
+      for (const e of [-1, 1]) gBox((wx + back) / 2, 0, 3.2, o.z + e * 2.2, Math.abs(back - wx), 0.2, 0, { mat: dark });
+      gBox((wx + back) / 2, 3.2, 3.3, o.z, Math.abs(back - wx), 4.4, 0, { mat: roof, noRay: true });
+    }
+    const end = GZEND - 6;
+    if (cursor - end > 0.01) gBox(wx, 0, 3.2, (cursor + end) / 2, 0.4, cursor - end, COL.wall);
+  }
+  // targets: the same plan in both lanes
+  G.lanes = [-1, 1].map(s => G.plan.map((o, i) => {
+    const m = soldierModel('grunt');
+    const t = { i, o, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + o.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + o.dir * 2.0, ux: s * (GWALL - 0.05), uz: o.z,
+      st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
+    m.root.visible = false; for (const p of m.parts) p.userData.gt = t;
+    roomGroup.add(m.root);
+    return t;
+  }));
+  RM = { name: 'Hallway', loopSec: 99, loops: 1, rules: {}, door: { side: 'e', c: 0 }, spawn: { x: 0, z: GZ0, yaw: 0 }, plates: [], walls: [], enemies: [] };
+  DOOR = { x0: 999, x1: 999.1, z0: 999, z1: 999.1 }; doorC = { x: 999, z: 999 };
+  doorMesh = new THREE.Object3D(); guardRing = new THREE.Object3D(); exitSide = 'e';
+}
+function clearGallery() {
+  if (B) { scene.remove(B.root); B = null; }
+  G = null;
+}
+function startGallery(seed, online) {
+  if (mode !== 'gallery') { screenEl.classList.remove('duel'); screenEl.classList.add('gallery'); mode = 'gallery'; }
+  clearActors(); clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; }
+  D = { online: !!online, score: [0, 0], round: 0, arena: 'Hallway' };
+  G = { seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: 0, rpitch: 0 };
+  buildGallery(seed);
+  G.mySide = online && typeof netIsHost === 'function' && !netIsHost() ? 1 : -1;
+  G.mine = G.lanes[G.mySide === -1 ? 0 : 1]; G.theirs = G.lanes[G.mySide === -1 ? 1 : 0];
+  P.stats = baseStats(); P.cards = []; P.ammo = P.stats.mag; P.rl = 0; P.dcd = 0; reloadQueued = false; firing = false;
+  Object.assign(P, { x: G.mySide * GLANE, z: GZ0, vx: 0, vz: 0, yaw: 0, pitch: 0, alive: true, hp: 100, dashT: 0, dashCd: 0, pushCd: 0, shieldT: 0, crouch: 0 });
+  B = makeBot(online && typeof netPeerColor === 'function' ? netPeerColor() : null);
+  B.hpBar.visible = false; B.stats = baseStats();
+  Object.assign(B, { x: -G.mySide * GLANE, z: GZ0, a: -Math.PI / 2, alive: true, stun: 0, aimT: 0, ammo: 6, rl: 0, cd: 0, shieldT: 0 });
+  resetBotAnim();
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === (online ? 'modeOnline' : 'modeGallery'))); }
+  $('gFoeName').textContent = online ? 'OPPONENT' : 'RIVAL';
+  state = 'dcount'; dTimer = 150; dtick = 0; tick = 0; SFX.spawn();
+  galHud(true);
+}
+function galKill(t, head, mine) {
+  t.alive = false; t.st = 'dead'; t.deadT = G.t; t.aimT = 0;
+  puff(new THREE.Vector3(t.x, head ? 1.6 : 1.1, t.z), 8, head ? 0xffb547 : COL.foe);
+  if (mine) { G.me++; if (head) G.heads++; } else G.foe++;
+  galHud(true);
+}
+function galShoot() {
+  const S = P.stats;
+  P.dcd = Math.max(2, Math.round(S.delay)); kick = 1; flashT = 3; SFX.shoot(); tone(85, 0.14, 'sawtooth', 0.07, 45);
+  P.ammo--; if (P.ammo <= 0) startReload(P);
+  G.shots++;
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const objs = G.rayObjs.slice();
+  for (const t of G.mine) if (t.alive && (t.st === 'up' || t.st === 'in' || t.st === 'out')) objs.push(...t.parts);
+  ray.set(camera.position, dir); ray.far = 70;
+  const h = ray.intersectObjects(objs, false)[0];
+  const mz = new THREE.Vector3(0.2, -0.13, -0.75).applyQuaternion(camera.quaternion).add(camera.position);
+  muzzleLight.position.copy(mz); muzzleLight.intensity = 3;
+  const end = h ? h.point : camera.position.clone().addScaledVector(dir, 70);
+  tracer(mz, end);
+  if (D.online) netSend('gs', { yaw: +P.yaw.toFixed(3), pitch: +P.pitch.toFixed(3) });
+  if (!h) return;
+  const t = h.object.userData.gt;
+  if (!t || !t.alive) { puff(h.point, 3, 0x6b7480); SFX.wall(); return; }
+  const head = h.object.userData.zone === 'head';
+  G.hits++;
+  t.hp -= head ? 2 : 1; t.flash = 5;
+  const kill = t.hp <= 0;
+  head ? SFX.headshot() : SFX.hit(); hitMarker(kill, head);
+  puff(h.point, 4, head ? 0xffb547 : COL.foe);
+  if (kill) { galKill(t, head, true); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head }); }
+}
+function galBot() {
+  if (B.cd > 0) B.cd--;
+  tickReload(B);
+  let tgt = null;
+  for (const t of G.theirs) if (t.alive && t.st === 'up') { if (!t.botAt) t.botAt = G.t + 30 + Math.random() * 40; if (!tgt || t.botAt < tgt.botAt) tgt = t; }
+  if (tgt) { const want = Math.atan2(tgt.z - B.z, tgt.x - B.x); B.a += Math.atan2(Math.sin(want - B.a), Math.cos(want - B.a)) * 0.25; }
+  else B.a += Math.atan2(Math.sin(-Math.PI / 2 - B.a), Math.cos(-Math.PI / 2 - B.a)) * 0.1;
+  if (!tgt || G.t < tgt.botAt || B.cd > 0 || B.rl > 0 || B.ammo <= 0) return;
+  B.cd = 15 + Math.random() * 8; B.ammo--; if (B.ammo <= 0) startReload(B); B.fireT = 8;
+  SFX.gruntShot();
+  const r = Math.random(), head = r < 0.22, hit = r < 0.65;
+  const aimY = head ? 1.58 : hit ? 1.1 : 1.1 + (Math.random() - 0.5) * 2;
+  const [mx, mz] = muzzleOf(B.x, B.z, B.a, 0.7, 0.22);
+  tracer(new THREE.Vector3(mx, 1.35, mz), new THREE.Vector3(tgt.x + (hit ? 0 : (Math.random() - 0.5) * 2), aimY, tgt.z + (hit ? 0 : (Math.random() - 0.5) * 2)), 0xff8a7f);
+  if (!hit) return;
+  tgt.flash = 5; tgt.hp -= head ? 2 : 1;
+  if (tgt.hp <= 0) galKill(tgt, head, false); else tgt.botAt = G.t + 12;
+}
+function galTargets(list, wz, isMine) {
+  for (const t of list) {
+    if (t.st === 'wait') {
+      if (wz <= t.o.z + t.o.ahead) { t.st = 'in'; t.k = 0; t.root.visible = true; if (isMine) tone(520, 0.05, 'square', 0.03); }
+      continue;
+    }
+    if (t.st === 'in') { t.k = Math.min(1, t.k + 1 / 12); if (t.k >= 1) { t.st = 'up'; t.upT = t.o.up; } }
+    else if (t.st === 'up') { if (--t.upT <= 0) t.st = 'out'; }
+    else if (t.st === 'out') { t.k = Math.max(0, t.k - 1 / 12); if (t.k <= 0) { t.st = 'gone'; t.root.visible = false; } }
+    else if (t.st === 'dead') { if (G.t - t.deadT > 100) t.root.visible = false; }
+    if (t.flash > 0) t.flash--;
+    if (t.alive) { t.x = t.hx + (t.ux - t.hx) * t.k; t.z = t.hz + (t.uz - t.hz) * t.k; }
+  }
+}
+function galTick() {
+  if (!G) return;
+  if (state === 'dcount') { if (dTimer % 50 === 0) SFX.blip(); bigText(String(Math.ceil(dTimer / 50)), ''); if (--dTimer <= 0) { bigText('GO', 'ok'); setTimeout(() => { if (state === 'dplay' && mode === 'gallery') bigText(''); }, 500); state = 'dplay'; } return; }
+  if (state !== 'dplay' && state !== 'gend') return;
+  G.t++; tick = G.t; dtick = G.t;
+  const wz = Math.max(GZEND, GZ0 - G.t * GSPEED);
+  const moving = wz > GZEND;
+  P.z = wz; P.vz = moving ? -GSPEED : 0; P.vx = 0; P.x = G.mySide * GLANE;
+  P.bob += moving ? 0.07 : 0;
+  if (moving && G.t >= (P.stepAt || 0)) { SFX.step(); P.stepAt = G.t + 24; }
+  B.z = wz; B.x = -G.mySide * GLANE; if (moving) B.lastMove = G.t;
+  galTargets(G.mine, wz, true); galTargets(G.theirs, wz, false);
+  if (state === 'dplay') {
+    if (reloadQueued) startReload(P); reloadQueued = false;
+    tickReload(P);
+    if (P.dcd > 0) P.dcd--;
+    if (firing && P.dcd <= 0 && P.rl <= 0 && P.ammo <= 0) startReload(P);
+    if (firing && P.dcd <= 0 && P.rl <= 0 && P.ammo > 0) galShoot();
+    if (D.online) {
+      if (G.t % 3 === 0) netSend('gy', { yaw: +P.yaw.toFixed(3), pitch: +P.pitch.toFixed(3) });
+      B.a += Math.atan2(Math.sin(G.ryaw - B.a), Math.cos(G.ryaw - B.a)) * 0.3;
+      if (B.fireT > 0) B.fireT--;
+    } else { galBot(); if (B.fireT > 0) B.fireT--; }
+    const allDone = G.mine.every(t => t.st === 'gone' || t.st === 'dead') && G.theirs.every(t => t.st === 'gone' || t.st === 'dead');
+    if (!moving && allDone) { state = 'gend'; G.endT = G.t; firing = false; bigText('FINISH', 'ok'); if (D.online) netSend('gend', { k: G.me }); }
+  } else if (state === 'gend' && G.t - G.endT > 90) galFinish();
+}
+function galFinish() {
+  state = 'gover'; bigText('');
+  const won = G.me > G.foe, draw = G.me === G.foe;
+  SFX[won ? 'win' : draw ? 'blip' : 'lose']();
+  if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
+  showOverlay('galOver');
+  if (D.online && typeof netGalOver === 'function') netGalOver();
+}
+function galRemoteKill(i, head) { if (!G) return; const t = G.theirs[i]; if (t && t.alive) galKill(t, head, false); }
+function galRemoteShot(yaw, pitch) {
+  if (!G || !B) return;
+  B.fireT = 8; SFX.gruntShot();
+  const d = dirFrom(yaw, pitch), [mx, mz] = muzzleOf(B.x, B.z, B.a, 0.7, 0.22);
+  const o = new THREE.Vector3(mx, 1.4, mz);
+  tracer(o, o.clone().addScaledVector(d, 12), 0xff8a7f);
+}
+function galRemoteYaw(yaw) { if (G) G.ryaw = Math.atan2(-Math.cos(yaw), -Math.sin(yaw)); }
+function galRemoteEnd(k) { if (G && k > G.foe) { G.foe = k; galHud(true); } }
+let lastGal = '';
+function galHud(force) {
+  if (!G) return;
+  const total = G.plan.length, done = G.mine.filter(t => t.st === 'gone' || t.st === 'dead').length;
+  const key = G.me + '|' + G.foe + '|' + done;
+  if (!force && key === lastGal) return; lastGal = key;
+  $('gMe').textContent = G.me; $('gFoe').textContent = G.foe;
+  $('gLeft').textContent = 'TARGETS ' + done + ' / ' + total;
+  $('gMe').parentElement.classList.toggle('lead', G.me > G.foe); $('gFoe').parentElement.classList.toggle('lead', G.foe > G.me);
+}
+function galRender() {
+  if (!G || !B) return;
+  for (const lane of G.lanes) for (const t of lane) {
+    if (!t.root.visible) continue;
+    t.root.position.set(t.x, 0, t.z);
+    const wx = t.side === G.mySide ? P.x : B.x;
+    t.root.rotation.y = yawFromAng(Math.atan2(P.z - t.z, wx - t.x));
+    animateSoldier(t, animDt);
+    for (const m of t.mats) { m.emissive.setHex(t.flash > 0 ? 0xffffff : 0x000000); m.emissiveIntensity = t.flash > 0 ? 0.6 : 0; }
+  }
+  B.root.position.set(B.x, 0, B.z); B.root.rotation.y = yawFromAng(B.a);
+  animateSoldier(B, animDt);
+  const prog = Math.min(1, (GZ0 - P.z) / (GZ0 - GZEND));
+  $('gProg').style.width = (prog * 100).toFixed(1) + '%';
+  galHud(false);
+  renderAmmo();
+}
+function enterGallery() {
+  if (mode === 'duel') { clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } screenEl.classList.remove('duel'); }
+  mode = 'gallery'; state = 'title'; screenEl.classList.add('gallery'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; bigText('');
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === 'modeGallery')); }
+  clearActors();
+  G = { rayObjs: [] }; buildGallery(1); G = null;
+  Object.assign(P, { x: -GLANE, z: GZ0, yaw: 0, pitch: 0 });
+  showOverlay('galIntro');
+  if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
+}
+$('modeGallery').addEventListener('click', e => { if (mode !== 'gallery' || G) enterGallery(); e.currentTarget.blur(); });
+// ===== end Hallway mode =====
+
 const colorsEl = $('colors');
 for (const [nm, hex] of PCOLORS) {
   const b = document.createElement('button'); b.type = 'button'; b.className = 'sw'; b.title = nm; b.setAttribute('aria-label', nm); b.style.background = hex; b.dataset.hex = hex;
@@ -1858,7 +2130,7 @@ function mockTransport() {
 // match messages go player-to-player. If the direct link fails, everything keeps flowing through Supabase.
 let rtc = null;
 const ICE = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' }];
-const FAST = { st: 1, ping: 1, pong: 1 };
+const FAST = { st: 1, ping: 1, pong: 1, gy: 1 };
 const VIA_SERVER = { join: 1, welcome: 1, full: 1, bye: 1, rtc: 1 };
 function rtcOpen() { return !!(rtc && rtc.fast.readyState === 'open' && rtc.rel.readyState === 'open'); }
 function closeRTC() { if (!rtc) return; const r = rtc; rtc = null; try { r.pc.close(); } catch (e) {} }
@@ -1901,7 +2173,7 @@ const netInfoEl = document.createElement('div');
 netInfoEl.style.cssText = 'position:absolute;left:50%;top:92px;transform:translateX(-50%);background:rgba(13,15,18,0.78);color:#fff;font-size:11px;letter-spacing:0.1em;padding:5px 10px;border-radius:5px;pointer-events:none;white-space:nowrap';
 netInfoEl.hidden = true; screenEl.appendChild(netInfoEl);
 setInterval(() => {
-  const on = !!(ON && ON.inMatch && mode === 'duel');
+  const on = !!(ON && ON.inMatch && mode !== 'campaign');
   netInfoEl.hidden = !on; if (!on) return;
   const direct = rtcOpen(), ms = ON.rtt == null ? '…' : Math.round(ON.rtt) + ' ms';
   const t = 'PING ' + ms + ' · ' + (direct ? 'DIRECT' : 'RELAY');
@@ -1911,8 +2183,9 @@ function myName() { const v = ($('lName').value || '').trim().slice(0, 16); retu
 function lobbyStatus(t) { $('lStatus').textContent = t; }
 
 async function openOnline() {
+  if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); }
   mode = 'duel'; state = 'title'; screenEl.classList.add('duel'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; ov.hidden = true;
-  for (const id of ['modeCampaign', 'modeDuel', 'modeOnline']) $(id).setAttribute('aria-pressed', id === 'modeOnline' ? 'true' : 'false');
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeOnline']) if ($(id)) $(id).setAttribute('aria-pressed', id === 'modeOnline' ? 'true' : 'false');
   clearActors(); clearShots(); if (B) { scene.remove(B.root); B = null; } D = { score: [0, 0], round: 0, arena: '' };
   buildArena(0); Object.assign(P, { x: -AX + 3, z: 0, yaw: E_, pitch: 0 });
   if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
@@ -1945,7 +2218,7 @@ function renderLobbies() {
     const row = document.createElement('div'); row.className = 'lrow';
     const info = document.createElement('div'); info.className = 'linfo';
     const nm = document.createElement('b'); nm.textContent = l.name;
-    const sub = document.createElement('span'); sub.textContent = 'Duel · ' + l.players + '/2 · ' + (l.status === 'open' ? 'waiting for a player' : 'match in progress');
+    const sub = document.createElement('span'); sub.textContent = (l.mode === 'gallery' ? 'Hallway · most kills' : 'Duel · first to 5') + ' · ' + l.players + '/2 · ' + (l.status === 'open' ? 'waiting for a player' : 'match in progress');
     info.append(nm, sub);
     const b = document.createElement('button'); b.type = 'button'; b.className = 'play'; b.textContent = 'Join'; b.disabled = l.status !== 'open';
     b.addEventListener('click', () => joinLobby(l));
@@ -1961,7 +2234,7 @@ async function hostLobby() {
   if (!NET || !lobbyCh) { lobbyStatus('Still connecting. Try again in a moment.'); return; }
   const name = myName(); try { localStorage.setItem('bb-name', $('lName').value.trim()); } catch (e) {}
   const lobbyId = myId + Date.now().toString(36);
-  ON = { lobbyId, isHost: true, me: name, peer: null, peerName: '', lobbyName: name + '’s lobby', inMatch: false };
+  ON = { lobbyId, isHost: true, me: name, peer: null, peerName: '', lobbyName: name + '’s lobby', inMatch: false, gameMode: hostMode };
   await enterGameChannel(lobbyId);
   await announce();
   waitView();
@@ -1970,11 +2243,11 @@ async function hostLobby() {
 function browsePresence() { return lobbyCh ? lobbyCh.track({ browsing: true, id: myId, at: Date.now() }) : null; }
 async function announce() {
   if (!ON || !ON.isHost || !lobbyCh) return;
-  await lobbyCh.track({ lobbyId: ON.lobbyId, hostId: myId, name: ON.lobbyName, players: ON.peer ? 2 : 1, status: ON.peer ? 'full' : 'open', at: ON.at || (ON.at = Date.now()) });
+  await lobbyCh.track({ lobbyId: ON.lobbyId, hostId: myId, name: ON.lobbyName, mode: ON.gameMode || 'duel', players: ON.peer ? 2 : 1, status: ON.peer ? 'full' : 'open', at: ON.at || (ON.at = Date.now()) });
 }
 async function joinLobby(l) {
   const name = myName(); try { localStorage.setItem('bb-name', $('lName').value.trim()); } catch (e) {}
-  ON = { lobbyId: l.lobbyId, isHost: false, me: name, peer: l.hostId, peerName: l.name, lobbyName: l.name, inMatch: false, pending: true };
+  ON = { lobbyId: l.lobbyId, isHost: false, me: name, peer: l.hostId, peerName: l.name, lobbyName: l.name, inMatch: false, pending: true, gameMode: l.mode || 'duel' };
   lobbyStatus('Joining ' + l.name + '…');
   await enterGameChannel(l.lobbyId);
   netSend('join', { name, color: myColor }, l.hostId);
@@ -1982,6 +2255,7 @@ async function joinLobby(l) {
 }
 function waitView() {
   showLobby('wait');
+  $('wEye').textContent = ON.gameMode === 'gallery' ? 'Online · Hallway · most kills wins' : 'Online · Duel · first to 5';
   $('wTitle').textContent = ON.lobbyName;
   const start = $('wStart');
   if (ON.isHost) {
@@ -2002,7 +2276,7 @@ function onNetPeers(list) {
 setInterval(() => {
   if (!ON || !ON.peer || ON.pending || ON.peerHere !== false) return;
   const now = Date.now();
-  if (now - ON.missingSince > 4000 && now - (ON.lastSeen || 0) > 4000) peerLeft();
+  if (now - ON.missingSince > 10000 && now - (ON.lastSeen || 0) > 10000) peerLeft();
 }, 1000);
 function peerLeft() {
   closeRTC();
@@ -2023,7 +2297,7 @@ function onNetMsg(m) {
       ON.peer = m.from; ON.peerName = d.name || 'Player'; ON.peerColor = d.color; ON.lastSeen = Date.now(); ON.peerHere = undefined; netSend('welcome', { name: ON.me, color: myColor }, m.from); announce(); waitView(); SFX.plateOn(); { const pid = m.from; setTimeout(() => { if (ON && ON.isHost && ON.peer === pid) startRTC(true, pid); }, 400); } return;
     case 'welcome': if (ON.isHost) return; ON.pending = false; ON.peer = m.from; ON.lastSeen = Date.now(); ON.peerName = d.name; ON.peerColor = d.color; lobbyStatus(''); waitView(); SFX.plateOn(); return;
     case 'full': ON.pending = false; leaveGame(); lobbyStatus('That lobby just filled up.'); return;
-    case 'start': if (!ON.isHost) beginOnlineMatch(); return;
+    case 'start': if (!ON.isHost) { if (d.mode) ON.gameMode = d.mode; beginOnlineMatch(d.seed); } return;
     case 'st': if (ON.inMatch && !(d.q <= (ON.lastQ || 0))) { ON.lastQ = d.q || 0; ON.remote = { ...d, at: performance.now() }; } return;
     case 'shot': if (ON.inMatch && B && state === 'dplay') { fireShots('b', B, d.x, d.y ?? 1.5, d.z, 0, 0, d.st, false, d.dirs); SFX.gruntShot(); B.fireT = 8; } return;
     case 'hit': if (ON.inMatch && B && B.alive) B.hp = d.hp; return;
@@ -2043,24 +2317,30 @@ function onNetMsg(m) {
       return;
     }
     case 'round': if (!ON.isHost) { D.round = d.r; bigText(''); $('cards').hidden = true; startRound(); } return;
-    case 'rematch': if (!ON.isHost) beginOnlineMatch(); return;
+    case 'rematch': if (!ON.isHost) beginOnlineMatch(d.seed); return;
+    case 'gk': if (ON.inMatch) galRemoteKill(d.i | 0, !!d.head); return;
+    case 'gs': if (ON.inMatch) galRemoteShot(d.yaw, d.pitch); return;
+    case 'gy': if (ON.inMatch) galRemoteYaw(d.yaw); return;
+    case 'gend': if (ON.inMatch) galRemoteEnd(d.k | 0); return;
     case 'pushed': if (ON.inMatch) { P.vx = d.kx; P.vz = d.kz; } return;
     case 'shield': if (ON.inMatch && B) { B.shieldT = Math.min(120, d.t | 0); SFX.shield(0.5); } return;
     case 'bye': peerLeft(); return;
   }
 }
-function beginOnlineMatch() {
+function beginOnlineMatch(seed) {
   if (!ON) return;
   ON.inMatch = true; netOn = true; ON.remote = null;
   $('lobby').hidden = true; ov.hidden = true; unlockAudio();
-  startMatch();
+  if (ON.gameMode === 'gallery') startGallery(seed || 1, true);
+  else { if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); screenEl.classList.add('duel'); mode = 'duel'; } startMatch(); }
   requestLock();
 }
 // Host waits half a round trip before starting so both players' countdowns end at the same moment.
 const halfRtt = () => Math.min(400, ((ON && ON.rtt) || 0) / 2);
 function hostStart() {
   if (!ON || !ON.isHost || !ON.peer) return;
-  netSend('start', {}); announce(); setTimeout(beginOnlineMatch, halfRtt());
+  const seed = (Math.random() * 1e9) | 0;
+  netSend('start', { seed, mode: ON.gameMode }); announce(); setTimeout(() => beginOnlineMatch(seed), halfRtt());
 }
 function hostNextRound(replay) {
   if (!ON || !ON.inMatch) return;
@@ -2160,8 +2440,14 @@ function netCardPicked(c) {
   state = 'dwait';
   if (ON.isHost) setTimeout(hostNextRound, 600); else bigText('WAITING FOR THE NEXT ROUND', '');
 }
+function netGalOver() {
+  $('ovEyebrow').textContent = 'Online hallway · finished';
+  if (ON && ON.isHost) { ovBtn.textContent = 'Rematch'; ovAction = 'netRematch'; } else { ovBtn.textContent = 'Waiting for host'; ovAction = 'none'; }
+  ovAlt.hidden = false; ovAlt.textContent = 'Leave lobby';
+}
 function endOnlineMatch(msg) {
   netOn = false; if (ON) ON.inMatch = false;
+  if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); screenEl.classList.add('duel'); mode = 'duel'; buildArena(0); }
   clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; }
   D = { score: [0, 0], round: 0, arena: '' }; bigText(''); $('cards').hidden = true; ov.hidden = true;
   state = 'title';
@@ -2183,12 +2469,18 @@ function netLeave() {
 }
 $('modeOnline').addEventListener('click', e => { if (!(mode === 'duel' && !$('lobby').hidden)) openOnline(); e.currentTarget.blur(); });
 $('modeDuel').addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } $('modeOnline').setAttribute('aria-pressed', 'false'); }, true);
+let hostMode = 'duel';
+try { if (localStorage.getItem('bb-mode') === 'gallery') hostMode = 'gallery'; } catch (e) {}
+function syncHostMode() { $('lmDuel').setAttribute('aria-pressed', String(hostMode === 'duel')); $('lmGal').setAttribute('aria-pressed', String(hostMode === 'gallery')); }
+for (const [id, m] of [['lmDuel', 'duel'], ['lmGal', 'gallery']]) $(id).addEventListener('click', e => { hostMode = m; try { localStorage.setItem('bb-mode', m); } catch (err) {} syncHostMode(); e.currentTarget.blur(); });
+syncHostMode();
+$('modeGallery').addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } }, true);
 $('lHost').addEventListener('click', hostLobby);
 $('lBack').addEventListener('click', () => { netLeave(); leaveDuel(); });
 $('wStart').addEventListener('click', hostStart);
 $('wLeave').addEventListener('click', () => { leaveGame(); showLobby('browse'); lobbyStatus(''); renderLobbies(); });
 ovBtn.addEventListener('click', e => {
-  if (ovAction === 'netRematch') { e.stopImmediatePropagation(); netSend('rematch', {}); ov.hidden = true; setTimeout(beginOnlineMatch, halfRtt()); }
+  if (ovAction === 'netRematch') { e.stopImmediatePropagation(); const seed = (Math.random() * 1e9) | 0; netSend('rematch', { seed }); ov.hidden = true; setTimeout(() => beginOnlineMatch(seed), halfRtt()); }
   else if (ovAction === 'none') e.stopImmediatePropagation();
 }, true);
 ovAlt.addEventListener('click', e => {
@@ -2212,6 +2504,7 @@ function frame(now) {
     if (state === 'play') step();
     else if (state === 'rewind') { if (!keys.has('tab') && --rewindT <= 0) { $('rewind').hidden = true; state = 'play'; } }
     else if (mode === 'duel') duelTick();
+    else if (mode === 'gallery') galTick();
   }
   render();
   requestAnimationFrame(frame);
