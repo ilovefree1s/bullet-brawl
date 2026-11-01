@@ -203,7 +203,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v17</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v18</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -304,7 +304,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v17</span>
+    <span class="ver">v18</span>
   </div>
 </div>
 
@@ -1847,7 +1847,60 @@ function mockTransport() {
   };
 }
 
-function netSend(t, d, to) { if (gameCh) gameCh.send({ t, d, from: myId, to }); }
+// ---- Peer-to-peer (WebRTC) ----
+// Supabase carries the lobby and the connection handshake; once the two browsers connect directly,
+// match messages go player-to-player. If the direct link fails, everything keeps flowing through Supabase.
+let rtc = null;
+const ICE = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' }];
+const FAST = { st: 1, ping: 1, pong: 1 };
+const VIA_SERVER = { join: 1, welcome: 1, full: 1, bye: 1, rtc: 1 };
+function rtcOpen() { return !!(rtc && rtc.fast.readyState === 'open' && rtc.rel.readyState === 'open'); }
+function closeRTC() { if (!rtc) return; const r = rtc; rtc = null; try { r.pc.close(); } catch (e) {} }
+function sigSend(d) { if (gameCh && ON && ON.peer) gameCh.send({ t: 'rtc', d, from: myId, to: ON.peer }); }
+function startRTC(initiator, peer) {
+  closeRTC();
+  if (!window.RTCPeerConnection || !ON) return;
+  let pc;
+  try { pc = new RTCPeerConnection({ iceServers: ICE }); } catch (e) { return; }
+  const fast = pc.createDataChannel('fast', { negotiated: true, id: 0, ordered: false, maxRetransmits: 0 });
+  const rel = pc.createDataChannel('rel', { negotiated: true, id: 1, ordered: true });
+  const me = rtc = { pc, fast, rel, peer, pend: (!initiator && ON.earlyIce) || [], remoteSet: false };
+  ON.earlyIce = [];
+  const onm = e => { if (rtc !== me) return; let m; try { m = JSON.parse(e.data); } catch (err) { return; } onNetMsg(m); };
+  fast.onmessage = onm; rel.onmessage = onm;
+  pc.onicecandidate = e => { if (e.candidate && rtc === me) sigSend({ c: e.candidate.toJSON() }); };
+  pc.onconnectionstatechange = () => { if (rtc === me && pc.connectionState === 'failed') closeRTC(); };
+  if (initiator) (async () => { try { await pc.setLocalDescription(await pc.createOffer()); if (rtc === me) sigSend({ sdp: pc.localDescription.toJSON() }); } catch (e) { if (rtc === me) closeRTC(); } })();
+}
+async function onRtcSignal(d, from) {
+  if (!ON || from !== ON.peer) return;
+  if (d.sdp && d.sdp.type === 'offer') { if (ON.isHost) return; startRTC(false, from); }
+  const r = rtc;
+  if (!r || r.peer !== from) { if (d.c) (ON.earlyIce = ON.earlyIce || []).push(d.c); return; }
+  try {
+    if (d.sdp) {
+      await r.pc.setRemoteDescription(d.sdp); r.remoteSet = true;
+      for (const c of r.pend) { try { await r.pc.addIceCandidate(c); } catch (e) {} }
+      r.pend = [];
+      if (d.sdp.type === 'offer') { await r.pc.setLocalDescription(await r.pc.createAnswer()); if (rtc === r) sigSend({ sdp: r.pc.localDescription.toJSON() }); }
+    } else if (d.c) { if (r.remoteSet) await r.pc.addIceCandidate(d.c); else r.pend.push(d.c); }
+  } catch (e) {}
+}
+function netSend(t, d, to) {
+  const m = { t, d, from: myId, to };
+  if (!VIA_SERVER[t] && rtcOpen()) { try { (FAST[t] ? rtc.fast : rtc.rel).send(JSON.stringify(m)); return; } catch (e) {} }
+  if (gameCh) gameCh.send(m);
+}
+const netInfoEl = document.createElement('div');
+netInfoEl.style.cssText = 'position:absolute;left:50%;top:92px;transform:translateX(-50%);background:rgba(13,15,18,0.78);color:#fff;font-size:11px;letter-spacing:0.1em;padding:5px 10px;border-radius:5px;pointer-events:none;white-space:nowrap';
+netInfoEl.hidden = true; screenEl.appendChild(netInfoEl);
+setInterval(() => {
+  const on = !!(ON && ON.inMatch && mode === 'duel');
+  netInfoEl.hidden = !on; if (!on) return;
+  const direct = rtcOpen(), ms = ON.rtt == null ? '…' : Math.round(ON.rtt) + ' ms';
+  const t = 'PING ' + ms + ' · ' + (direct ? 'DIRECT' : 'RELAY');
+  if (netInfoEl.textContent !== t) { netInfoEl.textContent = t; netInfoEl.style.color = direct ? '#7ef0a8' : '#ffd27a'; }
+}, 500);
 function myName() { const v = ($('lName').value || '').trim().slice(0, 16); return v || 'Soldier ' + myId.slice(0, 3).toUpperCase(); }
 function lobbyStatus(t) { $('lStatus').textContent = t; }
 
@@ -1946,6 +1999,7 @@ setInterval(() => {
   if (now - ON.missingSince > 4000 && now - (ON.lastSeen || 0) > 4000) peerLeft();
 }, 1000);
 function peerLeft() {
+  closeRTC();
   const wasMatch = ON.inMatch;
   if (ON.isHost) {
     ON.peer = null; ON.peerName = ''; ON.peerHere = undefined; ON.inMatch = false; netOn = false; announce();
@@ -1960,11 +2014,11 @@ function onNetMsg(m) {
     case 'join':
       if (!ON.isHost) return;
       if (ON.peer && ON.peer !== m.from) { netSend('full', {}, m.from); return; }
-      ON.peer = m.from; ON.peerName = d.name || 'Player'; ON.peerColor = d.color; ON.lastSeen = Date.now(); ON.peerHere = undefined; netSend('welcome', { name: ON.me, color: myColor }, m.from); announce(); waitView(); SFX.plateOn(); return;
+      ON.peer = m.from; ON.peerName = d.name || 'Player'; ON.peerColor = d.color; ON.lastSeen = Date.now(); ON.peerHere = undefined; netSend('welcome', { name: ON.me, color: myColor }, m.from); announce(); waitView(); SFX.plateOn(); { const pid = m.from; setTimeout(() => { if (ON && ON.isHost && ON.peer === pid) startRTC(true, pid); }, 400); } return;
     case 'welcome': if (ON.isHost) return; ON.pending = false; ON.peer = m.from; ON.lastSeen = Date.now(); ON.peerName = d.name; ON.peerColor = d.color; lobbyStatus(''); waitView(); SFX.plateOn(); return;
     case 'full': ON.pending = false; leaveGame(); lobbyStatus('That lobby just filled up.'); return;
     case 'start': if (!ON.isHost) beginOnlineMatch(); return;
-    case 'st': if (ON.inMatch) ON.remote = { ...d, at: performance.now() }; return;
+    case 'st': if (ON.inMatch && !(d.q <= (ON.lastQ || 0))) { ON.lastQ = d.q || 0; ON.remote = { ...d, at: performance.now() }; } return;
     case 'shot': if (ON.inMatch && B && state === 'dplay') { fireShots('b', B, d.x, d.y ?? 1.5, d.z, 0, 0, d.st, false, d.dirs); SFX.gruntShot(); B.fireT = 8; } return;
     case 'hit': if (ON.inMatch && B && B.alive) B.hp = d.hp; return;
     case 'dmg':
@@ -1973,6 +2027,7 @@ function onNetMsg(m) {
       return;
     case 'died': if (ON.inMatch && ON.isHost) hostDeath('g', d); return;
     case 'res': if (ON.inMatch && !ON.isHost && D && d.rid === D.rid) applyResult(d.w); return;
+    case 'rtc': onRtcSignal(d, m.from); return;
     case 'ping': netSend('pong', { t: d.t }, m.from); return;
     case 'pong': { const r = performance.now() - d.t; if (r >= 0 && r < 5000) ON.rtt = ON.rtt == null ? r : ON.rtt * 0.7 + r * 0.3; return; }
     case 'card': {
@@ -2062,7 +2117,7 @@ function netTick() {
   if (B && B.flash > 0) B.flash--;
   if (B && B.fireT > 0) B.fireT--;
   if (B && B.shieldT > 0) B.shieldT--;
-  if (dtick % 2 === 0) netSend('st', { x: +P.x.toFixed(3), z: +P.z.toFixed(3), yaw: +P.yaw.toFixed(3), vx: +P.vx.toFixed(4), vz: +P.vz.toFixed(4), hp: +P.hp.toFixed(1), c: +(P.crouch || 0).toFixed(2) });
+  if (dtick % 2 === 0) netSend('st', { q: (ON.sq = (ON.sq || 0) + 1), x: +P.x.toFixed(3), z: +P.z.toFixed(3), yaw: +P.yaw.toFixed(3), vx: +P.vx.toFixed(4), vz: +P.vz.toFixed(4), hp: +P.hp.toFixed(1), c: +(P.crouch || 0).toFixed(2) });
 }
 function netAfterRound() {
   if (D.draw) {
@@ -2109,6 +2164,7 @@ function endOnlineMatch(msg) {
   lobbyStatus(msg || '');
 }
 function leaveGame() {
+  closeRTC();
   if (ON && ON.isHost && lobbyCh) browsePresence();
   if (gameCh) { netSend('bye', {}); const g = gameCh; setTimeout(() => g.close(), 150); gameCh = null; }
   ON = null; netOn = false;
