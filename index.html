@@ -203,7 +203,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v15</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v16</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -304,7 +304,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v15</span>
+    <span class="ver">v16</span>
   </div>
 </div>
 
@@ -753,6 +753,7 @@ const SFX = {
   hunterSpawn: () => { tone(300, 0.3, 'sawtooth', 0.07, 900); noise(0.2, 0.08, 1800, 'bandpass'); },
   dash: () => { noise(0.14, 0.1, 2200, 'bandpass'); tone(380, 0.12, 'sine', 0.06, 760); },
   ghostDash: () => { noise(0.1, 0.03, 2200, 'bandpass'); },
+  shield: (v = 1) => { tone(320, 0.22, 'sine', 0.12 * v, 900); tone(1200, 0.12, 'triangle', 0.04 * v, 2200, 0.02); noise(0.12, 0.05 * v, 3000, 'highpass'); },
   push: () => { tone(110, 0.3, 'sine', 0.25, 45); noise(0.25, 0.12, 700); tone(500, 0.18, 'triangle', 0.05, 1400); },
   ghostPush: () => { tone(110, 0.2, 'sine', 0.08, 50); },
   blip: () => { tone(980, 0.06, 'square', 0.06); },
@@ -1101,7 +1102,7 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
-  if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and swat shots away with <b>Q</b>. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and throw up a quick <b>shield</b> with <b>Q</b> to block bullets. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelOver') { const won = D.score[0] > D.score[1]; $('ovEyebrow').textContent = 'Duel · match over'; $('ovTitle').textContent = won ? 'You win the match' : 'The rival wins'; ovBody.innerHTML = 'Final score <b>' + D.score[0] + ' – ' + D.score[1] + '</b>. Your cards: <b>' + (P.cards.join(', ') || 'none') + '</b>. Rival cards: <b>' + (B.cards.join(', ') || 'none') + '</b>.'; ovBtn.textContent = 'Rematch'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'lost') { $('ovTitle').textContent = 'Out of loops'; ovBody.innerHTML = (lastWhy === 'early' ? 'You ended the final loop without getting out.' : 'Time ran out on the final loop.') + ' Plan the runs as one: who holds the plate, who clears the guards, who covers your ghosts from hunters, and who makes the dash.'; ovBtn.textContent = 'Restart room'; ovAction = 'start'; }
 }
@@ -1349,6 +1350,7 @@ function render() {
   if (chips !== lastChips) { $('gstat').innerHTML = chips; lastChips = chips; }
   if (mode === 'duel') renderDuel();
   $('abDashF').style.width = (100 * (1 - P.dashCd / (P.dashMax || DASH_CD))) + '%'; $('abDash').classList.toggle('ready', !P.dashCd);
+  const abl = mode === 'duel' ? 'SHIELD' : 'PUSH', abEl = $('abPush').querySelector('.abt span'); if (abEl.textContent !== abl) abEl.textContent = abl;
   $('abPushF').style.width = (100 * (1 - P.pushCd / (P.pushMax || PUSH_CD))) + '%'; $('abPush').classList.toggle('ready', !P.pushCd);
 
   renderer.clear();
@@ -1383,11 +1385,11 @@ const CARDS = [
   { id: 'swift', name: 'Swift', text: 'Move 20% faster, and dash recharges 35% sooner.', f: s => { s.move *= 1.2; s.dashCd *= 0.65; } },
   { id: 'leech', name: 'Leech', text: 'Heal 30% of the damage you deal.', f: s => { s.leech += 0.3; } },
   { id: 'blast', name: 'Blast Rounds', text: 'Bullets explode on impact, dealing half damage within 1.8 m.', f: s => { s.splash += 1.8; } },
-  { id: 'shock', name: 'Shockwave', text: 'Force push recharges 45% sooner and reaches 40% farther.', f: s => { s.pushCd *= 0.55; s.pushR *= 1.4; } },
+  { id: 'bulwark', name: 'Bulwark', text: 'Your shield recharges 40% sooner and lasts 50% longer.', f: s => { s.shieldCd *= 0.6; s.shieldT *= 1.5; } },
   { id: 'rail', name: 'Rail Rounds', text: 'Bullets fly 60% faster and deal 15% more damage.', f: s => { s.speed *= 1.6; s.dmg *= 1.15; } },
   { id: 'clone', name: 'Paradox Clone', rare: true, text: 'A decoy copy of you spawns each round and mirrors your every move and shot. Its shots are harmless, but your rival can\u2019t tell which one is really you. Stacks.', f: s => { s.clones += 1; } }
 ];
-const baseStats = () => ({ mag: 6, reload: 50, clones: 0, maxHp: 100, dmg: 25, delay: 15, speed: 0.8, size: 0.07, bounces: 0, pellets: 1, spread: 0.012, regen: 0, leech: 0, splash: 0, move: 1, dashCd: DASH_CD, pushCd: 360, pushR: PUSH_R });
+const baseStats = () => ({ mag: 6, reload: 50, clones: 0, maxHp: 100, dmg: 25, delay: 15, speed: 0.8, size: 0.07, bounces: 0, pellets: 1, spread: 0.012, regen: 0, leech: 0, splash: 0, move: 1, dashCd: DASH_CD, shieldT: 36, shieldCd: 240 });
 let D = null, B = null, dShots = [], dtick = 0, dTimer = 0, offered = [];
 const shotGeo = new THREE.SphereGeometry(1, 10, 8);
 const pShotMat = new THREE.MeshBasicMaterial({ color: 0xfff2c8 }), bShotMat = new THREE.MeshBasicMaterial({ color: 0xff3b2e }), gShotMat = new THREE.MeshBasicMaterial({ color: 0xaab4ff });
@@ -1436,9 +1438,9 @@ function startRound() {
   clearShots(); clearActors();
   const side = D.online && !netIsHost() ? -1 : 1;
   Object.assign(P, { x: -side * (AX - 3), z: 0, vx: 0, vz: 0, yaw: side === 1 ? E_ : Math.PI / 2, pitch: 0, alive: true, dashT: 0, dashCd: 0, pushCd: 0, inv: 0, hp: P.stats.maxHp, lastHurt: -999, dcd: 0 });
-  P.dashMax = P.stats.dashCd; P.pushMax = P.stats.pushCd; P.rec = []; P.ammo = P.stats.mag; P.rl = 0; reloadQueued = false;
+  P.dashMax = P.stats.dashCd; P.pushMax = P.stats.shieldCd; P.shieldT = 0; P.rec = []; P.ammo = P.stats.mag; P.rl = 0; reloadQueued = false;
   if (D.online) netRoundReset();
-  Object.assign(B, { x: side * (AX - 3), z: 0, a: side === 1 ? Math.PI : 0, alive: true, stun: 0, kx: 0, kz: 0, hp: B.stats.maxHp, lastHurt: -999, cd: 50, dashT: 0, dashCdT: 0, pushCdT: 60, path: null, rec: [], ammo: B.stats.mag, rl: 0, tgt: null, tgtT: 0, crouch: 0 });
+  Object.assign(B, { x: side * (AX - 3), z: 0, a: side === 1 ? Math.PI : 0, alive: true, stun: 0, kx: 0, kz: 0, hp: B.stats.maxHp, lastHurt: -999, cd: 50, dashT: 0, dashCdT: 0, pushCdT: 60, shieldT: 0, path: null, rec: [], ammo: B.stats.mag, rl: 0, tgt: null, tgtT: 0, crouch: 0 });
   B.root.visible = true; resetBotAnim();
   dashQueued = false; pushQueued = false; firing = false;
   ghosts = [];
@@ -1535,6 +1537,21 @@ function pickCard(f, c, human) {
   if (human) { $('cards').hidden = true; unlockAudio(); SFX.plateOn(); D.round++; startRound(); requestLock(); }
   else D.round++;
 }
+function duelShield(f) {
+  const st = f.stats;
+  f.shieldT = Math.round(st.shieldT);
+  if (f === P) { P.pushCd = Math.round(st.shieldCd); SFX.shield(); if (D.online) netSend('shield', { t: f.shieldT }); }
+  else { B.pushCdT = Math.round(st.shieldCd * 1.3); SFX.shield(0.5); }
+}
+const shieldGeo = new THREE.SphereGeometry(1, 24, 16);
+const bubbles = [P, null].map(() => { const m = new THREE.Mesh(shieldGeo, new THREE.MeshBasicMaterial({ color: COL.tech, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false })); m.renderOrder = 5; m.visible = false; scene.add(m); return m; });
+function shieldBubble(f) {
+  const bub = bubbles[f === P ? 0 : 1];
+  const on = !!f && mode === 'duel' && f.shieldT > 0 && f.alive;
+  bub.visible = on;
+  if (on) { const k = Math.min(1, f.shieldT / 8); bub.position.set(f.x, 1.0, f.z); bub.scale.setScalar(SHIELD_R * (0.85 + 0.15 * k)); bub.material.opacity = (f === P ? 0.1 : 0.28) * (0.5 + 0.5 * k); }
+}
+const SHIELD_R = 1.05;
 function duelPush(f, opp) {
   const st = f.stats, r = st.pushR;
   if (f === P) { P.pushCd = st.pushCd; SFX.push(); } else { B.pushCdT = st.pushCd; SFX.ghostPush(); }
@@ -1574,8 +1591,8 @@ function duelStep() {
   if (P.dashT > 0) { P.dashT--; P.vx = P.dvx * DASH_SPEED; P.vz = P.dvz * DASH_SPEED; }
   else { P.vx += ((moving ? wx * SPEED : 0) - P.vx) * 0.2; P.vz += ((moving ? wz * SPEED : 0) - P.vz) * 0.2; }
   if (P.dashCd > 0) P.dashCd--;
-  if (pushQueued && !P.pushCd) duelPush(P, B);
-  pushQueued = false; if (P.pushCd > 0) P.pushCd--;
+  if (pushQueued && !P.pushCd && P.alive) duelShield(P);
+  pushQueued = false; if (P.pushCd > 0) P.pushCd--; if (P.shieldT > 0) P.shieldT--;
   const pox = P.x, poz = P.z;
   if (!duelBlocked(P.x + P.vx, P.z)) P.x += P.vx; else P.vx = 0;
   if (!duelBlocked(P.x, P.z + P.vz)) P.z += P.vz; else P.vz = 0;
@@ -1622,6 +1639,7 @@ function duelStep() {
     }
     if (s.life <= 0 || s.y > 6) { s.dead = true; continue; }
     const tgt = s.team === 'p' ? B : P;
+    if (tgt.shieldT > 0 && tgt.alive && Math.hypot(tgt.x - s.x, tgt.z - s.z) < SHIELD_R + s.size && s.y < 2.1) { s.dead = true; puff(new THREE.Vector3(s.x, s.y, s.z), 3, COL.tech); SFX.wall(); continue; }
     const cl = clones.find(c => c.alive && c.owner !== s.owner && Math.hypot(c.x - s.x, c.z - s.z) < 0.4 + s.size && s.y > 0.1 && s.y < 1.95);
     if (cl) { if (!s.fake) hurtClone(cl, s.dmg, s.owner); impact(s, cl); continue; }
     if (s.fake && tgt.alive && Math.hypot(tgt.x - s.x, tgt.z - s.z) < 0.4 + s.size && s.y > 0.1 && s.y < 1.95 - 0.6 * (tgt.crouch || 0)) { impact(s, tgt); continue; }
@@ -1660,7 +1678,7 @@ function botThink() {
   if (B.flash > 0) B.flash--;
   if (B.fireT > 0) B.fireT--;
   if (B.dashCdT > 0) B.dashCdT--;
-  if (B.pushCdT > 0) B.pushCdT--;
+  if (B.pushCdT > 0) B.pushCdT--; if (B.shieldT > 0) B.shieldT--;
   if (S.regen && dtick - B.lastHurt > 120) B.hp = Math.min(S.maxHp, B.hp + S.regen / 60);
   tickReload(B);
   if (!B.tgt || !B.tgt.alive || --B.tgtT <= 0) {
@@ -1675,7 +1693,7 @@ function botThink() {
     const dx = T.x - B.x, dz = T.z - B.z, d = Math.hypot(dx, dz) || 1, see = losClear(B.x, B.z, T.x, T.z);
     B.a = Math.atan2(dz, dx);
     const threats = dShots.filter(s => s.team === 'p' && Math.hypot(s.x - B.x, s.z - B.z) < 4 && ((B.x - s.x) * s.vx + (B.z - s.z) * s.vz) > 0);
-    if (threats.length >= 2 && !B.pushCdT) duelPush(B, P);
+    if (threats.length && !B.pushCdT && !B.shieldT && Math.random() < 0.05) duelShield(B);
     let sp = 0.072 * S.move;
     if (B.dashT > 0) { B.dashT--; moveEnemy(B, B.dvx * DASH_SPEED, B.dvz * DASH_SPEED); }
     else if (threats.length && !B.dashCdT && Math.random() < 0.08) { const s = threats[0], l = Math.hypot(s.vx, s.vz) || 1; B.dvx = -s.vz / l * B.strafeDir; B.dvz = s.vx / l * B.strafeDir; B.dashT = DASH_TICKS; B.dashCdT = S.dashCd * 1.4; SFX.ghostDash(); }
@@ -1727,6 +1745,7 @@ function renderDuel() {
   const k = Math.max(0, B.hp / B.stats.maxHp); if (Math.abs(k - B.lastHpDraw) > 0.005) { B.hpBar.userData.draw(k, '#ff6157'); B.lastHpDraw = k; }
   B.hpBar.visible = B.alive;
   B.root.scale.set(1, 1 - 0.32 * (B.crouch || 0), 1);
+  shieldBubble(P); shieldBubble(B);
   for (const c of clones) {
     c.root.position.set(c.x, 0, c.z); c.root.rotation.y = yawFromAng(c.a);
     if (c.owner === P) c.root.scale.set(1, 1 - 0.32 * (P.crouch || 0), 1); else c.root.scale.copy(B.root.scale);
@@ -1749,6 +1768,7 @@ function enterDuel() {
   if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
 }
 function leaveDuel() {
+  for (const m of bubbles) m.visible = false;
   mode = 'campaign'; screenEl.classList.remove('duel'); $('rooms').hidden = false; $('cards').hidden = true; bigText('');
   $('modeCampaign').setAttribute('aria-pressed', 'true'); $('modeDuel').setAttribute('aria-pressed', 'false');
   if (typeof netLeave === 'function') netLeave();
@@ -1779,13 +1799,13 @@ async function makeTransport() {
   const sb = createClient(SUPA_URL, SUPA_KEY, { realtime: { params: { eventsPerSecond: 60 } } });
   return {
     lobby(onList) {
-      const ch = sb.channel('bb-lobbies', { config: { presence: { key: myId } } });
+      const ch = sb.channel('bb-lobbies', { config: { presence: { key: myId, enabled: true } } });
       ch.on('presence', { event: 'sync' }, () => onList(Object.values(ch.presenceState()).flat()));
       const ready = new Promise((res, rej) => ch.subscribe(st => { if (st === 'SUBSCRIBED') res(); else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT') rej(new Error(st)); }));
       return { ready, track: info => ch.track(info), untrack: () => ch.untrack(), close: () => sb.removeChannel(ch) };
     },
     game(id, onMsg, onPeers, me) {
-      const ch = sb.channel('bb-game-' + id, { config: { broadcast: { self: false }, presence: { key: myId } } });
+      const ch = sb.channel('bb-game-' + id, { config: { broadcast: { self: false }, presence: { key: myId, enabled: true } } });
       ch.on('broadcast', { event: 'm' }, ({ payload }) => onMsg(payload));
       ch.on('presence', { event: 'sync' }, () => onPeers(Object.values(ch.presenceState()).flat()));
       const ready = new Promise((res, rej) => ch.subscribe(async st => { if (st === 'SUBSCRIBED') { await ch.track(me); res(); } else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT') rej(new Error(st)); }));
@@ -1835,7 +1855,7 @@ async function openOnline() {
   }
   if (!lobbyCh) {
     lobbyCh = NET.lobby(list => { lobbies = list; renderLobbies(); });
-    try { await lobbyCh.ready; lobbyStatus(''); } catch (e) { lobbyStatus('Could not connect to the lobby list (' + e.message + ').'); lobbyCh = null; }
+    try { await lobbyCh.ready; await browsePresence(); lobbyStatus(''); } catch (e) { lobbyStatus('Could not connect to the lobby list (' + e.message + ').'); lobbyCh = null; }
   }
   renderLobbies();
 }
@@ -1877,6 +1897,8 @@ async function hostLobby() {
   await announce();
   waitView();
 }
+// Supabase only sends presence updates to clients that track something, so browsers track a plain 'browsing' entry.
+function browsePresence() { return lobbyCh ? lobbyCh.track({ browsing: true, id: myId, at: Date.now() }) : null; }
 async function announce() {
   if (!ON || !ON.isHost || !lobbyCh) return;
   await lobbyCh.track({ lobbyId: ON.lobbyId, hostId: myId, name: ON.lobbyName, players: ON.peer ? 2 : 1, status: ON.peer ? 'full' : 'open', at: ON.at || (ON.at = Date.now()) });
@@ -1952,6 +1974,7 @@ function onNetMsg(m) {
     case 'round': if (!ON.isHost) { D.round = d.r; bigText(''); $('cards').hidden = true; startRound(); } return;
     case 'rematch': if (!ON.isHost) beginOnlineMatch(); return;
     case 'pushed': if (ON.inMatch) { P.vx = d.kx; P.vz = d.kz; } return;
+    case 'shield': if (ON.inMatch && B) { B.shieldT = Math.min(120, d.t | 0); SFX.shield(0.5); } return;
     case 'bye': peerLeft(); return;
   }
 }
@@ -2028,6 +2051,7 @@ function netTick() {
   }
   if (B && B.flash > 0) B.flash--;
   if (B && B.fireT > 0) B.fireT--;
+  if (B && B.shieldT > 0) B.shieldT--;
   if (dtick % 2 === 0) netSend('st', { x: +P.x.toFixed(3), z: +P.z.toFixed(3), yaw: +P.yaw.toFixed(3), vx: +P.vx.toFixed(4), vz: +P.vz.toFixed(4), hp: +P.hp.toFixed(1), c: +(P.crouch || 0).toFixed(2) });
 }
 function netAfterRound() {
@@ -2075,7 +2099,7 @@ function endOnlineMatch(msg) {
   lobbyStatus(msg || '');
 }
 function leaveGame() {
-  if (ON && ON.isHost && lobbyCh) lobbyCh.untrack();
+  if (ON && ON.isHost && lobbyCh) browsePresence();
   if (gameCh) { netSend('bye', {}); const g = gameCh; setTimeout(() => g.close(), 150); gameCh = null; }
   ON = null; netOn = false;
 }
