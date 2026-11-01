@@ -117,6 +117,13 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .modes { display: flex; gap: 8px; margin-right: 12px; }
 .topbar { justify-content: flex-start; }
 .topbar .fsbtn { margin-left: 12px; }
+.sens { display: flex; gap: 6px; align-items: center; margin-left: auto; font-size: 12px; color: var(--dim); }
+.sens .clbl { letter-spacing: 0.08em; text-transform: uppercase; }
+.sens input { width: 110px; accent-color: var(--tech); }
+.sens b { color: var(--text); font-weight: 500; min-width: 34px; font-variant-numeric: tabular-nums; }
+.psens { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 14px; font-size: 13px; }
+.psens input { width: 200px; accent-color: var(--tech); }
+.colors { margin-left: 16px !important; }
 .colors { display: flex; gap: 6px; align-items: center; margin-left: auto; }
 .colors .clbl { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-right: 2px; }
 .sw { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.15); cursor: pointer; padding: 0; }
@@ -201,6 +208,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
     <div class="rooms" id="rooms" role="group" aria-label="Choose a room"></div>
+    <label class="sens"><span class="clbl">Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>
     <div class="colors" id="colors" role="group" aria-label="Your color"><span class="clbl">Color</span></div>
     <button type="button" class="fsbtn" id="fsBtn">Full screen</button>
   </div>
@@ -295,7 +303,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v13</span>
+    <span class="ver">v14</span>
   </div>
 </div>
 
@@ -1086,7 +1094,7 @@ function showOverlay(kind) {
   ov.hidden = false; ovAlt.hidden = true; ovAlt.textContent = 'Replay room';
   $('ovEyebrow').textContent = 'Room 0' + (levelIdx + 1) + ' · ' + RM.loops + ' loops of ' + RM.loopSec + ' seconds';
   if (kind === 'intro') { $('ovTitle').textContent = RM.name; ovBody.innerHTML = RM.brief; ovBtn.textContent = 'Click to play'; ovAction = 'start'; }
-  if (kind === 'pause') { $('ovTitle').textContent = 'Paused'; ovBody.innerHTML = 'The loop timer is stopped.'; ovBtn.textContent = 'Resume'; ovAction = 'resume'; }
+  if (kind === 'pause') { $('ovTitle').textContent = 'Paused'; ovBody.innerHTML = (mode === 'duel' ? 'The match is paused.' : 'The loop timer is stopped.') + '<label class="psens"><span>Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>'; syncSens(); ovBtn.textContent = 'Resume'; ovAction = 'resume'; }
   if (kind === 'won') {
     $('ovTitle').textContent = RM.name + ' cleared';
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
@@ -1131,12 +1139,19 @@ document.addEventListener('pointerlockchange', () => {
 document.addEventListener('pointerlockerror', lockFailed);
 function pauseGame() { pausedFrom = state; state = 'pause'; firing = false; keys.clear(); showOverlay('pause'); }
 
-const SENS = 0.0022;
+const SENS_BASE = 0.0022;
+let sensMul = 1;
+try { const v = parseFloat(localStorage.getItem('pl3d-sens')); if (v >= 0.2 && v <= 3) sensMul = v; } catch (e) {}
+function syncSens() { for (const el of document.querySelectorAll('.sensIn')) el.value = sensMul; for (const el of document.querySelectorAll('.sensVal')) el.textContent = sensMul.toFixed(2) + 'x'; }
+document.addEventListener('input', e => { if (!e.target.classList || !e.target.classList.contains('sensIn')) return; sensMul = Math.max(0.2, Math.min(3, parseFloat(e.target.value) || 1)); try { localStorage.setItem('pl3d-sens', String(sensMul)); } catch (err) {} syncSens(); });
+document.addEventListener('change', e => { if (e.target.classList && e.target.classList.contains('sensIn')) e.target.blur(); });
+syncSens();
 addEventListener('mousemove', e => {
   if (state !== 'play' && state !== 'dplay' && state !== 'dcount') return;
   if (!locked && !(fallback && e.target === cv)) return;
   const mx = e.movementX || 0, my = e.movementY || 0;
   if (Math.abs(mx) > 300 || Math.abs(my) > 300) return;
+  const SENS = SENS_BASE * sensMul;
   P.yaw -= mx * SENS; P.pitch = Math.max(-1.45, Math.min(1.45, P.pitch - my * SENS));
   swayX = Math.max(-1, Math.min(1, swayX + mx * 0.004)); swayY = Math.max(-1, Math.min(1, swayY + my * 0.004));
 });
