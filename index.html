@@ -217,7 +217,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v20</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v21</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -324,7 +324,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v20</span>
+    <span class="ver">v21</span>
   </div>
 </div>
 
@@ -1122,8 +1122,8 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
-  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Hallway · vs AI'; $('ovTitle').textContent = 'Hallway'; ovBody.innerHTML = 'You and a rival walk down side-by-side hallways at the same pace, split by a glass wall. Soldiers pop out of the <b>doorways and windows</b> in your lane for a moment, then duck back in. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Most kills by the end of the hallway wins. Both lanes get the exact same targets. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
-  if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Hallway · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.plan.length + ' targets each. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Hallway · vs AI'; $('ovTitle').textContent = 'Hallway'; ovBody.innerHTML = 'You and a rival walk down the same hallway side by side. Soldiers pop out of the <b>doorways and windows</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Hallway · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.plan.length + ' targets. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and throw up a quick <b>shield</b> with <b>Q</b> to block bullets. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelOver') { const won = D.score[0] > D.score[1]; $('ovEyebrow').textContent = 'Duel · match over'; $('ovTitle').textContent = won ? 'You win the match' : 'The rival wins'; ovBody.innerHTML = 'Final score <b>' + D.score[0] + ' – ' + D.score[1] + '</b>. Your cards: <b>' + (P.cards.join(', ') || 'none') + '</b>. Rival cards: <b>' + (B.cards.join(', ') || 'none') + '</b>.'; ovBtn.textContent = 'Rematch'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'lost') { $('ovTitle').textContent = 'Out of loops'; ovBody.innerHTML = (lastWhy === 'early' ? 'You ended the final loop without getting out.' : 'Time ran out on the final loop.') + ' Plan the runs as one: who holds the plate, who clears the guards, who covers your ghosts from hunters, and who makes the dash.'; ovBtn.textContent = 'Restart room'; ovAction = 'start'; }
@@ -1823,8 +1823,8 @@ function leaveDuel() {
 }
 $('modeCampaign').addEventListener('click', e => { if (mode !== 'campaign') leaveDuel(); e.currentTarget.blur(); });
 $('modeDuel').addEventListener('click', e => { if (mode !== 'duel') enterDuel(); e.currentTarget.blur(); });
-// ===== Hallway mode: side-by-side shooting gallery, most kills wins =====
-const GZ0 = 7, GZEND = -86, GSPEED = 2.4 / 60, GWALL = 7, GLANE = 1.7;
+// ===== Hallway mode: one shared hallway, both players race for the same targets =====
+const GZ0 = 7, GZEND = -86, GSPEED = 2.4 / 60, GWALL = 3.6, GLANE = 1.0;
 let G = null;
 function galRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 function gBox(x, y0, y1, z, w, d, color, opts = {}) {
@@ -1835,11 +1835,11 @@ function gBox(x, y0, y1, z, w, d, color, opts = {}) {
 }
 function galPlan(seed) {
   const r = galRng(seed), out = [];
-  let z = -3;
-  for (let i = 0; z > GZEND + 8; i++) {
-    const late = i / 18;
-    out.push({ z, type: r() < 0.5 ? 'door' : 'window', ahead: 8 + r() * 6, up: Math.round(125 - late * 40 + r() * 30), dir: r() < 0.5 ? 1 : -1 });
-    z -= 4 + r() * 2.2;
+  let z = -2;
+  for (let i = 0; z > GZEND + 7; i++) {
+    const late = Math.min(1, i / 22);
+    out.push({ z, side: r() < 0.5 ? -1 : 1, type: r() < 0.5 ? 'door' : 'window', ahead: 7 + r() * 5, up: Math.round(130 - late * 40 + r() * 30), dir: r() < 0.5 ? 1 : -1 });
+    z -= 2.6 + r() * 2.2;
   }
   return out;
 }
@@ -1848,20 +1848,17 @@ function buildGallery(seed) {
   solids = []; shootables = []; plates = [];
   G.rayObjs = [];
   const len = GZ0 + 3 - (GZEND - 8), cz = (GZ0 + 3 + GZEND - 8) / 2;
-  floorTex.repeat.set(22, len);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, len), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.9 }));
+  floorTex.repeat.set(14, len);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, len), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.9 }));
   floor.rotation.x = -Math.PI / 2; floor.position.z = cz; floor.receiveShadow = true; roomGroup.add(floor); G.rayObjs.push(floor);
-  gBox(0, 0, 3.2, GZ0 + 3, 22, 0.4, COL.wall); gBox(0, 0, 3.2, GZEND - 6, 22, 0.4, COL.wall);
-  // glass divider between the two lanes
-  const glass = new THREE.MeshStandardMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.16, roughness: 0.1, depthWrite: false });
-  gBox(0, 0, 3.0, cz, 0.12, len, 0, { mat: glass, noShadow: true });
-  gBox(0, 0, 0.12, cz, 0.2, len, COL.gunLite, { noShadow: true });
+  gBox(0, 0, 3.2, GZ0 + 3, 14, 0.4, COL.wall); gBox(0, 0, 3.2, GZEND - 6, 14, 0.4, COL.wall);
   const frameMat = mat(COL.turret), dark = mat(0x2a2f36), roof = mat(0x3a4048);
   G.plan = galPlan(seed);
   for (const s of [-1, 1]) {
     const wx = s * GWALL, back = s * (GWALL + 2.6);
     let cursor = GZ0 + 3;
     for (const o of G.plan) {
+      if (o.side !== s) continue;
       const w = 1.8, top = o.z + w / 2;
       if (cursor - top > 0.01) gBox(wx, 0, 3.2, (cursor + top) / 2, 0.4, cursor - top, COL.wall);
       cursor = o.z - w / 2;
@@ -1880,15 +1877,15 @@ function buildGallery(seed) {
     const end = GZEND - 6;
     if (cursor - end > 0.01) gBox(wx, 0, 3.2, (cursor + end) / 2, 0.4, cursor - end, COL.wall);
   }
-  // targets: the same plan in both lanes
-  G.lanes = [-1, 1].map(s => G.plan.map((o, i) => {
-    const m = soldierModel('grunt');
+  // one shared set of targets, on both walls
+  G.targets = G.plan.map((o, i) => {
+    const m = soldierModel('grunt'), s = o.side;
     const t = { i, o, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + o.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + o.dir * 2.0, ux: s * (GWALL - 0.05), uz: o.z,
-      st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
+      st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
     m.root.visible = false; for (const p of m.parts) p.userData.gt = t;
     roomGroup.add(m.root);
     return t;
-  }));
+  });
   RM = { name: 'Hallway', loopSec: 99, loops: 1, rules: {}, door: { side: 'e', c: 0 }, spawn: { x: 0, z: GZ0, yaw: 0 }, plates: [], walls: [], enemies: [] };
   DOOR = { x0: 999, x1: 999.1, z0: 999, z1: 999.1 }; doorC = { x: 999, z: 999 };
   doorMesh = new THREE.Object3D(); guardRing = new THREE.Object3D(); exitSide = 'e';
@@ -1901,10 +1898,10 @@ function startGallery(seed, online) {
   if (mode !== 'gallery') { screenEl.classList.remove('duel'); screenEl.classList.add('gallery'); mode = 'gallery'; }
   clearActors(); clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; }
   D = { online: !!online, score: [0, 0], round: 0, arena: 'Hallway' };
-  G = { seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: 0, rpitch: 0 };
+  G = { seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: -Math.PI / 2 };
   buildGallery(seed);
-  G.mySide = online && typeof netIsHost === 'function' && !netIsHost() ? 1 : -1;
-  G.mine = G.lanes[G.mySide === -1 ? 0 : 1]; G.theirs = G.lanes[G.mySide === -1 ? 1 : 0];
+  G.host = !(online && typeof netIsHost === 'function' && !netIsHost());
+  G.mySide = G.host ? -1 : 1;
   P.stats = baseStats(); P.cards = []; P.ammo = P.stats.mag; P.rl = 0; P.dcd = 0; reloadQueued = false; firing = false;
   Object.assign(P, { x: G.mySide * GLANE, z: GZ0, vx: 0, vz: 0, yaw: 0, pitch: 0, alive: true, hp: 100, dashT: 0, dashCd: 0, pushCd: 0, shieldT: 0, crouch: 0 });
   B = makeBot(online && typeof netPeerColor === 'function' ? netPeerColor() : null);
@@ -1916,8 +1913,8 @@ function startGallery(seed, online) {
   state = 'dcount'; dTimer = 150; dtick = 0; tick = 0; SFX.spawn();
   galHud(true);
 }
-function galKill(t, head, mine) {
-  t.alive = false; t.st = 'dead'; t.deadT = G.t; t.aimT = 0;
+function galKill(t, head, mine, at) {
+  t.alive = false; t.st = 'dead'; t.deadT = G.t; t.aimT = 0; t.by = mine ? 'me' : 'foe'; t.killT = at ?? G.t; t.head = head;
   puff(new THREE.Vector3(t.x, head ? 1.6 : 1.1, t.z), 8, head ? 0xffb547 : COL.foe);
   if (mine) { G.me++; if (head) G.heads++; } else G.foe++;
   galHud(true);
@@ -1929,7 +1926,7 @@ function galShoot() {
   G.shots++;
   const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
   const objs = G.rayObjs.slice();
-  for (const t of G.mine) if (t.alive && (t.st === 'up' || t.st === 'in' || t.st === 'out')) objs.push(...t.parts);
+  for (const t of G.targets) if (t.alive && (t.st === 'up' || t.st === 'in' || t.st === 'out')) objs.push(...t.parts);
   ray.set(camera.position, dir); ray.far = 70;
   const h = ray.intersectObjects(objs, false)[0];
   const mz = new THREE.Vector3(0.2, -0.13, -0.75).applyQuaternion(camera.quaternion).add(camera.position);
@@ -1942,34 +1939,36 @@ function galShoot() {
   if (!t || !t.alive) { puff(h.point, 3, 0x6b7480); SFX.wall(); return; }
   const head = h.object.userData.zone === 'head';
   G.hits++;
-  t.hp -= head ? 2 : 1; t.flash = 5;
+  const dmg = head ? 2 : 1;
+  t.hp -= dmg; t.flash = 5;
   const kill = t.hp <= 0;
   head ? SFX.headshot() : SFX.hit(); hitMarker(kill, head);
   puff(h.point, 4, head ? 0xffb547 : COL.foe);
-  if (kill) { galKill(t, head, true); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head }); }
+  if (kill) { galKill(t, head, true); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head, at: G.t }); }
+  else if (D.online) netSend('gh', { i: t.i, dmg });
 }
 function galBot() {
   if (B.cd > 0) B.cd--;
   tickReload(B);
   let tgt = null;
-  for (const t of G.theirs) if (t.alive && t.st === 'up') { if (!t.botAt) t.botAt = G.t + 30 + Math.random() * 40; if (!tgt || t.botAt < tgt.botAt) tgt = t; }
+  for (const t of G.targets) if (t.alive && t.st === 'up') { if (!t.botAt) t.botAt = G.t + 30 + Math.random() * 40; if (!tgt || t.botAt < tgt.botAt) tgt = t; }
   if (tgt) { const want = Math.atan2(tgt.z - B.z, tgt.x - B.x); B.a += Math.atan2(Math.sin(want - B.a), Math.cos(want - B.a)) * 0.25; }
   else B.a += Math.atan2(Math.sin(-Math.PI / 2 - B.a), Math.cos(-Math.PI / 2 - B.a)) * 0.1;
   if (!tgt || G.t < tgt.botAt || B.cd > 0 || B.rl > 0 || B.ammo <= 0) return;
   B.cd = 15 + Math.random() * 8; B.ammo--; if (B.ammo <= 0) startReload(B); B.fireT = 8;
   SFX.gruntShot();
   const r = Math.random(), head = r < 0.22, hit = r < 0.65;
-  const aimY = head ? 1.58 : hit ? 1.1 : 1.1 + (Math.random() - 0.5) * 2;
+  const aimY = head ? 1.58 : 1.1 + (hit ? 0 : (Math.random() - 0.5) * 2);
   const [mx, mz] = muzzleOf(B.x, B.z, B.a, 0.7, 0.22);
   tracer(new THREE.Vector3(mx, 1.35, mz), new THREE.Vector3(tgt.x + (hit ? 0 : (Math.random() - 0.5) * 2), aimY, tgt.z + (hit ? 0 : (Math.random() - 0.5) * 2)), 0xff8a7f);
   if (!hit) return;
   tgt.flash = 5; tgt.hp -= head ? 2 : 1;
   if (tgt.hp <= 0) galKill(tgt, head, false); else tgt.botAt = G.t + 12;
 }
-function galTargets(list, wz, isMine) {
-  for (const t of list) {
+function galTargets(wz) {
+  for (const t of G.targets) {
     if (t.st === 'wait') {
-      if (wz <= t.o.z + t.o.ahead) { t.st = 'in'; t.k = 0; t.root.visible = true; if (isMine) tone(520, 0.05, 'square', 0.03); }
+      if (wz <= t.o.z + t.o.ahead) { t.st = 'in'; t.k = 0; t.root.visible = true; tone(520, 0.05, 'square', 0.03); }
       continue;
     }
     if (t.st === 'in') { t.k = Math.min(1, t.k + 1 / 12); if (t.k >= 1) { t.st = 'up'; t.upT = t.o.up; } }
@@ -1991,7 +1990,7 @@ function galTick() {
   P.bob += moving ? 0.07 : 0;
   if (moving && G.t >= (P.stepAt || 0)) { SFX.step(); P.stepAt = G.t + 24; }
   B.z = wz; B.x = -G.mySide * GLANE; if (moving) B.lastMove = G.t;
-  galTargets(G.mine, wz, true); galTargets(G.theirs, wz, false);
+  galTargets(wz);
   if (state === 'dplay') {
     if (reloadQueued) startReload(P); reloadQueued = false;
     tickReload(P);
@@ -2001,9 +2000,9 @@ function galTick() {
     if (D.online) {
       if (G.t % 3 === 0) netSend('gy', { yaw: +P.yaw.toFixed(3), pitch: +P.pitch.toFixed(3) });
       B.a += Math.atan2(Math.sin(G.ryaw - B.a), Math.cos(G.ryaw - B.a)) * 0.3;
-      if (B.fireT > 0) B.fireT--;
-    } else { galBot(); if (B.fireT > 0) B.fireT--; }
-    const allDone = G.mine.every(t => t.st === 'gone' || t.st === 'dead') && G.theirs.every(t => t.st === 'gone' || t.st === 'dead');
+    } else galBot();
+    if (B.fireT > 0) B.fireT--;
+    const allDone = G.targets.every(t => t.st === 'gone' || t.st === 'dead');
     if (!moving && allDone) { state = 'gend'; G.endT = G.t; firing = false; bigText('FINISH', 'ok'); if (D.online) netSend('gend', { k: G.me }); }
   } else if (state === 'gend' && G.t - G.endT > 90) galFinish();
 }
@@ -2015,7 +2014,17 @@ function galFinish() {
   showOverlay('galOver');
   if (D.online && typeof netGalOver === 'function') netGalOver();
 }
-function galRemoteKill(i, head) { if (!G) return; const t = G.theirs[i]; if (t && t.alive) galKill(t, head, false); }
+// Online: both players can kill the same target a moment apart. Each side applies the same rule,
+// so both screens agree: the earlier kill wins, and an exact tie goes to the host.
+function galRemoteKill(i, head, at) {
+  if (!G) return;
+  const t = G.targets[i]; if (!t) return;
+  if (t.alive) { galKill(t, head, false, at); return; }
+  if (t.by === 'me' && (at < t.killT || (at === t.killT && !G.host))) {
+    G.me--; if (t.head) G.heads--; G.foe++; t.by = 'foe'; t.killT = at; galHud(true);
+  }
+}
+function galRemoteHit(i, dmg) { if (!G) return; const t = G.targets[i]; if (t && t.alive) { t.hp = Math.max(1, t.hp - dmg); t.flash = 5; } }
 function galRemoteShot(yaw, pitch) {
   if (!G || !B) return;
   B.fireT = 8; SFX.gruntShot();
@@ -2028,7 +2037,7 @@ function galRemoteEnd(k) { if (G && k > G.foe) { G.foe = k; galHud(true); } }
 let lastGal = '';
 function galHud(force) {
   if (!G) return;
-  const total = G.plan.length, done = G.mine.filter(t => t.st === 'gone' || t.st === 'dead').length;
+  const total = G.plan.length, done = G.targets.filter(t => t.st === 'gone' || t.st === 'dead').length;
   const key = G.me + '|' + G.foe + '|' + done;
   if (!force && key === lastGal) return; lastGal = key;
   $('gMe').textContent = G.me; $('gFoe').textContent = G.foe;
@@ -2037,11 +2046,10 @@ function galHud(force) {
 }
 function galRender() {
   if (!G || !B) return;
-  for (const lane of G.lanes) for (const t of lane) {
+  for (const t of G.targets) {
     if (!t.root.visible) continue;
     t.root.position.set(t.x, 0, t.z);
-    const wx = t.side === G.mySide ? P.x : B.x;
-    t.root.rotation.y = yawFromAng(Math.atan2(P.z - t.z, wx - t.x));
+    t.root.rotation.y = yawFromAng(Math.atan2(P.z - t.z, 0 - t.x));
     animateSoldier(t, animDt);
     for (const m of t.mats) { m.emissive.setHex(t.flash > 0 ? 0xffffff : 0x000000); m.emissiveIntensity = t.flash > 0 ? 0.6 : 0; }
   }
@@ -2318,7 +2326,8 @@ function onNetMsg(m) {
     }
     case 'round': if (!ON.isHost) { D.round = d.r; bigText(''); $('cards').hidden = true; startRound(); } return;
     case 'rematch': if (!ON.isHost) beginOnlineMatch(d.seed); return;
-    case 'gk': if (ON.inMatch) galRemoteKill(d.i | 0, !!d.head); return;
+    case 'gk': if (ON.inMatch) galRemoteKill(d.i | 0, !!d.head, +d.at || 0); return;
+    case 'gh': if (ON.inMatch) galRemoteHit(d.i | 0, d.dmg | 0); return;
     case 'gs': if (ON.inMatch) galRemoteShot(d.yaw, d.pitch); return;
     case 'gy': if (ON.inMatch) galRemoteYaw(d.yaw); return;
     case 'gend': if (ON.inMatch) galRemoteEnd(d.k | 0); return;
