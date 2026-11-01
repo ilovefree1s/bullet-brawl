@@ -203,7 +203,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v18</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v19</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -304,7 +304,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v18</span>
+    <span class="ver">v19</span>
   </div>
 </div>
 
@@ -1389,7 +1389,7 @@ const CARDS = [
   { id: 'rail', name: 'Rail Rounds', text: 'Bullets fly 60% faster and deal 15% more damage.', f: s => { s.speed *= 1.6; s.dmg *= 1.15; } },
   { id: 'clone', name: 'Paradox Clone', rare: true, text: 'A decoy copy of you spawns each round and mirrors your every move and shot. Its shots are harmless, but your rival can\u2019t tell which one is really you. Stacks.', f: s => { s.clones += 1; } }
 ];
-const baseStats = () => ({ mag: 6, reload: 50, clones: 0, maxHp: 100, dmg: 25, delay: 15, speed: 0.8, size: 0.07, bounces: 0, pellets: 1, spread: 0.012, regen: 0, leech: 0, splash: 0, move: 1, dashCd: DASH_CD, shieldT: 36, shieldCd: 240 });
+const baseStats = () => ({ mag: 6, reload: 50, clones: 0, maxHp: 100, dmg: 25, delay: 15, speed: 1.6, size: 0.07, bounces: 0, pellets: 1, spread: 0.012, regen: 0, leech: 0, splash: 0, move: 1, dashCd: DASH_CD, shieldT: 36, shieldCd: 240 });
 let D = null, B = null, dShots = [], dtick = 0, dTimer = 0, offered = [];
 const shotGeo = new THREE.SphereGeometry(1, 10, 8);
 const pShotMat = new THREE.MeshBasicMaterial({ color: 0xfff2c8 }), bShotMat = new THREE.MeshBasicMaterial({ color: 0xff3b2e }), gShotMat = new THREE.MeshBasicMaterial({ color: 0xaab4ff });
@@ -1633,8 +1633,17 @@ function duelStep() {
   moveClones(B, B.x - box, B.z - boz);
   for (const s of dShots) {
     if (s.dead) continue;
+    if (--s.life <= 0) { s.dead = true; continue; }
+    // Fast bullets move in small sub-steps so they can't skip through a player or a thin wall.
+    const n = Math.max(1, Math.ceil(Math.hypot(s.vx, s.vy, s.vz) / 0.3));
+    for (let k = 0; k < n && !s.dead; k++) shotSub(s, 1 / n);
+  }
+  dShots = dShots.filter(s => { if (s.dead) scene.remove(s.mesh); return !s.dead; });
+  dtick++;
+}
+function shotSub(s, f) {
     const px = s.x, pz = s.z;
-    s.x += s.vx; s.y += s.vy; s.z += s.vz; s.life--;
+    s.x += s.vx * f; s.y += s.vy * f; s.z += s.vz * f;
     let hitWall = null;
     for (const w of solids) if (s.x > w.x0 && s.x < w.x1 && s.z > w.z0 && s.z < w.z1 && s.y < (w.h || 3.2)) { hitWall = w; break; }
     const hitFloor = s.y <= 0.03;
@@ -1643,21 +1652,18 @@ function duelStep() {
         s.bounces--;
         if (hitFloor) { s.vy = Math.abs(s.vy); s.y = 0.05; }
         else { if (px < hitWall.x0 || px > hitWall.x1) s.vx = -s.vx; else s.vz = -s.vz; s.x = px; s.z = pz; }
-        SFX.wall(); continue;
+        SFX.wall(); return;
       }
-      impact(s, null); continue;
+      impact(s, null); return;
     }
-    if (s.life <= 0 || s.y > 6) { s.dead = true; continue; }
+    if (s.y > 6) { s.dead = true; return; }
     const tgt = s.team === 'p' ? B : P;
-    if (tgt.shieldT > 0 && tgt.alive && Math.hypot(tgt.x - s.x, tgt.z - s.z) < SHIELD_R + s.size && s.y < 2.1) { s.dead = true; puff(new THREE.Vector3(s.x, s.y, s.z), 3, COL.tech); SFX.wall(); continue; }
+    if (tgt.shieldT > 0 && tgt.alive && Math.hypot(tgt.x - s.x, tgt.z - s.z) < SHIELD_R + s.size && s.y < 2.1) { s.dead = true; puff(new THREE.Vector3(s.x, s.y, s.z), 3, COL.tech); SFX.wall(); return; }
     const cl = clones.find(c => c.alive && c.owner !== s.owner && Math.hypot(c.x - s.x, c.z - s.z) < 0.4 + s.size && s.y > 0.1 && s.y < 1.95);
-    if (cl) { if (!s.fake) hurtClone(cl, s.dmg, s.owner); impact(s, cl); continue; }
-    if (s.fake && tgt.alive && Math.hypot(tgt.x - s.x, tgt.z - s.z) < 0.4 + s.size && s.y > 0.1 && s.y < 1.95 - 0.6 * (tgt.crouch || 0)) { impact(s, tgt); continue; }
-    if (s.fake) continue;
+    if (cl) { if (!s.fake) hurtClone(cl, s.dmg, s.owner); impact(s, cl); return; }
+    if (s.fake && tgt.alive && Math.hypot(tgt.x - s.x, tgt.z - s.z) < 0.4 + s.size && s.y > 0.1 && s.y < 1.95 - 0.6 * (tgt.crouch || 0)) { impact(s, tgt); return; }
+    if (s.fake) return;
     if (tgt.alive && Math.hypot(tgt.x - s.x, tgt.z - s.z) < 0.4 + s.size && s.y > 0.1 && s.y < 1.95 - 0.6 * (tgt.crouch || 0)) { const zn = zoneOf(tgt, s.x, s.y, s.z), head = zn === 'head'; dDamage(tgt, s.dmg * (head ? 1.5 : zn === 'limb' ? 0.75 : 1), s.owner, s.x - s.vx * 20, s.z - s.vz * 20, head); impact(s, tgt); }
-  }
-  dShots = dShots.filter(s => { if (s.dead) scene.remove(s.mesh); return !s.dead; });
-  dtick++;
 }
 function hurtClone(c, dmg, attacker) {
   c.hp -= dmg; c.flash = 5;
