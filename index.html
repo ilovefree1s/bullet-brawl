@@ -217,11 +217,11 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v22</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v23</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
-    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">Hallway vs AI</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
+    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">Last Laugh vs AI</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
     <div class="rooms" id="rooms" role="group" aria-label="Choose a room"></div>
     <label class="sens"><span class="clbl">Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>
     <div class="colors" id="colors" role="group" aria-label="Your color"><span class="clbl">Color</span></div>
@@ -271,7 +271,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
             <p class="eyebrow">Online</p>
             <h2>Lobbies</h2>
             <div class="lname"><label for="lName">Your name</label><input id="lName" maxlength="16" placeholder="Freebird" autocomplete="off"></div>
-            <div class="lmode" role="group" aria-label="Mode for your lobby"><span>Host mode</span><button type="button" class="rbtn" id="lmDuel" aria-pressed="true">Duel · first to 5</button><button type="button" class="rbtn" id="lmGal" aria-pressed="false">Hallway · most kills</button></div>
+            <div class="lmode" role="group" aria-label="Mode for your lobby"><span>Host mode</span><button type="button" class="rbtn" id="lmDuel" aria-pressed="true">Duel · first to 5</button><button type="button" class="rbtn" id="lmGal" aria-pressed="false">Last Laugh · most kills</button></div>
             <div class="btns lbtns"><button type="button" class="play" id="lHost">Host a lobby</button><button type="button" class="play alt" id="lBack">Back</button></div>
             <h3>Open lobbies</h3>
             <div class="llist" id="lList"></div>
@@ -324,7 +324,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v22</span>
+    <span class="ver">v23</span>
   </div>
 </div>
 
@@ -1122,8 +1122,8 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
-  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Hallway · vs AI'; $('ovTitle').textContent = 'Hallway'; ovBody.innerHTML = 'You and a rival walk down the same hallway side by side. Soldiers pop out of the <b>doorways and windows</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
-  if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Hallway · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.targets.length + ' targets. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Last Laugh · vs AI'; $('ovTitle').textContent = 'Last Laugh'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns pop out of the <b>booths and windows</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Last Laugh · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.targets.length + ' targets. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and throw up a quick <b>shield</b> with <b>Q</b> to block bullets. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelOver') { const won = D.score[0] > D.score[1]; $('ovEyebrow').textContent = 'Duel · match over'; $('ovTitle').textContent = won ? 'You win the match' : 'The rival wins'; ovBody.innerHTML = 'Final score <b>' + D.score[0] + ' – ' + D.score[1] + '</b>. Your cards: <b>' + (P.cards.join(', ') || 'none') + '</b>. Rival cards: <b>' + (B.cards.join(', ') || 'none') + '</b>.'; ovBtn.textContent = 'Rematch'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'lost') { $('ovTitle').textContent = 'Out of loops'; ovBody.innerHTML = (lastWhy === 'early' ? 'You ended the final loop without getting out.' : 'Time ran out on the final loop.') + ' Plan the runs as one: who holds the plate, who clears the guards, who covers your ghosts from hunters, and who makes the dash.'; ovBtn.textContent = 'Restart room'; ovAction = 'start'; }
@@ -1823,7 +1823,101 @@ function leaveDuel() {
 }
 $('modeCampaign').addEventListener('click', e => { if (mode !== 'campaign') leaveDuel(); e.currentTarget.blur(); });
 $('modeDuel').addEventListener('click', e => { if (mode !== 'duel') enterDuel(); e.currentTarget.blur(); });
-// ===== Hallway mode: one shared hallway, both players race for the same targets =====
+// ===== Last Laugh look: creepy night carnival (visual only) =====
+const CARN = (() => {
+  const cv2 = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t; };
+  const grime = (x, w, h, n, a) => { for (let i = 0; i < n; i++) { x.fillStyle = 'rgba(20,10,8,' + (Math.random() * a) + ')'; const r = 2 + Math.random() * 14; x.beginPath(); x.arc(Math.random() * w, Math.random() * h, r, 0, 7); x.fill(); } };
+  const stripes = (c1, c2, n) => cv2(256, 256, (x, w, h) => {
+    for (let i = 0; i < n; i++) { x.fillStyle = i % 2 ? c2 : c1; x.fillRect(i * w / n, 0, w / n + 1, h); }
+    grime(x, w, h, 160, 0.18);
+    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(0,0,0,0.35)'); g.addColorStop(0.35, 'rgba(0,0,0,0)'); g.addColorStop(0.85, 'rgba(0,0,0,0.05)'); g.addColorStop(1, 'rgba(30,10,0,0.55)');
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+  });
+  const wall = stripes('#5e0c18', '#cbb48a', 2);
+  const awning = stripes('#b3132b', '#efe3c8', 2);
+  const tent = stripes('#1b0d24', '#2c1238', 2);
+  const planks = cv2(256, 256, (x, w, h) => {
+    for (let i = 0; i < 4; i++) { const v = 52 + Math.random() * 22; x.fillStyle = 'rgb(' + v + ',' + (v * 0.62 | 0) + ',' + (v * 0.4 | 0) + ')'; x.fillRect(0, i * h / 4, w, h / 4); x.fillStyle = '#120804'; x.fillRect(0, i * h / 4, w, 3); x.fillRect((i * 97) % w, i * h / 4, 3, h / 4); }
+    for (let i = 0; i < 400; i++) { x.fillStyle = 'rgba(0,0,0,' + Math.random() * 0.15 + ')'; x.fillRect(Math.random() * w, Math.random() * h, 30 + Math.random() * 60, 1); }
+    grime(x, w, h, 60, 0.25);
+  });
+  const sign = (title, sub) => cv2(1024, 320, (x, w, h) => {
+    x.fillStyle = '#12060c'; x.fillRect(0, 0, w, h);
+    x.strokeStyle = '#8f1020'; x.lineWidth = 18; x.strokeRect(14, 14, w - 28, h - 28);
+    for (let i = 0; i < 46; i++) { const t = i / 46, px = 30 + t * (w - 60); for (const py of [30, h - 30]) { x.fillStyle = i % 2 ? '#ffd27a' : '#fff2c8'; x.beginPath(); x.arc(px, py, 7, 0, 7); x.fill(); } }
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = 'bold 150px Georgia, serif'; x.shadowColor = '#ff3b2e'; x.shadowBlur = 30; x.fillStyle = '#ffd23c'; x.fillText(title, w / 2, h / 2 - (sub ? 20 : 0));
+    if (sub) { x.shadowBlur = 10; x.font = 'italic 44px Georgia, serif'; x.fillStyle = '#efe3c8'; x.fillText(sub, w / 2, h - 70); }
+  });
+  const face = cv2(512, 512, (x, w, h) => {
+    x.clearRect(0, 0, w, h);
+    x.fillStyle = '#e9e2cf'; x.beginPath(); x.ellipse(256, 270, 190, 230, 0, 0, 7); x.fill();
+    grime(x, w, h, 50, 0.2);
+    x.fillStyle = '#0b0507';
+    for (const ex of [176, 336]) { x.beginPath(); x.moveTo(ex, 150); x.lineTo(ex + 42, 205); x.lineTo(ex, 260); x.lineTo(ex - 42, 205); x.closePath(); x.fill(); }
+    x.fillStyle = '#ff2a2a'; for (const ex of [176, 336]) { x.beginPath(); x.arc(ex, 205, 7, 0, 7); x.fill(); }
+    x.fillStyle = '#b3132b'; x.beginPath(); x.arc(256, 290, 34, 0, 7); x.fill();
+    x.fillStyle = '#7a0c18'; x.beginPath(); x.moveTo(96, 330); x.quadraticCurveTo(256, 520, 416, 330); x.quadraticCurveTo(256, 420, 96, 330); x.fill();
+    x.fillStyle = '#efe3c8'; for (let i = 0; i < 9; i++) { const tx = 140 + i * 29; x.beginPath(); x.moveTo(tx, 350 + Math.abs(4 - i) * -4); x.lineTo(tx + 14, 392 - Math.abs(4 - i) * 5); x.lineTo(tx + 28, 350 + Math.abs(4 - i) * -4); x.fill(); }
+  });
+  const bulbGeo = new THREE.SphereGeometry(0.045, 8, 6);
+  const lights = [];
+  for (let i = 0; i < 6; i++) { const l = new THREE.PointLight([0xffb347, 0xff3b5c, 0x9a6bff][i % 3], 0, 9, 1.6); l.visible = false; scene.add(l); lights.push(l); }
+  const carry = new THREE.PointLight(0xffd9a0, 0, 10, 1.4); carry.visible = false; scene.add(carry);
+  return { wall, awning, tent, planks, sign, face, bulbGeo, lights, carry, on: false };
+})();
+const CLOWN_COLORS = ['#f4f4f4', '#a46bff', '#3ccf6e', '#ffd23c', '#ff7ad9', '#3cc7e0'];
+const sceneDefaults = { bg: scene.background.clone(), fog: scene.fog.color.clone(), near: scene.fog.near, far: scene.fog.far };
+let hemiLight = null; scene.traverse(o => { if (o.isHemisphereLight) hemiLight = o; });
+const lightDefaults = { hc: hemiLight.color.clone(), hg: hemiLight.groundColor.clone(), hi: hemiLight.intensity, sc: sun.color.clone(), si: sun.intensity, vi: vmSun.intensity };
+function setCarnival(on) {
+  if (CARN.on === on) return; CARN.on = on;
+  if (on) {
+    scene.background.setHex(0x0b0710); scene.fog.color.setHex(0x120a18); scene.fog.near = 6; scene.fog.far = 48;
+    hemiLight.color.setHex(0x7a5c9a); hemiLight.groundColor.setHex(0x1a0f14); hemiLight.intensity = 0.55;
+    sun.color.setHex(0x8f7cff); sun.intensity = 0.25; vmSun.intensity = 0.7;
+  } else {
+    scene.background.copy(sceneDefaults.bg); scene.fog.color.copy(sceneDefaults.fog); scene.fog.near = sceneDefaults.near; scene.fog.far = sceneDefaults.far;
+    hemiLight.color.copy(lightDefaults.hc); hemiLight.groundColor.copy(lightDefaults.hg); hemiLight.intensity = lightDefaults.hi;
+    sun.color.copy(lightDefaults.sc); sun.intensity = lightDefaults.si; vmSun.intensity = lightDefaults.vi;
+  }
+  for (const l of CARN.lights) { l.visible = on; l.intensity = on ? 7 : 0; }
+  CARN.carry.visible = on; CARN.carry.intensity = on ? 3.5 : 0;
+}
+function carnTex(base, rx, ry) { const t = base.clone(); t.needsUpdate = true; t.repeat.set(rx, ry); return t; }
+function carnWallMat(len) { return new THREE.MeshStandardMaterial({ map: carnTex(CARN.wall, Math.max(1, len / 0.9), 1), roughness: 0.9 }); }
+// Bulbs are one instanced mesh per hallway; their colors chase around like a midway marquee.
+function carnBulbs(points) {
+  const im = new THREE.InstancedMesh(CARN.bulbGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, fog: true }), points.length);
+  const m4 = new THREE.Matrix4();
+  points.forEach((p, i) => { m4.makeTranslation(p[0], p[1], p[2]); im.setMatrixAt(i, m4); im.setColorAt(i, new THREE.Color(0xffd27a)); });
+  im.instanceMatrix.needsUpdate = true; roomGroup.add(im);
+  return im;
+}
+function carnClown(m) {
+  // red nose and a striped party hat ride on the head bone, so they follow every animation
+  const hb = m.anim && m.anim.model.getObjectByName('mixamorigHead'); if (!hb) return;
+  m.root.updateMatrixWorld(true);
+  const ws = new THREE.Vector3(); hb.getWorldScale(ws);
+  const acc = new THREE.Group(); acc.scale.setScalar(1 / (ws.x || 0.01)); hb.add(acc);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), new THREE.MeshStandardMaterial({ color: 0xd0101c, emissive: 0x500006, roughness: 0.35 })); nose.position.set(0, 0.13, 0.17); acc.add(nose);
+  const hat = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.34, 14), new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 4, 1), roughness: 0.8 })); hat.position.set(0.03, 0.42, -0.02); hat.rotation.z = -0.25; acc.add(hat);
+  const pom = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshStandardMaterial({ color: 0xefe3c8 })); pom.position.set(-0.01, 0.6, -0.02); acc.add(pom);
+}
+function carnFrame(t) {
+  if (!CARN.on || !G || !G.bulbs) return;
+  const ph = Math.floor(t / 7);
+  for (const b of G.bulbs) {
+    const col = b.userData.col || (b.userData.col = new THREE.Color());
+    for (let i = 0; i < b.count; i++) { const on = (i + ph) % 3 !== 0; col.setHex(on ? (b.userData.warm ? 0xffd27a : [0xffd27a, 0xff5a6e, 0xb88cff][i % 3]) : 0x3a2410); b.setColorAt(i, col); }
+    b.instanceColor.needsUpdate = true;
+  }
+  // booth glow: the nearest openings ahead get the point lights, with a little flicker
+  const near = G.plan.filter(o => o.z < P.z + 4 && o.z > P.z - 24).sort((a, b) => Math.abs(a.z - P.z + 6) - Math.abs(b.z - P.z + 6));
+  CARN.lights.forEach((l, i) => { const o = near[i]; if (!o) { l.intensity = 0; return; } l.position.set(o.side * (GWALL - 0.7), 2.5, o.z); l.intensity = 6 + Math.sin(t * 0.3 + i * 7) * 1.2 + (Math.random() < 0.02 ? -4 : 0); });
+  CARN.carry.position.set(P.x * 0.3, 2.9, P.z - 1.5);
+}
+// ===== Hallway mode (Last Laugh): one shared hallway, both players race for the same targets =====
 const GZ0 = 7, GZEND = -86, GSPEED = 2.4 / 60, GWALL = 3.6, GLANE = 1.0;
 let G = null;
 function galRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -1863,11 +1957,20 @@ function buildGallery(seed) {
   solids = []; shootables = []; plates = [];
   G.rayObjs = [];
   const len = GZ0 + 3 - (GZEND - 8), cz = (GZ0 + 3 + GZEND - 8) / 2;
-  floorTex.repeat.set(14, len);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, len), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.9 }));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, len), new THREE.MeshStandardMaterial({ map: carnTex(CARN.planks, 3, len / 3), roughness: 0.95 }));
   floor.rotation.x = -Math.PI / 2; floor.position.z = cz; floor.receiveShadow = true; roomGroup.add(floor); G.rayObjs.push(floor);
-  gBox(0, 0, 3.2, GZ0 + 3, 14, 0.4, COL.wall); gBox(0, 0, 3.2, GZEND - 6, 14, 0.4, COL.wall);
-  const frameMat = mat(COL.turret), dark = mat(0x2a2f36), roof = mat(0x3a4048);
+  gBox(0, 0, 3.2, GZ0 + 3, 14, 0.4, 0, { mat: carnWallMat(14) }); gBox(0, 0, 3.2, GZEND - 6, 14, 0.4, 0, { mat: carnWallMat(14) });
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(GWALL * 2 + 0.4, len), new THREE.MeshStandardMaterial({ map: carnTex(CARN.tent, 6, 1), roughness: 1, side: THREE.DoubleSide }));
+  ceil.rotation.x = Math.PI / 2; ceil.position.set(0, 3.2, cz); roomGroup.add(ceil);
+  const signMat = (tx) => new THREE.MeshBasicMaterial({ map: tx, fog: false });
+  const endSign = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 1.75), signMat(CARN.sign('LAST LAUGH', 'step right up · nobody leaves')));
+  endSign.position.set(0, 2.25, GZEND - 5.75); roomGroup.add(endSign);
+  const clown = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), new THREE.MeshBasicMaterial({ map: CARN.face, transparent: true, fog: false })); clown.position.set(0, 0.8, GZEND - 5.74); roomGroup.add(clown);
+  const startSign = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.3), signMat(CARN.sign('LAST LAUGH')));
+  startSign.rotation.y = Math.PI; startSign.position.set(0, 2.35, GZ0 + 2.75); roomGroup.add(startSign);
+  const frameMat = mat(0xc9a227, { metalness: 0.4, roughness: 0.5 }), dark = mat(0x140a10), roof = mat(0x140a10);
+  const bulbPts = [], stringPts = [];
+  for (let z = GZ0 - 1; z > GZEND - 4; z -= 5) for (let k = 0; k <= 12; k++) { const x = -GWALL + 0.2 + k * (GWALL * 2 - 0.4) / 12, u = x / GWALL; stringPts.push([x, 3.05 - 0.4 * (1 - u * u), z + Math.sin(k) * 0.05]); }
   G.plan = galPlan(seed);
   for (const s of [-1, 1]) {
     const wx = s * GWALL, back = s * (GWALL + 2.6);
@@ -1875,11 +1978,16 @@ function buildGallery(seed) {
     for (const o of G.plan) {
       if (o.side !== s) continue;
       const w = 1.8, top = o.z + w / 2;
-      if (cursor - top > 0.01) gBox(wx, 0, 3.2, (cursor + top) / 2, 0.4, cursor - top, COL.wall);
+      if (cursor - top > 0.01) gBox(wx, 0, 3.2, (cursor + top) / 2, 0.4, cursor - top, 0, { mat: carnWallMat(cursor - top) });
       cursor = o.z - w / 2;
       const lintel = o.type === 'door' ? 2.4 : 2.25;
-      gBox(wx, lintel, 3.2, o.z, 0.4, w, COL.wall);
-      if (o.type === 'window') gBox(wx, 0, 0.95, o.z, 0.4, w, COL.wall);
+      gBox(wx, lintel, 3.2, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
+      if (o.type === 'window') gBox(wx, 0, 0.95, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
+      // striped booth awning and marquee bulbs around every opening
+      gBox(wx - s * 0.42, lintel + 0.08, lintel + 0.34, o.z, 0.5, w + 0.5, 0, { mat: new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 6, 1), roughness: 0.85 }), noShadow: true, noRay: true });
+      const bx = wx - s * 0.25, y0 = o.type === 'window' ? 0.95 : 0.1;
+      for (let y = y0; y <= lintel; y += 0.22) for (const e of [-1, 1]) bulbPts.push([bx, y, o.z + e * (w / 2 + 0.06)]);
+      for (let zz = -w / 2; zz <= w / 2; zz += 0.22) { bulbPts.push([bx, lintel + 0.03, o.z + zz]); if (o.type === 'window') bulbPts.push([bx, 0.92, o.z + zz]); }
       // orange frame so openings read at a glance
       gBox(wx - s * 0.21, lintel - 0.06, lintel, o.z, 0.04, w, 0, { mat: frameMat, noShadow: true, noRay: true });
       for (const e of [-1, 1]) gBox(wx - s * 0.21, o.type === 'window' ? 0.95 : 0, lintel, o.z + e * (w / 2 - 0.03), 0.04, 0.06, 0, { mat: frameMat, noShadow: true, noRay: true });
@@ -1890,12 +1998,16 @@ function buildGallery(seed) {
       gBox((wx + back) / 2, 3.2, 3.3, o.z, Math.abs(back - wx), 4.4, 0, { mat: roof, noRay: true });
     }
     const end = GZEND - 6;
-    if (cursor - end > 0.01) gBox(wx, 0, 3.2, (cursor + end) / 2, 0.4, cursor - end, COL.wall);
+    if (cursor - end > 0.01) gBox(wx, 0, 3.2, (cursor + end) / 2, 0.4, cursor - end, 0, { mat: carnWallMat(cursor - end) });
   }
+  const mb = carnBulbs(bulbPts), sb = carnBulbs(stringPts); sb.userData.warm = true;
+  G.bulbs = [mb, sb];
+  setCarnival(true);
   // one shared set of targets, on both walls
   G.spawns = galSpawns(seed, G.plan);
   G.targets = G.spawns.map((sp, i) => {
-    const o = sp.o, m = soldierModel('grunt'), s = o.side;
+    const o = sp.o, m = soldierModel('grunt', CLOWN_COLORS[(sp.oi * 7 + i * 3) % CLOWN_COLORS.length]), s = o.side;
+    carnClown(m);
     m.root.scale.setScalar(sp.sc);
     const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (GWALL + (o.type === 'window' ? 0.35 : -0.05) + 0.15 * (sp.sc - 1)), uz: o.z,
       st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
@@ -1903,11 +2015,12 @@ function buildGallery(seed) {
     roomGroup.add(m.root);
     return t;
   });
-  RM = { name: 'Hallway', loopSec: 99, loops: 1, rules: {}, door: { side: 'e', c: 0 }, spawn: { x: 0, z: GZ0, yaw: 0 }, plates: [], walls: [], enemies: [] };
+  RM = { name: 'Last Laugh', loopSec: 99, loops: 1, rules: {}, door: { side: 'e', c: 0 }, spawn: { x: 0, z: GZ0, yaw: 0 }, plates: [], walls: [], enemies: [] };
   DOOR = { x0: 999, x1: 999.1, z0: 999, z1: 999.1 }; doorC = { x: 999, z: 999 };
   doorMesh = new THREE.Object3D(); guardRing = new THREE.Object3D(); exitSide = 'e';
 }
 function clearGallery() {
+  setCarnival(false);
   if (B) { scene.remove(B.root); B = null; }
   G = null;
 }
@@ -2077,6 +2190,7 @@ function galRender() {
   $('gProg').style.width = (prog * 100).toFixed(1) + '%';
   galHud(false);
   renderAmmo();
+  carnFrame(performance.now() / 16.7);
 }
 function enterGallery() {
   if (mode === 'duel') { clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } screenEl.classList.remove('duel'); }
@@ -2244,7 +2358,7 @@ function renderLobbies() {
     const row = document.createElement('div'); row.className = 'lrow';
     const info = document.createElement('div'); info.className = 'linfo';
     const nm = document.createElement('b'); nm.textContent = l.name;
-    const sub = document.createElement('span'); sub.textContent = (l.mode === 'gallery' ? 'Hallway · most kills' : 'Duel · first to 5') + ' · ' + l.players + '/2 · ' + (l.status === 'open' ? 'waiting for a player' : 'match in progress');
+    const sub = document.createElement('span'); sub.textContent = (l.mode === 'gallery' ? 'Last Laugh · most kills' : 'Duel · first to 5') + ' · ' + l.players + '/2 · ' + (l.status === 'open' ? 'waiting for a player' : 'match in progress');
     info.append(nm, sub);
     const b = document.createElement('button'); b.type = 'button'; b.className = 'play'; b.textContent = 'Join'; b.disabled = l.status !== 'open';
     b.addEventListener('click', () => joinLobby(l));
@@ -2281,7 +2395,7 @@ async function joinLobby(l) {
 }
 function waitView() {
   showLobby('wait');
-  $('wEye').textContent = ON.gameMode === 'gallery' ? 'Online · Hallway · most kills wins' : 'Online · Duel · first to 5';
+  $('wEye').textContent = ON.gameMode === 'gallery' ? 'Online · Last Laugh · most kills wins' : 'Online · Duel · first to 5';
   $('wTitle').textContent = ON.lobbyName;
   const start = $('wStart');
   if (ON.isHost) {
@@ -2468,7 +2582,7 @@ function netCardPicked(c) {
   if (ON.isHost) setTimeout(hostNextRound, 600); else bigText('WAITING FOR THE NEXT ROUND', '');
 }
 function netGalOver() {
-  $('ovEyebrow').textContent = 'Online hallway · finished';
+  $('ovEyebrow').textContent = 'Online · Last Laugh · finished';
   if (ON && ON.isHost) { ovBtn.textContent = 'Rematch'; ovAction = 'netRematch'; } else { ovBtn.textContent = 'Waiting for host'; ovAction = 'none'; }
   ovAlt.hidden = false; ovAlt.textContent = 'Leave lobby';
 }
