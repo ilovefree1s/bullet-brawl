@@ -227,7 +227,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v25</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v26</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -335,7 +335,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v25</span>
+    <span class="ver">v26</span>
   </div>
 </div>
 
@@ -2047,7 +2047,7 @@ function buildGallery(seed) {
     const o = sp.o, m = soldierModel('grunt', CLOWN_COLORS[(sp.oi * 7 + i * 3) % CLOWN_COLORS.length]), s = o.side;
     carnClown(m);
     m.root.scale.setScalar(sp.sc);
-    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (GWALL + (o.type === 'window' ? 0.35 : -0.05) + 0.15 * (sp.sc - 1)), uz: o.z,
+    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL - 0.17 + 0.2 * sp.sc : GWALL - 0.05 + 0.15 * (sp.sc - 1)), uz: o.z,
       st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
     m.root.visible = false; for (const p of m.parts) p.userData.gt = t;
     roomGroup.add(m.root);
