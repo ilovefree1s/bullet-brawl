@@ -115,6 +115,7 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .hd::before { content: ""; position: absolute; inset: 0; background: rgba(255,59,46,0.9); clip-path: polygon(0 100%, 50% 0, 100% 100%, 80% 100%, 50% 40%, 20% 100%); }
 .hd.fade { opacity: 0; }
 .hver { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; color: var(--dim); vertical-align: middle; margin-left: 6px; }
+#modeDuel { display: none !important; }
 .modes { display: flex; gap: 8px; margin-right: 12px; }
 .topbar { justify-content: flex-start; }
 .topbar .fsbtn { margin-left: 12px; }
@@ -194,6 +195,7 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .lname input:focus-visible { outline: 2px solid var(--ghost); outline-offset: 1px; }
 .lbtns { justify-content: flex-start; }
 .lmode { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 4px; }
+.lmode[hidden] { display: none; }
 .lmode span { font-size: 12px; color: var(--dim); margin-right: 4px; }
 .lmode .rbtn[aria-pressed="true"] { color: var(--ink); background: var(--ghost); border-color: var(--ghost); }
 .llist { display: grid; gap: 8px; max-height: 260px; overflow: auto; }
@@ -227,11 +229,11 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v26</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v28</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
-    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">Last Laugh vs AI</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
+    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">Last Laugh vs AI</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online · Last Laugh</button></div>
     <div class="rooms" id="rooms" role="group" aria-label="Choose a room"></div>
     <label class="sens"><span class="clbl">Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>
     <div class="colors" id="colors" role="group" aria-label="Your color"><span class="clbl">Color</span></div>
@@ -282,7 +284,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
             <p class="eyebrow">Online</p>
             <h2>Lobbies</h2>
             <div class="lname"><label for="lName">Your name</label><input id="lName" maxlength="16" placeholder="Freebird" autocomplete="off"></div>
-            <div class="lmode" role="group" aria-label="Mode for your lobby"><span>Host mode</span><button type="button" class="rbtn" id="lmDuel" aria-pressed="true">Duel · first to 5</button><button type="button" class="rbtn" id="lmGal" aria-pressed="false">Last Laugh · most kills</button></div>
+            <div class="lmode" hidden role="group" aria-label="Mode for your lobby"><span>Host mode</span><button type="button" class="rbtn" id="lmDuel" aria-pressed="true">Duel · first to 5</button><button type="button" class="rbtn" id="lmGal" aria-pressed="false">Last Laugh · most kills</button></div>
             <div class="btns lbtns"><button type="button" class="play" id="lHost">Host a lobby</button><button type="button" class="play alt" id="lBack">Back</button></div>
             <h3>Open lobbies</h3>
             <div class="llist" id="lList"></div>
@@ -335,7 +337,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v26</span>
+    <span class="ver">v28</span>
   </div>
 </div>
 
@@ -1984,7 +1986,7 @@ function galSpawns(seed, plan) {
       const late = Math.min(1, oi / plan.length);
       const roll = r(), sc = roll < 0.22 ? 0.68 + r() * 0.14 : roll > 0.8 ? 1.2 + r() * 0.18 : 0.88 + r() * 0.22;
       const lo = 1.2 - 1.58 * sc, hi = 2.05 - 1.75 * sc, yOff = o.type === 'window' ? lo + r() * Math.max(0, hi - lo) : 0;
-      const peek = o.type === 'door' && r() < 0.35 ? 0.5 + r() * 0.12 : 1;
+      const peek = o.type === 'door' && r() < 0.3 ? 0.78 : 1;
       out.push({ oi, o, sc, yOff, peek, ahead: k === 0 ? 6 + r() * 7 : 1 + r() * 3, up: Math.round(125 - late * 45 + r() * 35), dir: r() < 0.5 ? 1 : -1 });
     }
   });
@@ -2020,7 +2022,13 @@ function buildGallery(seed) {
       cursor = o.z - w / 2;
       const lintel = o.type === 'door' ? 2.4 : 2.25;
       gBox(wx, lintel, 3.2, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
-      if (o.type === 'window') gBox(wx, 0, 0.95, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
+      if (o.type === 'window') {
+        gBox(wx, 0, 0.95, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
+        // booth counter sticking out into the hallway: window clowns pop up from behind it
+        gBox(wx - s * 0.55, 0, 0.95, o.z, 0.7, w + 0.3, 0, { mat: new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 5, 1), roughness: 0.85 }) });
+        gBox(wx - s * 0.55, 0.95, 1.01, o.z, 0.8, w + 0.4, 0, { mat: frameMat, noShadow: true });
+        for (let zz = -w / 2 - 0.1; zz <= w / 2 + 0.1; zz += 0.22) bulbPts.push([wx - s * 0.93, 0.88, o.z + zz]);
+      }
       // striped booth awning and marquee bulbs around every opening
       gBox(wx - s * 0.42, lintel + 0.08, lintel + 0.34, o.z, 0.5, w + 0.5, 0, { mat: new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 6, 1), roughness: 0.85 }), noShadow: true, noRay: true });
       const bx = wx - s * 0.25, y0 = o.type === 'window' ? 0.95 : 0.1;
@@ -2047,8 +2055,9 @@ function buildGallery(seed) {
     const o = sp.o, m = soldierModel('grunt', CLOWN_COLORS[(sp.oi * 7 + i * 3) % CLOWN_COLORS.length]), s = o.side;
     carnClown(m);
     m.root.scale.setScalar(sp.sc);
-    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL - 0.17 + 0.2 * sp.sc : GWALL - 0.05 + 0.15 * (sp.sc - 1)), uz: o.z,
+    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL - 0.62 : GWALL - 0.6), uz: o.z, mx: s * (GWALL + 1.0), win: o.type === 'window', y: 0, yHide: sp.yOff - (sp.yOff + 1.75 * sp.sc - 0.85),
       st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
+    if (t.win) { t.x = t.ux; t.z = t.uz; t.y = t.yHide; }
     m.root.visible = false; for (const p of m.parts) p.userData.gt = t;
     roomGroup.add(m.root);
     return t;
@@ -2145,7 +2154,14 @@ function galTargets(wz) {
     else if (t.st === 'out') { t.k = Math.max(0, t.k - 1 / 12); if (t.k <= 0) { t.st = 'gone'; t.root.visible = false; } }
     else if (t.st === 'dead') { if (G.t - t.deadT > 100) t.root.visible = false; }
     if (t.flash > 0) t.flash--;
-    if (t.alive) { t.x = t.hx + (t.ux - t.hx) * t.k; t.z = t.hz + (t.uz - t.hz) * t.k; }
+    if (t.alive) {
+      if (t.win) { t.x = t.ux; t.z = t.uz; t.y = t.yHide + (t.yOff - t.yHide) * Math.min(1, t.k); }
+      else {
+        // doors: slide over to the doorway inside the room, then step out into the hallway
+        const a = Math.min(1, t.k * 2), b = Math.max(0, t.k * 2 - 1);
+        t.z = t.hz + (t.uz - t.hz) * a; t.x = (t.hx + (t.mx - t.hx) * a) + (t.ux - t.mx) * b; t.y = 0;
+      }
+    }
   }
 }
 function galTick() {
@@ -2218,7 +2234,7 @@ function galRender() {
   if (!G || !B) return;
   for (const t of G.targets) {
     if (!t.root.visible) continue;
-    t.root.position.set(t.x, t.yOff, t.z);
+    t.root.position.set(t.x, t.alive ? t.y : (t.win ? t.y : 0), t.z);
     t.root.rotation.y = yawFromAng(Math.atan2(P.z - t.z, 0 - t.x));
     animateSoldier(t, animDt);
     for (const m of t.mats) { m.emissive.setHex(t.flash > 0 ? 0xffffff : 0x000000); m.emissiveIntensity = t.flash > 0 ? 0.6 : 0; }
@@ -2387,7 +2403,7 @@ function showLobby(view) {
 }
 function renderLobbies() {
   const box = $('lList'); if (!box) return;
-  const open = lobbies.filter(l => l && l.lobbyId && l.hostId !== myId).sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || a.at - b.at);
+  const open = lobbies.filter(l => l && l.lobbyId && l.hostId !== myId && l.mode === 'gallery').sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || a.at - b.at);
   const key = open.map(l => l.lobbyId + l.name + l.players + l.status).join('|');
   if (key === box.dataset.key && box.children.length) return;
   box.dataset.key = key;
@@ -2649,10 +2665,9 @@ function netLeave() {
 }
 $('modeOnline').addEventListener('click', e => { if (!(mode === 'duel' && !$('lobby').hidden)) openOnline(); e.currentTarget.blur(); });
 $('modeDuel').addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } $('modeOnline').setAttribute('aria-pressed', 'false'); }, true);
-let hostMode = 'duel';
-try { if (localStorage.getItem('bb-mode') === 'gallery') hostMode = 'gallery'; } catch (e) {}
+// Duel (the card-based mode) is retired; online lobbies are Last Laugh only.
+const hostMode = 'gallery';
 function syncHostMode() { $('lmDuel').setAttribute('aria-pressed', String(hostMode === 'duel')); $('lmGal').setAttribute('aria-pressed', String(hostMode === 'gallery')); }
-for (const [id, m] of [['lmDuel', 'duel'], ['lmGal', 'gallery']]) $(id).addEventListener('click', e => { hostMode = m; try { localStorage.setItem('bb-mode', m); } catch (err) {} syncHostMode(); e.currentTarget.blur(); });
 syncHostMode();
 $('modeGallery').addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } }, true);
 $('lHost').addEventListener('click', hostLobby);
