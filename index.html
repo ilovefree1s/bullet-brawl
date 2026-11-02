@@ -229,7 +229,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v28</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v30</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -337,7 +337,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v28</span>
+    <span class="ver">v30</span>
   </div>
 </div>
 
@@ -1985,9 +1985,9 @@ function galSpawns(seed, plan) {
     for (let k = 0; k < n; k++) {
       const late = Math.min(1, oi / plan.length);
       const roll = r(), sc = roll < 0.22 ? 0.68 + r() * 0.14 : roll > 0.8 ? 1.2 + r() * 0.18 : 0.88 + r() * 0.22;
-      const lo = 1.2 - 1.58 * sc, hi = 2.05 - 1.75 * sc, yOff = o.type === 'window' ? lo + r() * Math.max(0, hi - lo) : 0;
+      const lo = 0.95 - 0.9 * sc, hi = 0.95 - 0.55 * sc, yOff = o.type === 'window' ? lo + r() * Math.max(0, hi - lo) : 0;
       const peek = o.type === 'door' && r() < 0.3 ? 0.78 : 1;
-      out.push({ oi, o, sc, yOff, peek, ahead: k === 0 ? 6 + r() * 7 : 1 + r() * 3, up: Math.round(125 - late * 45 + r() * 35), dir: r() < 0.5 ? 1 : -1 });
+      out.push({ oi, o, sc, yOff, peek, ahead: k === 0 ? 12 + r() * 8 : 5 + r() * 4, up: Math.round(125 - late * 45 + r() * 35), dir: r() < 0.5 ? 1 : -1 });
     }
   });
   return out;
@@ -2022,13 +2022,7 @@ function buildGallery(seed) {
       cursor = o.z - w / 2;
       const lintel = o.type === 'door' ? 2.4 : 2.25;
       gBox(wx, lintel, 3.2, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
-      if (o.type === 'window') {
-        gBox(wx, 0, 0.95, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
-        // booth counter sticking out into the hallway: window clowns pop up from behind it
-        gBox(wx - s * 0.55, 0, 0.95, o.z, 0.7, w + 0.3, 0, { mat: new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 5, 1), roughness: 0.85 }) });
-        gBox(wx - s * 0.55, 0.95, 1.01, o.z, 0.8, w + 0.4, 0, { mat: frameMat, noShadow: true });
-        for (let zz = -w / 2 - 0.1; zz <= w / 2 + 0.1; zz += 0.22) bulbPts.push([wx - s * 0.93, 0.88, o.z + zz]);
-      }
+      if (o.type === 'window') gBox(wx, 0, 0.95, o.z, 0.4, w, 0, { mat: carnWallMat(w) });
       // striped booth awning and marquee bulbs around every opening
       gBox(wx - s * 0.42, lintel + 0.08, lintel + 0.34, o.z, 0.5, w + 0.5, 0, { mat: new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 6, 1), roughness: 0.85 }), noShadow: true, noRay: true });
       const bx = wx - s * 0.25, y0 = o.type === 'window' ? 0.95 : 0.1;
@@ -2055,7 +2049,7 @@ function buildGallery(seed) {
     const o = sp.o, m = soldierModel('grunt', CLOWN_COLORS[(sp.oi * 7 + i * 3) % CLOWN_COLORS.length]), s = o.side;
     carnClown(m);
     m.root.scale.setScalar(sp.sc);
-    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL - 0.62 : GWALL - 0.6), uz: o.z, mx: s * (GWALL + 1.0), win: o.type === 'window', y: 0, yHide: sp.yOff - (sp.yOff + 1.75 * sp.sc - 0.85),
+    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL + 0.18 : GWALL - 1.2), uz: o.z, lean: o.type === 'window' ? 0.75 : 0, mx: s * (GWALL + 1.0), win: o.type === 'window', y: 0, yHide: sp.yOff - (sp.yOff + 1.75 * sp.sc - 0.85),
       st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
     if (t.win) { t.x = t.ux; t.z = t.uz; t.y = t.yHide; }
     m.root.visible = false; for (const p of m.parts) p.userData.gt = t;
@@ -2230,12 +2224,14 @@ function galHud(force) {
   $('gLeft').textContent = 'TARGETS ' + done + ' / ' + G.targets.length;
   $('gMe').parentElement.classList.toggle('lead', G.me > G.foe); $('gFoe').parentElement.classList.toggle('lead', G.foe > G.me);
 }
+const LEAN_SIGN = -1;
 function galRender() {
   if (!G || !B) return;
   for (const t of G.targets) {
     if (!t.root.visible) continue;
     t.root.position.set(t.x, t.alive ? t.y : (t.win ? t.y : 0), t.z);
-    t.root.rotation.y = yawFromAng(Math.atan2(P.z - t.z, 0 - t.x));
+    // window clowns stand inside the wall and lean out through the window toward the players
+    t.root.rotation.set(t.lean * Math.min(1, t.k) * LEAN_SIGN, yawFromAng(Math.atan2(P.z - t.z, 0 - t.x)), 0, 'YXZ');
     animateSoldier(t, animDt);
     for (const m of t.mats) { m.emissive.setHex(t.flash > 0 ? 0xffffff : 0x000000); m.emissiveIntensity = t.flash > 0 ? 0.6 : 0; }
   }
