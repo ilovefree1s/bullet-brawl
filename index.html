@@ -131,6 +131,13 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .sw[aria-pressed="true"] { border-color: var(--text); box-shadow: inset 0 0 0 2px #fff; }
 .ammo { display: none; position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: rgba(13,15,18,0.78); padding: 8px 12px; border-radius: 6px; gap: 6px; align-items: center; color: #fff; font-size: 12px; letter-spacing: 0.1em; }
 .screen.duel .ammo, .screen.gallery .ammo { display: flex; }
+.tc { display: none; position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.screen.gallery.touch .tc.live { display: block; }
+.joy { position: absolute; left: 22px; bottom: 22px; width: 132px; height: 132px; border-radius: 50%; background: rgba(13,15,18,0.35); border: 2px solid rgba(255,255,255,0.35); pointer-events: auto; touch-action: none; }
+.joy i { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; background: rgba(255,255,255,0.75); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.joy span { position: absolute; left: 0; right: 0; top: -20px; text-align: center; font-size: 10px; letter-spacing: 0.14em; color: rgba(255,255,255,0.7); }
+.firebtn { position: absolute; right: 26px; bottom: 30px; width: 112px; height: 112px; border-radius: 50%; background: rgba(255,59,46,0.55); border: 3px solid rgba(255,255,255,0.6); color: #fff; font: 700 15px var(--display); letter-spacing: 0.1em; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+.firebtn.on { background: rgba(255,59,46,0.85); transform: scale(0.95); }
 .ghud { display: none; position: absolute; left: 50%; top: 14px; transform: translateX(-50%); gap: 10px; align-items: stretch; }
 .screen.gallery .ghud { display: flex; }
 .gside { background: rgba(13,15,18,0.78); padding: 6px 14px; border-radius: 6px; display: grid; justify-items: center; min-width: 92px; color: #fff; }
@@ -217,7 +224,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v23</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v24</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -263,6 +270,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
           <div class="gside foe"><span id="gFoeName">RIVAL</span><b id="gFoe">0</b></div>
         </div>
         <div class="dbig" id="dBig" hidden></div>
+        <div class="tc" id="touchCtl"><div class="joy" id="joy"><span>AIM</span><i id="joyKnob"></i></div><button type="button" class="firebtn" id="fireBtn" aria-label="Fire">FIRE</button></div>
         <div class="ammo" id="dAmmo"></div>
       </div>
       <div class="lobby" id="lobby" hidden>
@@ -324,7 +332,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v23</span>
+    <span class="ver">v24</span>
   </div>
 </div>
 
@@ -1150,6 +1158,7 @@ function requestLock() {
 function lockFailed() {
   if (fallback) return;
   fallback = true;
+  if (IS_TOUCH) return;
   const n = $('notice'); n.hidden = false;
   n.textContent = 'Mouse capture is blocked here. Move the mouse over the game to look, or turn with the arrow keys. Open in Chrome for full mouse look.';
   setTimeout(() => { n.hidden = true; }, 7000);
@@ -1917,6 +1926,30 @@ function carnFrame(t) {
   CARN.lights.forEach((l, i) => { const o = near[i]; if (!o) { l.intensity = 0; return; } l.position.set(o.side * (GWALL - 0.7), 2.5, o.z); l.intensity = 6 + Math.sin(t * 0.3 + i * 7) * 1.2 + (Math.random() < 0.02 ? -4 : 0); });
   CARN.carry.position.set(P.x * 0.3, 2.9, P.z - 1.5);
 }
+// ===== Touch controls (phones and tablets) for Last Laugh: aim stick + fire button =====
+const IS_TOUCH = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+if (IS_TOUCH) screenEl.classList.add('touch');
+const TJ = { id: null, x: 0, y: 0 };
+(() => {
+  const joy = $('joy'), knob = $('joyKnob'), fire = $('fireBtn'), R0 = 52;
+  const setKnob = () => { knob.style.transform = 'translate(' + (TJ.x * R0) + 'px,' + (TJ.y * R0) + 'px)'; };
+  const move = (t) => { const r = joy.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2; let dx = (t.clientX - cx) / R0, dy = (t.clientY - cy) / R0; const l = Math.hypot(dx, dy); if (l > 1) { dx /= l; dy /= l; } TJ.x = dx; TJ.y = dy; setKnob(); };
+  joy.addEventListener('touchstart', e => { e.preventDefault(); unlockAudio(); const t = e.changedTouches[0]; TJ.id = t.identifier; move(t); }, { passive: false });
+  joy.addEventListener('touchmove', e => { e.preventDefault(); for (const t of e.changedTouches) if (t.identifier === TJ.id) move(t); }, { passive: false });
+  const end = e => { for (const t of e.changedTouches) if (t.identifier === TJ.id) { TJ.id = null; TJ.x = TJ.y = 0; setKnob(); } };
+  joy.addEventListener('touchend', end); joy.addEventListener('touchcancel', end);
+  const fOn = e => { e.preventDefault(); unlockAudio(); if (state === 'dplay') firing = true; fire.classList.add('on'); };
+  const fOff = e => { e.preventDefault(); firing = false; fire.classList.remove('on'); };
+  fire.addEventListener('touchstart', fOn, { passive: false }); fire.addEventListener('touchend', fOff); fire.addEventListener('touchcancel', fOff);
+})();
+// Stick aim: small pushes turn slowly for fine aim, full push turns fast.
+function touchAim() {
+  if (!TJ.id && TJ.id !== 0) return;
+  const k = (v) => Math.sign(v) * Math.pow(Math.abs(v), 1.8);
+  const rate = 0.04 * sensMul;
+  P.yaw -= k(TJ.x) * rate; P.pitch = Math.max(-1.2, Math.min(1.2, P.pitch - k(TJ.y) * rate * 0.75));
+}
+setInterval(() => { const live = mode === 'gallery' && (state === 'dplay' || state === 'dcount' || state === 'gend'); $('touchCtl').classList.toggle('live', live); if (!live && IS_TOUCH) firing = false; }, 200);
 // ===== Hallway mode (Last Laugh): one shared hallway, both players race for the same targets =====
 const GZ0 = 7, GZEND = -86, GSPEED = 2.4 / 60, GWALL = 3.6, GLANE = 1.0;
 let G = null;
@@ -2115,6 +2148,7 @@ function galTick() {
   if (state === 'dcount') { if (dTimer % 50 === 0) SFX.blip(); bigText(String(Math.ceil(dTimer / 50)), ''); if (--dTimer <= 0) { bigText('GO', 'ok'); setTimeout(() => { if (state === 'dplay' && mode === 'gallery') bigText(''); }, 500); state = 'dplay'; } return; }
   if (state !== 'dplay' && state !== 'gend') return;
   G.t++; tick = G.t; dtick = G.t;
+  if (state === 'dplay') touchAim();
   const wz = Math.max(GZEND, GZ0 - G.t * GSPEED);
   const moving = wz > GZEND;
   P.z = wz; P.vz = moving ? -GSPEED : 0; P.vx = 0; P.x = G.mySide * GLANE;
