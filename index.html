@@ -229,7 +229,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v30</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v34</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -337,7 +337,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v30</span>
+    <span class="ver">v34</span>
   </div>
 </div>
 
@@ -1158,21 +1158,31 @@ ovAlt.addEventListener('click', () => { if (mode === 'duel' || mode === 'gallery
 function requestLock() {
   if (fallback) return;
   try { const p = cv.requestPointerLock(); if (p && p.catch) p.catch(lockFailed); } catch (e) { lockFailed(); return; }
-  setTimeout(() => { if ((state === 'play' || state === 'rewind' || state === 'dplay' || state === 'dcount') && document.pointerLockElement !== cv) lockFailed(); }, 500);
+  setTimeout(() => { if ((state === 'play' || state === 'rewind' || state === 'dplay' || state === 'dcount') && document.pointerLockElement !== cv) lockFailed(); }, 700);
 }
+// On the real website, a failed mouse grab is never permanent (it usually fails only because the game
+// started without a click, e.g. when the host starts an online match). The next click grabs it again.
+// Only inside an embedded frame, where grabbing is blocked for good, do we fall back to hover-look.
+const EMBEDDED = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
 function lockFailed() {
   if (fallback) return;
+  if (!EMBEDDED || IS_TOUCH) { showAimPrompt(); return; }
   fallback = true;
   if (IS_TOUCH) return;
   const n = $('notice'); n.hidden = false;
   n.textContent = 'Mouse capture is blocked here. Move the mouse over the game to look, or turn with the arrow keys. Open in Chrome for full mouse look.';
   setTimeout(() => { n.hidden = true; }, 7000);
 }
+const aimPrompt = document.createElement('div');
+aimPrompt.style.cssText = 'position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);background:rgba(13,15,18,0.85);color:#ffd27a;font:700 16px var(--display);letter-spacing:0.12em;padding:12px 20px;border-radius:8px;border:1px solid rgba(255,210,122,0.5);pointer-events:none;z-index:4;white-space:nowrap';
+aimPrompt.textContent = 'CLICK TO AIM'; aimPrompt.hidden = true; screenEl.appendChild(aimPrompt);
+function showAimPrompt() { if (!IS_TOUCH && !locked && !fallback) aimPrompt.hidden = false; }
+setInterval(() => { const live = state === 'play' || state === 'dplay' || state === 'dcount' || state === 'gend'; if (locked || fallback || IS_TOUCH || !live) aimPrompt.hidden = true; else aimPrompt.hidden = false; }, 250);
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === cv;
-  if (locked) { fallback = false; $('notice').hidden = true; }
+  if (locked) { fallback = false; $('notice').hidden = true; aimPrompt.hidden = true; }
   if (!locked && quietUnlock) { quietUnlock = false; return; }
-  if (!locked && D && D.online && (state === 'dplay' || state === 'dcount')) { const n = $('notice'); n.hidden = false; n.textContent = 'Online match keeps running. Click the game to grab your mouse again.'; setTimeout(() => { n.hidden = true; }, 4000); return; }
+  if (!locked && D && D.online && (state === 'dplay' || state === 'dcount' || state === 'gend')) { firing = false; showAimPrompt(); return; }
   if (!locked && (state === 'play' || state === 'rewind' || state === 'plan' || state === 'dplay' || state === 'dcount') && !fallback) { if (state === 'plan') state = 'play'; pauseGame(); }
 });
 document.addEventListener('pointerlockerror', lockFailed);
@@ -1195,8 +1205,9 @@ addEventListener('mousemove', e => {
   swayX = Math.max(-1, Math.min(1, swayX + mx * 0.004)); swayY = Math.max(-1, Math.min(1, swayY + my * 0.004));
 });
 cv.addEventListener('mousedown', e => {
-  if (e.button !== 0 || (state !== 'play' && state !== 'dplay')) return;
-  if (!locked && !fallback) { requestLock(); return; }
+  if (e.button !== 0) return;
+  if (!locked && !fallback && (state === 'play' || state === 'dplay' || state === 'dcount' || state === 'gend')) { requestLock(); return; }
+  if (state !== 'play' && state !== 'dplay') return;
   firing = true;
 });
 addEventListener('mouseup', e => { if (e.button === 0) firing = false; });
@@ -1302,7 +1313,7 @@ let lastStatus = '', lastBanner = '';
 const aimLines = new Map();
 let animDt = 0, lastFrameT = performance.now();
 function render() {
-  const nowT = performance.now(); animDt = (state === 'play' || (mode === 'duel' && state !== 'pause')) ? Math.min(0.1, (nowT - lastFrameT) / 1000) : 0; lastFrameT = nowT;
+  const nowT = performance.now(); animDt = (state === 'play' || (mode !== 'campaign' && state !== 'pause')) ? Math.min(0.1, (nowT - lastFrameT) / 1000) : 0; lastFrameT = nowT;
   const planning = state === 'rewind' || state === 'plan';
   screenEl.classList.toggle('planning', planning);
   $('planbar').hidden = state !== 'plan';
@@ -1915,8 +1926,9 @@ function carnClown(m) {
   const ws = new THREE.Vector3(); hb.getWorldScale(ws);
   const acc = new THREE.Group(); acc.scale.setScalar(1 / (ws.x || 0.01)); hb.add(acc);
   const nose = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), new THREE.MeshStandardMaterial({ color: 0xd0101c, emissive: 0x500006, roughness: 0.35 })); nose.position.set(0, 0.13, 0.17); acc.add(nose);
-  const hat = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.34, 14), new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 4, 1), roughness: 0.8 })); hat.position.set(0.03, 0.42, -0.02); hat.rotation.z = -0.25; acc.add(hat);
+  const hat = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.3, 14), new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 4, 1), roughness: 0.8 })); hat.position.set(0.02, 0.44, -0.02); hat.rotation.z = -0.25; acc.add(hat);
   const pom = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshStandardMaterial({ color: 0xefe3c8 })); pom.position.set(-0.01, 0.6, -0.02); acc.add(pom);
+  hat.userData.hat = pom.userData.hat = true; m.hats = [hat, pom];
 }
 function carnFrame(t) {
   if (!CARN.on || !G || !G.bulbs) return;
@@ -2049,9 +2061,9 @@ function buildGallery(seed) {
     const o = sp.o, m = soldierModel('grunt', CLOWN_COLORS[(sp.oi * 7 + i * 3) % CLOWN_COLORS.length]), s = o.side;
     carnClown(m);
     m.root.scale.setScalar(sp.sc);
-    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL + 0.18 : GWALL - 1.2), uz: o.z, lean: o.type === 'window' ? 0.75 : 0, mx: s * (GWALL + 1.0), win: o.type === 'window', y: 0, yHide: sp.yOff - (sp.yOff + 1.75 * sp.sc - 0.85),
-      st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, mats: m.mats };
-    if (t.win) { t.x = t.ux; t.z = t.uz; t.y = t.yHide; }
+    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL + 0.32 : GWALL - 1.2), uz: o.z, lean: o.type === 'window' ? 0.95 : 0, mx: s * (GWALL + 1.0), win: o.type === 'window', y: 0, yHide: sp.yOff - (sp.yOff + 1.75 * sp.sc - 0.85),
+      st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, hats: m.hats || [], mats: m.mats };
+    if (t.win) { t.x = t.side * (GWALL + 0.75); t.z = t.uz; t.y = t.yHide; t.leanK = 0; }
     m.root.visible = false; for (const p of m.parts) p.userData.gt = t;
     roomGroup.add(m.root);
     return t;
@@ -2097,7 +2109,7 @@ function galShoot() {
   G.shots++;
   const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
   const objs = G.rayObjs.slice();
-  for (const t of G.targets) if (t.alive && (t.st === 'up' || t.st === 'in' || t.st === 'out')) objs.push(...t.parts);
+  for (const t of G.targets) if (t.alive && (t.st === 'up' || t.st === 'in' || t.st === 'out')) objs.push(...(t.win ? t.parts.slice(0, 2) : t.parts), ...(t.hats || []));
   ray.set(camera.position, dir); ray.far = 70;
   const h = ray.intersectObjects(objs, false)[0];
   const mz = new THREE.Vector3(0.2, -0.13, -0.75).applyQuaternion(camera.quaternion).add(camera.position);
@@ -2107,6 +2119,7 @@ function galShoot() {
   if (D.online) netSend('gs', { yaw: +P.yaw.toFixed(3), pitch: +P.pitch.toFixed(3) });
   if (!h) return;
   const t = h.object.userData.gt;
+  if (h.object.userData.hat) { puff(h.point, 5, 0xffd23c); SFX.wall(); return; } // hats don't count: shot is wasted
   if (!t || !t.alive) { puff(h.point, 3, 0x6b7480); SFX.wall(); return; }
   const head = h.object.userData.zone === 'head';
   G.hits++;
@@ -2149,7 +2162,11 @@ function galTargets(wz) {
     else if (t.st === 'dead') { if (G.t - t.deadT > 100) t.root.visible = false; }
     if (t.flash > 0) t.flash--;
     if (t.alive) {
-      if (t.win) { t.x = t.ux; t.z = t.uz; t.y = t.yHide + (t.yOff - t.yHide) * Math.min(1, t.k); }
+      if (t.win) {
+        // windows: rise up inside the room first, then step to the window and lean out
+        const a = Math.min(1, t.k * 2), b = Math.max(0, t.k * 2 - 1), back = t.side * (GWALL + 0.75);
+        t.z = t.uz; t.y = t.yHide + (t.yOff - t.yHide) * a; t.x = back + (t.ux - back) * b; t.leanK = b;
+      }
       else {
         // doors: slide over to the doorway inside the room, then step out into the hallway
         const a = Math.min(1, t.k * 2), b = Math.max(0, t.k * 2 - 1);
@@ -2225,14 +2242,44 @@ function galHud(force) {
   $('gMe').parentElement.classList.toggle('lead', G.me > G.foe); $('gFoe').parentElement.classList.toggle('lead', G.foe > G.me);
 }
 const LEAN_SIGN = -1;
+// The head hitbox follows the real head every frame (between the head bone and the top of the head),
+// so the party hat above it is not part of the head and leaning or crouching clowns are judged fairly.
+const _hc = new THREE.Vector3();
+// Window clowns bend at the waist out through the window; legs stay upright behind the wall.
+function leanSpine(t) {
+  const A = t.anim; if (!A || !t.lean) return;
+  const sp = A.sp || (A.sp = A.model.getObjectByName('mixamorigSpine'));
+  if (sp) {
+    // remove last frame's bend if the animation didn't overwrite it, so the bend never stacks up
+    if (sp.userData.after === sp.rotation.x) sp.rotation.x -= sp.userData.extra || 0;
+    const extra = t.alive ? t.lean * (t.leanK || 0) * LEAN_SIGN : 0;
+    sp.rotation.x += extra; sp.userData.extra = extra; sp.userData.after = sp.rotation.x;
+    t.root.updateMatrixWorld(true);
+  }
+  // torso hitbox follows the bent chest
+  const nk = A.nk || (A.nk = A.model.getObjectByName('mixamorigNeck'));
+  if (sp && nk) { sp.getWorldPosition(_v1); nk.getWorldPosition(_v2); _hc.copy(_v1).add(_v2).multiplyScalar(0.5); t.root.worldToLocal(_hc); t.parts[1].position.copy(_hc); t.parts[1].scale.set(1, 0.7, 1); }
+}
+function fitHeadBox(t) {
+  const A = t.anim; if (!A || !t.alive) return;
+  const hb = A.hb || (A.hb = A.model.getObjectByName('mixamorigHead')), ht = A.ht || (A.ht = A.model.getObjectByName('mixamorigHeadTop_End'));
+  if (!hb || !ht) return;
+  hb.getWorldPosition(_v1); ht.getWorldPosition(_v2);
+  const r = _v1.distanceTo(_v2) * 0.5;
+  _hc.copy(_v1).add(_v2).multiplyScalar(0.5);
+  t.root.worldToLocal(_hc);
+  const head = t.parts[0]; head.position.copy(_hc); head.scale.setScalar(r / (0.21 * t.sc));
+}
 function galRender() {
   if (!G || !B) return;
   for (const t of G.targets) {
     if (!t.root.visible) continue;
     t.root.position.set(t.x, t.alive ? t.y : (t.win ? t.y : 0), t.z);
     // window clowns stand inside the wall and lean out through the window toward the players
-    t.root.rotation.set(t.lean * Math.min(1, t.k) * LEAN_SIGN, yawFromAng(Math.atan2(P.z - t.z, 0 - t.x)), 0, 'YXZ');
+    t.root.rotation.set(0, yawFromAng(Math.atan2(P.z - t.z, 0 - t.x)), 0, 'YXZ');
     animateSoldier(t, animDt);
+    leanSpine(t);
+    fitHeadBox(t);
     for (const m of t.mats) { m.emissive.setHex(t.flash > 0 ? 0xffffff : 0x000000); m.emissiveIntensity = t.flash > 0 ? 0.6 : 0; }
   }
   B.root.position.set(B.x, 0, B.z); B.root.rotation.y = yawFromAng(B.a);
