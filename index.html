@@ -230,7 +230,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v37</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v38</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -338,7 +338,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v37</span>
+    <span class="ver">v38</span>
   </div>
 </div>
 
@@ -1375,7 +1375,7 @@ function render() {
   if (flashT > 0) { flash.rotation.z = rflash.rotation.z = Math.random() * Math.PI; flash.scale.setScalar(0.7 + Math.random() * 0.6); rflash.scale.copy(flash.scale); flashT--; }
   muzzleLight.intensity *= 0.5;
 
-  for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; f.life--; f.update(f.obj, f.life / f.max); if (f.life <= 0) { scene.remove(f.obj); f.obj.geometry?.dispose(); f.obj.material?.dispose(); fx.splice(i, 1); } }
+  for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; f.life--; f.update(f.obj, f.life / f.max); if (f.life <= 0) { scene.remove(f.obj); if (!f.obj.userData.shared) f.obj.geometry?.dispose(); f.obj.material?.dispose(); fx.splice(i, 1); } }
 
   const holderDown = !platesOk && ghosts.some(g => !g.alive && plates.some(p => onPlate(g.x, g.z, p)));
   const byGhost = ghosts.find(g => g.alive && plates.some(p => onPlate(g.x, g.z, p)));
@@ -2090,7 +2090,7 @@ function startGallery(seed, online) {
   screenEl.classList.remove('duel'); screenEl.classList.add('gallery'); mode = 'gallery';
   clearActors(); clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; }
   D = { online: !!online, score: [0, 0], round: 0, arena: 'Hallway' };
-  G = { seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: -Math.PI / 2 };
+  G = { foeColor: online && typeof netPeerColor === 'function' ? netPeerColor() : '#ff6157', seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: -Math.PI / 2 };
   buildGallery(seed);
   G.host = !(online && typeof netIsHost === 'function' && !netIsHost());
   G.mySide = G.host ? -1 : 1;
@@ -2105,9 +2105,31 @@ function startGallery(seed, online) {
   state = 'dcount'; dTimer = 150; dtick = 0; tick = 0; SFX.spawn();
   galHud(true);
 }
+// Kill burst in the killer's color: a bright flash, a shockwave ring and a spray of sparks.
+const burstGeo = new THREE.SphereGeometry(1, 16, 12), ringGeo = new THREE.RingGeometry(0.8, 1, 40), sparkGeo = new THREE.BoxGeometry(0.06, 0.06, 0.06);
+function killBurst(pos, hex, big) {
+  const c = new THREE.Color(hex), hot = c.clone().lerp(new THREE.Color(0xffffff), 0.55), s = big ? 1.35 : 1;
+  const core = new THREE.Mesh(burstGeo, new THREE.MeshBasicMaterial({ color: hot, transparent: true, opacity: 0.95, depthWrite: false, fog: false }));
+  core.userData.shared = true; core.position.copy(pos); addFx(core, 16, (o, k) => { o.scale.setScalar((0.15 + (1 - k) * 0.9) * s); o.material.opacity = 0.95 * k * k; });
+  const glow = new THREE.Mesh(burstGeo, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.5, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+  glow.userData.shared = true; glow.position.copy(pos); addFx(glow, 24, (o, k) => { o.scale.setScalar((0.3 + (1 - k) * 1.6) * s); o.material.opacity = 0.5 * k; });
+  for (const tilt of [0, Math.PI / 2]) {
+    const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false, fog: false }));
+    ring.userData.shared = true; ring.position.copy(pos); ring.rotation.x = tilt; ring.lookAt(camera.position); if (tilt) ring.rotation.z += 1.2;
+    addFx(ring, 20, (o, k) => { o.scale.setScalar((0.2 + (1 - k) * 2.2) * s); o.material.opacity = 0.9 * k; });
+  }
+  const sm = new THREE.MeshBasicMaterial({ color: c, fog: false });
+  for (let i = 0; i < (big ? 34 : 24); i++) {
+    const p = new THREE.Mesh(sparkGeo, i % 3 ? sm : new THREE.MeshBasicMaterial({ color: hot, fog: false }));
+    p.userData.shared = true; p.position.copy(pos);
+    const v = new THREE.Vector3(Math.random() - 0.5, Math.random() * 0.9 - 0.2, Math.random() - 0.5).normalize().multiplyScalar((0.07 + Math.random() * 0.09) * s);
+    addFx(p, 34 + (Math.random() * 14 | 0), (o, k) => { o.position.add(v); v.y -= 0.005; v.multiplyScalar(0.96); o.rotation.x += 0.3; o.rotation.y += 0.2; o.scale.setScalar(0.4 + k); });
+  }
+}
 function galKill(t, head, mine, at) {
   t.alive = false; t.st = 'dead'; t.deadT = G.t; t.aimT = 0; t.by = mine ? 'me' : 'foe'; t.killT = at ?? G.t; t.head = head;
-  puff(new THREE.Vector3(t.x, t.yOff + (head ? 1.6 : 1.1) * t.sc, t.z), 8, head ? 0xffb547 : COL.foe);
+  const kp = new THREE.Vector3(t.x, t.y + (head ? 1.55 : 1.1) * t.sc, t.z);
+  killBurst(kp, mine ? myColor : G.foeColor, head);
   if (mine) { G.me++; if (head) G.heads++; } else G.foe++;
   galHud(true);
 }
