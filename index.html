@@ -330,7 +330,7 @@ body { padding: 8px 10px !important; }
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v51</small>
+    <small class="hver">v52</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -476,7 +476,7 @@ body { padding: 8px 10px !important; }
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v51</span>
+    <span class="ver">v52</span>
   </div>
 </div>
 
@@ -2417,11 +2417,21 @@ function galShoot() {
   if (kill) { galKill(t, head, true, G.t, pt); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head, at: G.t, p: pt, pts: t.pts || 0 }); }
   else if (D.online) netSend('gh', { i: t.i, dmg });
 }
+// can the rival actually see this clown, or is a wall in the way?
+const botRay = new THREE.Raycaster();
+function galBotSees(t) {
+  if (t.seeT === G.t) return t.seeOk;
+  const y = t.yOff + 1.2 * t.sc, from = new THREE.Vector3(B.x, 1.5, B.z), to = new THREE.Vector3(t.x, y, t.z), dir = to.clone().sub(from), d = dir.length();
+  botRay.set(from, dir.normalize()); botRay.far = d;
+  const h = botRay.intersectObjects(G.rayObjs, false)[0];
+  t.seeT = G.t; t.seeOk = !h || h.distance > d - 0.6;
+  return t.seeOk;
+}
 function galBot() {
   if (B.cd > 0) B.cd--;
   tickReload(B);
   let tgt = null;
-  for (const t of G.targets) if (t.alive && t.st === 'up') { if (!t.botAt) t.botAt = G.t + 30 + Math.random() * 40; if (!tgt || t.botAt < tgt.botAt) tgt = t; }
+  for (const t of G.targets) if (t.alive && t.st === 'up' && galBotSees(t)) { if (!t.botAt) t.botAt = G.t + 30 + Math.random() * 40; if (!tgt || t.botAt < tgt.botAt) tgt = t; }
   if (tgt) { const want = Math.atan2(tgt.z - B.z, tgt.x - B.x); B.a += Math.atan2(Math.sin(want - B.a), Math.cos(want - B.a)) * 0.25; }
   else { const fa = Math.atan2(-Math.cos(B.hd || 0), -Math.sin(B.hd || 0)); B.a += Math.atan2(Math.sin(fa - B.a), Math.cos(fa - B.a)) * 0.1; }
   if (!tgt || G.t < tgt.botAt || B.cd > 0 || B.rl > 0 || B.ammo <= 0) return;
@@ -2485,7 +2495,7 @@ function galTick() {
   const moving = wz > GZEND && G.stopK < 0;
   const me = mapWalk(G.mySide * GLANE, GZ0 - wz), them = mapWalk(-G.mySide * GLANE, GZ0 - wz);
   if (G.hb == null) G.hb = me.h;
-  P.yaw += me.h - G.hb; G.hb = me.h;   // the view turns with the route at corners
+  G.hb = me.h;   // players turn the view themselves at corners
   P.x = me.x; P.z = me.z; P.vz = moving ? -GSPEED : 0; P.vx = 0;
   for (const dr of G.doors) { const want = GZ0 - wz > dr.s - 6 ? 1 : 0; if (want && !dr.k) tone(140, 0.5, 'sawtooth', 0.04, 70); dr.k = Math.min(1, Math.max(0, dr.k + (want ? 1 : -1) / 40)); const off = dr.k * (GWALL - 0.2); dr.L.position.x = -GWALL / 2 - off; dr.R.position.x = GWALL / 2 + off; }
   P.bob += moving ? 0.07 : 0;
