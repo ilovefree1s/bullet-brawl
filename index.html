@@ -273,13 +273,20 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 .rooms { flex-basis: 100%; }
 .rooms:empty, .rooms[hidden] { display: none; }
 @media (max-width: 640px) { .modes { width: 100%; justify-content: space-between; } .modes .rbtn { padding: 8px 10px; font-size: 13px; } }
+
+/* ---- fill the window ---- */
+body { padding: 8px 10px !important; }
+.wrap { max-width: none !important; gap: 8px !important; }
+.screen { aspect-ratio: auto !important; height: calc(100vh - 80px); height: calc(100dvh - 80px); min-height: 340px; }
+.stage.full .screen { width: 100vw !important; height: 100vh !important; height: 100dvh !important; }
+.keys { gap: 6px 18px; }
 </style>
 
 <div class="wrap">
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v42</small>
+    <small class="hver">v43</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -404,7 +411,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v42</span>
+    <span class="ver">v43</span>
   </div>
 </div>
 
