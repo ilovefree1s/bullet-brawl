@@ -295,7 +295,7 @@ body { padding: 8px 10px !important; }
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v46</small>
+    <small class="hver">v47</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -420,7 +420,7 @@ body { padding: 8px 10px !important; }
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v46</span>
+    <span class="ver">v47</span>
   </div>
 </div>
 
@@ -2175,7 +2175,7 @@ function buildGallery(seed) {
     for (const sd of [-1, 1]) {
       const wx = sd * GWALL, back = sd * (GWALL + 2.6);
       let cursor = zs;
-      const wallEnd = (g.turn && sd === -g.turn) ? -(g.L + half) : ze;  // outer side keeps going through the corner
+      const wallEnd = (g.turn && sd === g.turn) ? -(g.L + half) : ze;  // outer side keeps going through the corner
       for (const o of G.plan) {
         if (o.seg !== g.i || o.side !== sd) continue;
         const lz = o.z - (GZ0 - g.S), w = 1.8, top = lz + w / 2;
@@ -2249,14 +2249,14 @@ function buildGallery(seed) {
   doorMesh = new THREE.Object3D(); guardRing = new THREE.Object3D(); exitSide = 'e';
   // cover: a ticket-booth crate in front of each player at every co-op wave stop
   G.covers = [];
-  for (const st of G.stops || []) {
+  (G.stops || []).forEach((st, k) => {
     const g = ROUTE.segs[st.seg], grp = G.segGroups[st.seg], lz = st.z - (GZ0 - g.S) - 1.7;
     for (const vx of [-GLANE, GLANE]) {
       const c = gBox(vx, 0, 1.1, lz, 1.25, 0.5, 0, { mat: new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 3, 1), roughness: 0.85 }), parent: grp });
-      gBox(vx, 1.1, 1.16, lz, 1.35, 0.6, 0, { mat: frameMat2, noRay: true, parent: grp });
-      G.covers.push(c);
+      const rim = gBox(vx, 1.1, 1.16, lz, 1.35, 0.6, 0, { mat: frameMat2, noRay: true, parent: grp });
+      G.covers.push({ k, parts: [c, rim], y0: [c.position.y, rim.position.y], drop: 0 });
     }
-  }
+  });
   for (const t of G.targets) { const p = mapV(t.x, t.z); t.vx = t.x; t.vz = t.z; t.x = p[0]; t.z = p[1]; }
 }
 const frameMat2 = mat(0xc9a227, { metalness: 0.4, roughness: 0.5 });
@@ -2417,6 +2417,7 @@ function galTick() {
     if (ns >= 0 && G.wz - GSPEED <= G.stops[ns].z) { G.wz = G.stops[ns].z; G.stopK = ns; G.stopT = 0; bigText('WAVE ' + (ns + 1), 'bad'); SFX.warn(); }
     else G.wz = Math.max(GZEND, G.wz - GSPEED);
   }
+  for (const cv of G.covers || []) if (G.stops[cv.k].done && cv.drop < 1) { cv.drop = Math.min(1, cv.drop + 1 / 25); cv.parts.forEach((p, i) => { p.position.y = cv.y0[i] - cv.drop * 1.3; }); if (cv.drop === 1) cv.parts.forEach(p => { p.visible = false; }); }
   const wz = G.wz;
   const moving = wz > GZEND && G.stopK < 0;
   const me = mapWalk(G.mySide * GLANE, GZ0 - wz), them = mapWalk(-G.mySide * GLANE, GZ0 - wz);
