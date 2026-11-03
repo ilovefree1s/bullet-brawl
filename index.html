@@ -230,7 +230,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v36</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v37</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -338,7 +338,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v36</span>
+    <span class="ver">v37</span>
   </div>
 </div>
 
@@ -1137,7 +1137,7 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
-  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Last Laugh · vs AI'; $('ovTitle').textContent = 'Last Laugh'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns pop out of the <b>booths and windows</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Last Laugh · vs AI'; $('ovTitle').textContent = 'Last Laugh'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns step out of the <b>booth doorways</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Last Laugh · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.targets.length + ' targets. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and throw up a quick <b>shield</b> with <b>Q</b> to block bullets. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelOver') { const won = D.score[0] > D.score[1]; $('ovEyebrow').textContent = 'Duel · match over'; $('ovTitle').textContent = won ? 'You win the match' : 'The rival wins'; ovBody.innerHTML = 'Final score <b>' + D.score[0] + ' – ' + D.score[1] + '</b>. Your cards: <b>' + (P.cards.join(', ') || 'none') + '</b>. Rival cards: <b>' + (B.cards.join(', ') || 'none') + '</b>.'; ovBtn.textContent = 'Rematch'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
@@ -1985,7 +1985,7 @@ function galPlan(seed) {
   const r = galRng(seed), out = [];
   let z = -2;
   for (let i = 0; z > GZEND + 7; i++) {
-    out.push({ z, side: r() < 0.5 ? -1 : 1, type: r() < 0.5 ? 'door' : 'window' });
+    out.push({ z, side: r() < 0.5 ? -1 : 1, type: (r(), 'door') }); // doorways only, no windows
     z -= 2.6 + r() * 2.2;
   }
   return out;
