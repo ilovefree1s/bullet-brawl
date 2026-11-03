@@ -240,6 +240,25 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 .foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--dim); }
 .ver { letter-spacing: 0.1em; font-variant-numeric: tabular-nums; margin-left: auto; }
 
+/* ---- missions ---- */
+.mshud { display: none; position: absolute; inset: 0; pointer-events: none; }
+.screen.mission .mshud { display: block; }
+.screen.mission .tl, .screen.mission .tr, .screen.mission .status, .screen.mission .banner, .screen.mission .gstat, .screen.mission .health, .screen.mission .abil, .screen.mission .dhud, .screen.mission .ghud, .screen.mission .ammo { display: none !important; }
+.msarcs { position: absolute; left: 50%; top: 50%; width: min(46vh, 340px); height: min(46vh, 340px); transform: translate(-50%, -50%); transition: opacity 0.4s; opacity: 0; }
+.msarcs path { fill: none; stroke-width: 9; stroke-linecap: round; }
+.msarcs .trk { stroke: rgba(255,255,255,0.12); }
+.msarcs .hp { stroke: #ff3b2e; stroke-dasharray: 100; }
+.msarcs .ar { stroke: #3c8cff; stroke-dasharray: 100; }
+.msammo { position: absolute; right: 18px; bottom: 16px; display: grid; justify-items: end; gap: 2px; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,0.6); }
+.msammo span { font-size: 12px; letter-spacing: 0.16em; color: #d6dde3; }
+.msammo b { font-family: var(--display); font-size: 30px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.mstoast { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); background: rgba(13,15,18,0.8); color: #fff; font-family: var(--display); font-weight: 700; letter-spacing: 0.1em; font-size: 15px; padding: 7px 14px; border-radius: 5px; white-space: nowrap; }
+.mstoast.ok { color: #7ef0a8; } .mstoast.bad { color: #ff8a7f; }
+.card.watch { width: min(440px, 78vmin); aspect-ratio: 1; border-radius: 50%; padding: 54px 46px; align-content: center; background: radial-gradient(circle at 50% 40%, #1e2428, #0c0f11 70%); border: 12px solid #8d9396; box-shadow: 0 0 0 4px #3a4045, inset 0 0 30px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.6); }
+.card.watch h2 { font-size: 22px; letter-spacing: 0.18em; color: #7ef0a8; }
+.objs { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; text-align: left; font-size: 13px; }
+.objs li { color: #d6dde3; } .objs li.done { color: #7ef0a8; text-decoration: line-through; }
+.objs li::before { content: '\25B8  '; color: #c9a227; }
 /* ---- Last Laugh menu ---- */
 .overlay { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; align-items: center; gap: 12px; }
 .menutop { display: grid; justify-items: center; gap: 12px; padding-top: 6px; }
@@ -295,7 +314,7 @@ body { padding: 8px 10px !important; }
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v47</small>
+    <small class="hver">v48</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -346,6 +365,14 @@ body { padding: 8px 10px !important; }
           <div class="gside foe"><span id="gFoeName">RIVAL</span><b id="gFoe">0</b></div>
         </div>
         <div class="dbig" id="dBig" hidden></div>
+        <div class="mshud">
+          <svg class="msarcs" id="msArcs" viewBox="0 0 200 200" aria-hidden="true">
+            <path d="M 62 168 A 82 82 0 0 1 62 32" class="trk"/><path d="M 138 32 A 82 82 0 0 1 138 168" class="trk"/>
+            <path id="msHp" d="M 62 168 A 82 82 0 0 1 62 32" class="hp" pathLength="100"/><path id="msAr" d="M 138 168 A 82 82 0 0 0 138 32" class="ar" pathLength="100"/>
+          </svg>
+          <div class="msammo"><span id="msWeapon">SILENCED PISTOL</span><b id="msAmmo">7 | 28</b></div>
+          <div class="mstoast" id="msToast" hidden></div>
+        </div>
         <div class="tc" id="touchCtl"><div class="lookpad" id="lookPad"></div><div class="lookhint" id="lookHint">SWIPE TO AIM</div><button type="button" class="firebtn" id="fireBtn" aria-label="Fire">FIRE</button><button type="button" class="duckbtn" id="duckBtn" aria-label="Duck">DUCK</button></div>
         <div class="ammo" id="dAmmo"></div>
       </div>
@@ -398,6 +425,14 @@ body { padding: 8px 10px !important; }
     <span><kbd>M</kbd> mute</span>
     <span>Phone: swipe to aim, hold Fire</span>
   </div>
+  <div class="keys" id="keysMS" hidden>
+    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+    <span>Mouse aim, click shoot</span>
+    <span><kbd>R</kbd> reload</span>
+    <span><kbd>1</kbd><kbd>2</kbd> / <kbd>Q</kbd> / wheel switch weapon</span>
+    <span><kbd>C</kbd> crouch</span>
+    <span><kbd>Esc</kbd> mission status</span>
+  </div>
   <div class="keys" id="keysPL">
     <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
     <span>Mouse look</span>
@@ -420,7 +455,7 @@ body { padding: 8px 10px !important; }
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v47</span>
+    <span class="ver">v48</span>
   </div>
 </div>
 
@@ -1211,6 +1246,7 @@ function renderRooms() {
 }
 function showOverlay(kind) {
   ov.hidden = false; ovAlt.hidden = true; ovAlt.textContent = 'Replay room';
+  ov.querySelector('.card').classList.toggle('watch', kind === 'pause' && mode === 'mission');
   $('ovEyebrow').textContent = 'Room 0' + (levelIdx + 1) + ' · ' + RM.loops + ' loops of ' + RM.loopSec + ' seconds';
   if (kind === 'intro') { $('ovTitle').textContent = RM.name; ovBody.innerHTML = RM.brief; ovBtn.textContent = 'Click to play'; ovAction = 'start'; }
   if (kind === 'pause') { $('ovTitle').textContent = 'Paused'; ovBody.innerHTML = (mode !== 'campaign' ? 'The match is paused.' : 'The loop timer is stopped.') + '<label class="psens"><span>Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>'; syncSens(); ovBtn.textContent = 'Resume'; ovAction = 'resume'; }
@@ -1219,6 +1255,9 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
+  if (kind === 'misIntro') { $('ovEyebrow').textContent = 'Mission 1 · Facility'; $('ovTitle').textContent = 'Facility Breach'; ovBody.innerHTML = 'Get into the research facility and shut it down. Guards <b>patrol and notice you</b> if you walk into view, and <b>gunshots bring them running</b>. Your silenced pistol stays quiet; the rifles you take off guards do not. Headshots drop anyone.<ul class="objs"><li>Destroy the 2 server consoles</li><li>Find the vault keycard</li><li>Reach the lift in the vault</li></ul>'; ovBtn.textContent = 'Start mission'; ovAction = 'misStart'; }
+  if (kind === 'misWin' || kind === 'misFail') { const won = kind === 'misWin', secsT = (MS.t / 60).toFixed(1); $('ovEyebrow').textContent = 'Mission 1 · Facility'; $('ovTitle').textContent = won ? 'Mission complete' : 'Mission failed'; ovBody.innerHTML = (won ? 'You made it out in <b>' + secsT + 's</b>.' : 'You went down after <b>' + secsT + 's</b>.') + ' Kills <b>' + MS.kills + '</b> · headshots <b>' + MS.heads + '</b> · accuracy <b>' + (MS.shots ? Math.round(100 * MS.hits / MS.shots) : 0) + '%</b>.'; ovBtn.textContent = 'Play again'; ovAction = 'misRestart'; }
+  if (kind === 'pause' && mode === 'mission' && MS) { $('ovEyebrow').textContent = 'Mission 1 · Facility Breach'; $('ovTitle').textContent = 'MISSION STATUS'; ovBody.innerHTML = '<ul class="objs">' + msObjectives().map(o => '<li class="' + (o.done ? 'done' : '') + '">' + o.text + '</li>').join('') + '</ul><p style="margin-top:10px">Health <b>' + Math.ceil(MS.hp) + '</b> · Armor <b>' + Math.ceil(MS.armor) + '</b></p><label class="psens"><span>Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>'; syncSens(); ovBtn.textContent = 'Resume'; ovAction = 'resume'; ovAlt.hidden = false; ovAlt.textContent = 'Abort mission'; return; }
   if (kind === 'coopIntro') { $('ovEyebrow').textContent = 'Solo or online with a friend'; $('ovTitle').textContent = 'Co-op'; ovBody.innerHTML = 'Fight through the midway together. Clowns step out and <b>glow red when they wind up a throw</b>: drop them first, or shoot the <b>pie out of the air</b>. Every pie that lands costs the team a life, and you share <b>5</b>. At wave stops, hold <b>C</b> (or Ctrl) to <b>duck behind cover</b>: pies miss you and you reload, but you can\u2019t shoot. The walk <b>stops for waves</b> and moves on once the wave is cleared. Quick kills chain into a <b>combo</b> worth up to 4x points. Play solo here, or with a friend from <b>Online</b>.'; ovBtn.textContent = 'Start'; ovAction = 'coopStart'; ovAlt.hidden = true; }
   if (kind === 'coopOver') { const ok = G.lives > 0; $('ovEyebrow').textContent = 'Last Laugh · co-op · ' + (D.online ? 'online' : 'solo'); $('ovTitle').textContent = ok ? 'You made it out' : 'The clowns had the last laugh'; ovBody.innerHTML = (ok ? 'Out alive with <b>' + G.lives + '</b> of 5 lives.' : 'Out of lives ' + Math.round(100 * (GZ0 - G.wz) / (GZ0 - GZEND)) + '% of the way down the midway.') + ' Your score <b>' + G.score + '</b>' + (D.online ? ' · partner <b>' + G.foeScore + '</b> · team <b>' + (G.score + G.foeScore) + '</b>' : '') + '. Kills <b>' + G.me + '</b>, headshot kills <b>' + G.heads + '</b>, accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'coopStart'; ovAlt.hidden = true; }
   if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Race the AI rival for kills'; $('ovTitle').textContent = '1v1 vs AI'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns step out of the <b>booth doorways</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = true; }
@@ -1233,6 +1272,8 @@ function begin(fresh) {
   ov.hidden = true; $('rewind').hidden = true; state = 'play'; requestLock();
 }
 ovBtn.addEventListener('click', () => {
+  if (ovAction === 'misRestart') { enterMission(); return; }
+  if (ovAction === 'misStart') { unlockAudio(); ov.hidden = true; startMission(); requestLock(); return; }
   if (ovAction === 'coopStart') { unlockAudio(); ov.hidden = true; startGallery((Math.random() * 1e9) | 0, false, true); requestLock(); return; }
   if (ovAction === 'galStart') { unlockAudio(); ov.hidden = true; startGallery((Math.random() * 1e9) | 0, false); requestLock(); return; }
   if (ovAction === 'duelStart') { unlockAudio(); ov.hidden = true; startMatch(); requestLock(); return; }
@@ -1240,7 +1281,7 @@ ovBtn.addEventListener('click', () => {
   if (ovAction === 'resume') { unlockAudio(); ov.hidden = true; state = pausedFrom; requestLock(); return; }
   begin(true);
 });
-ovAlt.addEventListener('click', () => { if (mode === 'duel' || mode === 'gallery') { leaveDuel(); return; } begin(true); });
+ovAlt.addEventListener('click', () => { if (mode === 'mission') { enterMission(); return; } if (mode === 'duel' || mode === 'gallery') { leaveDuel(); return; } begin(true); });
 // The menu lives inside the game screen: logo and mode tabs on top, settings and full screen at the bottom.
 (() => {
   const verTxt = document.querySelector('.hver').textContent;
@@ -1460,7 +1501,7 @@ function render() {
   kick *= 0.82; swayX *= 0.88; swayY *= 0.88;
   rifle.position.set(VM_BASE.x + Math.cos(P.bob) * 0.012 * sp - swayX * 0.02, VM_BASE.y + Math.abs(Math.sin(P.bob)) * 0.012 * sp + swayY * 0.012, VM_BASE.z + kick * 0.06);
   rifle.rotation.set(kick * 0.09, -swayX * 0.04, swayX * 0.03);
-  const duelGun = mode !== 'campaign'; rifle.visible = !duelGun; revolver.visible = duelGun;
+  const duelGun = mode !== 'campaign' && !(mode === 'mission' && MS && MS.weapon === 'rifle'); rifle.visible = !duelGun; revolver.visible = duelGun;
   if (duelGun) {
     const rmax = (P.stats && P.stats.reload) || 50, rk = P.rl > 0 ? Math.sin(Math.PI * Math.min(1, 1 - P.rl / rmax)) : 0;
     revolver.position.set(rifle.position.x, rifle.position.y - rk * 0.06, rifle.position.z);
@@ -1494,7 +1535,7 @@ function render() {
 
   const chips = ghosts.map(g => { let c = '', t = 'ACTIVE'; if (!g.alive) { c = 'down'; t = 'DOWN'; } else if (g.inv > 0) { c = 'hit'; t = 'HIT'; } else if (plates.some(p => onPlate(g.x, g.z, p))) { c = 'plate'; t = 'ON PLATE'; } else if (tick >= g.frames.length) { c = 'wait'; t = 'WAITING'; } return '<span class="chip ' + c + '">L' + (g.id + 1) + ' · ' + t + '</span>'; }).join('');
   if (chips !== lastChips) { $('gstat').innerHTML = chips; lastChips = chips; }
-  if (mode === 'duel') renderDuel(); else if (mode === 'gallery') galRender();
+  if (mode === 'duel') renderDuel(); else if (mode === 'gallery') galRender(); else if (mode === 'mission') misRender();
   $('abDashF').style.width = (100 * (1 - P.dashCd / (P.dashMax || DASH_CD))) + '%'; $('abDash').classList.toggle('ready', !P.dashCd);
   const abl = mode === 'duel' ? 'SHIELD' : 'PUSH', abEl = $('abPush').querySelector('.abt span'); if (abEl.textContent !== abl) abEl.textContent = abl;
   $('abPushF').style.width = (100 * (1 - P.pushCd / (P.pushMax || PUSH_CD))) + '%'; $('abPush').classList.toggle('ready', !P.pushCd);
@@ -1944,7 +1985,7 @@ function leaveDuel() {
   clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } D = null; P.dashMax = DASH_CD; P.pushMax = PUSH_CD;
   pickRoom(levelIdx);
 }
-$('modeCampaign').addEventListener('click', e => { if (mode !== 'campaign') leaveDuel(); e.currentTarget.blur(); });
+$('modeCampaign').addEventListener('click', e => { enterMission(); e.currentTarget.blur(); });
 $('modeDuel').addEventListener('click', e => { if (mode !== 'duel') enterDuel(); e.currentTarget.blur(); });
 // ===== Last Laugh look: creepy night carnival (visual only) =====
 const CARN = (() => {
@@ -2589,6 +2630,7 @@ function galRender() {
   carnFrame(performance.now() / 16.7);
 }
 function enterGallery(coop) {
+  if (mode === 'mission') leaveMission();
   galCoopPick = !!coop;
   if (mode === 'duel') { clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } screenEl.classList.remove('duel'); }
   mode = 'gallery'; state = 'title'; screenEl.classList.add('gallery'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; bigText('');
@@ -2603,6 +2645,372 @@ let galCoopPick = false;
 $('modeGallery').addEventListener('click', e => { if (mode !== 'gallery' || G || galCoopPick) enterGallery(false); e.currentTarget.blur(); });
 $('modeCoop').addEventListener('click', e => { if (mode !== 'gallery' || G || !galCoopPick) enterGallery(true); e.currentTarget.blur(); });
 // ===== end Hallway mode =====
+// ===== Paradox Loop missions: GoldenEye-style facility (no loops) =====
+let MS = null;
+const MS_WEAPONS = {
+  pistol: { name: 'Silenced pistol', mag: 7, delay: 13, dmg: 34, spread: 0.006, loud: 4, reload: 55, sound: () => { noise(0.08, 0.06, 1800); tone(220, 0.05, 'square', 0.03, 120); } },
+  rifle: { name: 'Auto rifle', mag: 30, delay: 5, dmg: 22, spread: 0.018, loud: 24, reload: 75, sound: () => { SFX.shoot(); } }
+};
+const MS_ROOMS = { A: [-24, -15, -12, 15], C: [-12, -2.5, 24, 2.5], S: [-12, 2.5, 6, 15], O: [6, 2.5, 24, 15], T: [-12, -15, 8, -2.5], V: [8, -15, 24, -2.5] };
+function msTex(kind) {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  if (kind === 'wall') {
+    x.fillStyle = '#8d9396'; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 600; i++) { x.fillStyle = 'rgba(0,0,0,' + Math.random() * 0.06 + ')'; x.fillRect(Math.random() * 256, Math.random() * 256, 2 + Math.random() * 10, 2 + Math.random() * 10); }
+    x.strokeStyle = 'rgba(40,44,48,0.55)'; x.lineWidth = 3; x.strokeRect(2, 2, 252, 252); x.beginPath(); x.moveTo(0, 170); x.lineTo(256, 170); x.stroke();
+    x.fillStyle = '#5d6468'; x.fillRect(0, 210, 256, 46);
+    x.fillStyle = '#c9a227'; x.fillRect(0, 206, 256, 5);
+  } else if (kind === 'floor') {
+    for (let r = 0; r < 4; r++) for (let q = 0; q < 4; q++) { const v = 96 + Math.random() * 14; x.fillStyle = 'rgb(' + (v - 6) + ',' + v + ',' + (v - 4) + ')'; x.fillRect(q * 64, r * 64, 64, 64); }
+    x.strokeStyle = 'rgba(30,34,30,0.6)'; x.lineWidth = 2; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, 256); x.stroke(); x.beginPath(); x.moveTo(0, i * 64); x.lineTo(256, i * 64); x.stroke(); }
+    for (let i = 0; i < 300; i++) { x.fillStyle = 'rgba(0,0,0,' + Math.random() * 0.08 + ')'; x.fillRect(Math.random() * 256, Math.random() * 256, 3, 3); }
+  } else if (kind === 'door') {
+    x.fillStyle = '#6d7c86'; x.fillRect(0, 0, 256, 256); x.fillStyle = '#4a565e'; for (let i = 0; i < 8; i++) x.fillRect(0, 16 + i * 30, 256, 6);
+    x.fillStyle = '#d6b23a'; for (let i = -8; i < 16; i++) { x.beginPath(); x.moveTo(i * 32, 256); x.lineTo(i * 32 + 16, 256); x.lineTo(i * 32 + 48, 222); x.lineTo(i * 32 + 32, 222); x.fill(); }
+  } else if (kind === 'screen') {
+    x.fillStyle = '#062a12'; x.fillRect(0, 0, 256, 256); x.fillStyle = '#3cff7a'; x.font = '16px monospace';
+    for (let i = 0; i < 14; i++) x.fillText(Array.from({ length: 22 }, () => '01ABCDEF'[Math.random() * 8 | 0]).join(''), 8, 20 + i * 17);
+  } else if (kind === 'crate') {
+    x.fillStyle = '#6b5a3a'; x.fillRect(0, 0, 256, 256); x.strokeStyle = '#3e3220'; x.lineWidth = 14; x.strokeRect(7, 7, 242, 242); x.beginPath(); x.moveTo(0, 0); x.lineTo(256, 256); x.stroke();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
+}
+const MSTX = {};
+function msMat(kind, rx, ry, extra = {}) { if (!MSTX[kind]) MSTX[kind] = msTex(kind); const t = MSTX[kind].clone(); t.needsUpdate = true; t.repeat.set(rx, ry); return new THREE.MeshStandardMaterial(Object.assign({ map: t, roughness: 0.85 }, extra)); }
+function msBox(x0, z0, x1, z1, h, mt, solid = true) {
+  const w = x1 - x0, d = z1 - z0, m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mt);
+  m.position.set((x0 + x1) / 2, h / 2, (z0 + z1) / 2); m.castShadow = true; m.receiveShadow = true; roomGroup.add(m);
+  if (solid) { solids.push({ x0, x1, z0, z1, h }); MS.ray.push(m); }
+  return m;
+}
+function msWall(x0, z0, x1, z1, gaps) {
+  // a straight wall line with door gaps [center, width]
+  const horiz = z0 === z1, a0 = horiz ? x0 : z0, a1 = horiz ? x1 : z1, t = 0.2;
+  let cur = a0;
+  const seg = (s0, s1) => { if (s1 - s0 < 0.05) return; const len = s1 - s0; if (horiz) msBox(s0, z0 - t, s1, z0 + t, 3.2, msMat('wall', len / 3, 1)); else msBox(x0 - t, s0, x0 + t, s1, 3.2, msMat('wall', len / 3, 1)); };
+  for (const [c, w] of (gaps || []).sort((p, q) => p[0] - q[0])) { seg(cur, c - w / 2); cur = c + w / 2; if (horiz) msBox(c - w / 2, z0 - t, c + w / 2, z0 + t, 0.6, msMat('wall', 0.5, 0.2), false).position.y = 2.9; else msBox(x0 - t, c - w / 2, x0 + t, c + w / 2, 0.6, msMat('wall', 0.5, 0.2), false).position.y = 2.9; }
+  seg(cur, a1);
+}
+function msDoor(cx, cz, horiz, locked) {
+  const w = 2.2, half = w / 2, t = 0.12, grp = new THREE.Group(); roomGroup.add(grp);
+  const mk = s => { const m = new THREE.Mesh(new THREE.BoxGeometry(horiz ? half : t, 2.6, horiz ? t : half), msMat('door', 1, 1, locked ? { color: 0xffb0a0 } : {})); m.castShadow = true; grp.add(m); MS.ray.push(m); return m; };
+  const a = mk(-1), b = mk(1);
+  const solid = horiz ? { x0: cx - half, x1: cx + half, z0: cz - 0.15, z1: cz + 0.15, h: 2.6 } : { x0: cx - 0.15, x1: cx + 0.15, z0: cz - half, z1: cz + half, h: 2.6 };
+  const d = { cx, cz, horiz, locked: !!locked, k: 0, a, b, solid, closed: true };
+  solids.push(solid); MS.doors.push(d); msPlaceDoor(d);
+  if (locked) { const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 0.25), new THREE.MeshBasicMaterial({ color: 0xff3b2e })); lamp.position.set(cx, 2.85, cz); roomGroup.add(lamp); d.lamp = lamp; }
+  return d;
+}
+function msPlaceDoor(d) {
+  const off = d.k * 1.05, q = 0.55;
+  if (d.horiz) { d.a.position.set(d.cx - q - off, 1.3, d.cz); d.b.position.set(d.cx + q + off, 1.3, d.cz); }
+  else { d.a.position.set(d.cx, 1.3, d.cz - q - off); d.b.position.set(d.cx, 1.3, d.cz + q + off); }
+}
+function msConsole(x, z, rot) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; roomGroup.add(g);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 0.7), msMat('wall', 0.6, 0.4, { color: 0x6f7a80 })); body.position.y = 0.55; g.add(body);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.7), new THREE.MeshBasicMaterial({ map: msTex('screen') })); scr.position.set(0, 1.45, 0.05); scr.rotation.x = -0.25; g.add(scr);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 0.12), msMat('wall', 0.5, 0.3, { color: 0x50585e })); back.position.set(0, 1.45, -0.02); back.rotation.x = -0.25; g.add(back);
+  const c = { g, hp: 80, alive: true, scr, x, z };
+  for (const m of [body, scr, back]) { m.userData.console = c; MS.ray.push(m); }
+  solids.push({ x0: x - 0.85, x1: x + 0.85, z0: z - 0.45, z1: z + 0.45, h: 1.8 });
+  MS.consoles.push(c);
+}
+function msPickup(kind, x, z, amt) {
+  const col = { armor: 0x3c8cff, ammo: 0xffd23c, rifle: 0xff9a3d, key: 0x3cff7a }[kind];
+  const g = new THREE.Group(); g.position.set(x, 0.45, z); roomGroup.add(g);
+  const m = new THREE.Mesh(kind === 'armor' ? new THREE.BoxGeometry(0.5, 0.6, 0.18) : kind === 'key' ? new THREE.BoxGeometry(0.36, 0.04, 0.24) : kind === 'rifle' ? new THREE.BoxGeometry(0.9, 0.12, 0.16) : new THREE.BoxGeometry(0.34, 0.24, 0.24), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.35, roughness: 0.5 }));
+  g.add(m);
+  MS.pickups.push({ kind, x, z, amt, g, m });
+}
+function msGuard(x, z, a, opts = {}) {
+  const m = soldierModel('grunt', opts.officer ? '#3a3d44' : null);
+  const g = { t: 'grunt', id: MS.guards.length, x, z, a, alive: true, pending: false, hp: opts.officer ? 120 : 100, stun: 0, aimT: 0, fireT: 0, flash: 0, walk: 0, lastMove: -99, repath: 0, path: null,
+    root: m.root, anim: m.anim, parts: m.parts, mats: m.mats, state: 'idle', way: opts.way || null, wi: 0, spot: 0, cd: 40 + Math.random() * 40, burst: 0, officer: !!opts.officer, deadT: 0 };
+  for (const p of m.parts) p.userData.guard = g;
+  scene.add(g.root); MS.guards.push(g);
+  return g;
+}
+function buildMission() {
+  for (const ch of [...roomGroup.children]) { roomGroup.remove(ch); ch.geometry?.dispose(); }
+  solids = []; shootables = []; plates = [];
+  MS.ray = []; MS.doors = []; MS.consoles = []; MS.pickups = []; MS.guards = [];
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(48, 30), msMat('floor', 24, 15)); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; roomGroup.add(floor); MS.ray.push(floor);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(48, 30), new THREE.MeshStandardMaterial({ color: 0x3a4045, roughness: 1, side: THREE.DoubleSide })); ceil.rotation.x = Math.PI / 2; ceil.position.y = 3.2; roomGroup.add(ceil);
+  // fluorescent strip lights
+  const lampMat = new THREE.MeshBasicMaterial({ color: 0xf2f7ff });
+  for (let x = -22; x <= 22; x += 6) for (let z = -12; z <= 12; z += 6) { const l = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.22), lampMat); l.position.set(x, 3.17, z); roomGroup.add(l); }
+  // outer walls and room dividers (with doorways)
+  msWall(-24, -15, -24, 15); msWall(24, -15, 24, 15); msWall(-24, 15, 24, 15); msWall(-24, -15, 24, -15);
+  msWall(-12, -15, -12, 15, [[0, 2.2]]);
+  msWall(-12, 2.5, 24, 2.5, [[-3, 2.2], [15, 2.2]]);
+  msWall(-12, -2.5, 24, -2.5, [[-1, 2.2], [16, 2.2]]);
+  msWall(6, 2.5, 6, 15); msWall(8, -15, 8, -2.5);
+  msDoor(-12, 0, false); msDoor(-3, 2.5, true); msDoor(15, 2.5, true); msDoor(-1, -2.5, true);
+  MS.vault = msDoor(16, -2.5, true, true);
+  // start hangar: crates for cover
+  const crate = (x, z, s = 1.2, h = 1.2) => msBox(x - s / 2, z - s / 2, x + s / 2, z + s / 2, h, msMat('crate', 1, h / s));
+  crate(-18, -6); crate(-16.8, -6); crate(-18, -4.8, 1.2, 2.4); crate(-17, 7); crate(-15.5, 9, 1.6, 1.6); crate(-21, 11);
+  // server room: racks and two consoles
+  for (const z of [6, 9.5, 13]) { msBox(-10.5, z - 0.4, -6.5, z + 0.4, 2.4, msMat('wall', 1.5, 1, { color: 0x3b4248 })); }
+  msConsole(-1.5, 12.8, Math.PI); msConsole(3.5, 7.5, -Math.PI / 2);
+  // office: desks, keycard on the far desk
+  const desk = (x, z) => msBox(x - 1, z - 0.5, x + 1, z + 0.5, 0.8, new THREE.MeshStandardMaterial({ color: 0x6b5a3a, roughness: 0.7 }));
+  desk(10, 7); desk(10, 11); desk(16, 7); desk(16, 11); desk(21, 12.8);
+  msPickup('key', 21, 12.8, 1); MS.pickups[MS.pickups.length - 1].g.position.y = 0.86;
+  // storage: crate maze and an armor vest
+  crate(-8, -6); crate(-8, -7.2); crate(-3, -9, 1.6, 2.2); crate(1, -6); crate(2.2, -6); crate(5, -12, 1.6, 1.6); crate(-9.5, -12); crate(-2, -13.5);
+  msPickup('armor', -10.5, -13.5, 100); msPickup('armor', -21.5, 13, 50);
+  // vault: shelves and the extraction lift
+  msBox(10, -14.5, 18, -13.6, 2.2, msMat('wall', 2, 1, { color: 0x4a5258 })); msBox(10, -9, 14, -8.2, 1.4, msMat('crate', 3, 1));
+  const lift = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3.4), new THREE.MeshBasicMaterial({ color: 0x1a4a2a })); lift.rotation.x = -Math.PI / 2; lift.position.set(21.8, 0.01, -12.6); roomGroup.add(lift);
+  const liftRing = new THREE.Mesh(new THREE.RingGeometry(1.5, 1.7, 4, 1, Math.PI / 4), new THREE.MeshBasicMaterial({ color: 0x3cff7a, side: THREE.DoubleSide })); liftRing.rotation.x = -Math.PI / 2; liftRing.position.set(21.8, 0.02, -12.6); roomGroup.add(liftRing); MS.liftRing = liftRing;
+  MS.lift = { x0: 20.1, x1: 23.5, z0: -14.3, z1: -10.9 };
+  RM = { name: 'Facility Breach', loopSec: 999, loops: 1, rules: {}, door: { side: 'e', c: 0 }, spawn: { x: -21, z: 0, yaw: E_ }, plates: [], walls: [], enemies: [] };
+  DOOR = { x0: 999, x1: 999.1, z0: 999, z1: 999.1 }; doorC = { x: 999, z: 999 };
+  doorMesh = new THREE.Object3D(); guardRing = new THREE.Object3D(); exitSide = 'e';
+  // pathfinding ignores doors (guards open them), so build the grid before doors close
+  const doorSolids = MS.doors.map(d => d.solid); solids = solids.filter(s => !doorSolids.includes(s)); buildGrids(); solids.push(...doorSolids);
+  // guards
+  msGuard(-13.4, 4.5, 0);
+  msGuard(-10, 0, 0, { way: [[-10, 0], [22, 0]] }); msGuard(20, -0.5, Math.PI, { way: [[20, -0.5], [4, -0.5]] });
+  msGuard(-8, 11.3, 0); msGuard(0, 5.5, Math.PI / 2, { way: [[0, 5.5], [0, 13.5]] });
+  msGuard(19, 9, Math.PI, { officer: true }); msGuard(8.5, 4.5, 0, { way: [[8.5, 4.5], [22, 4.5]] }); msGuard(13, 13.5, -Math.PI / 2);
+  msGuard(-6, -8, 0, { way: [[-6, -8], [4, -11], [-6, -8]] }); msGuard(3, -4.2, -Math.PI / 2); msGuard(-9.5, -10, Math.PI / 2);
+  msGuard(12, -6, -Math.PI / 2); msGuard(19, -8.5, Math.PI);
+}
+function setMissionLook(on) {
+  if (on) { scene.background.setHex(0x2a2f33); scene.fog.color.setHex(0x2a2f33); scene.fog.near = 14; scene.fog.far = 60; hemiLight.color.setHex(0xf2f6ff); hemiLight.groundColor.setHex(0x5a6066); hemiLight.intensity = 1.35; sun.intensity = 0.35; }
+  else { scene.background.copy(sceneDefaults.bg); scene.fog.color.copy(sceneDefaults.fog); scene.fog.near = sceneDefaults.near; scene.fog.far = sceneDefaults.far; hemiLight.color.copy(lightDefaults.hc); hemiLight.groundColor.copy(lightDefaults.hg); hemiLight.intensity = lightDefaults.hi; sun.intensity = lightDefaults.si; }
+}
+function msObjectives() {
+  const servers = MS.consoles.filter(c => !c.alive).length;
+  return [
+    { text: 'Destroy the server consoles (' + servers + '/2)', done: servers >= 2 },
+    { text: 'Find the vault keycard', done: MS.keycard },
+    { text: 'Reach the lift in the vault', done: MS.won }
+  ];
+}
+function msToast(t, cls) { const el = $('msToast'); el.textContent = t; el.className = 'mstoast ' + (cls || ''); el.hidden = false; clearTimeout(MS.toastT); MS.toastT = setTimeout(() => { el.hidden = true; }, 2600); }
+function startMission() {
+  if (G) clearGallery();
+  if (B) { scene.remove(B.root); B = null; }
+  for (const c of ['duel', 'gallery', 'solo']) screenEl.classList.remove(c);
+  screenEl.classList.add('mission'); mode = 'mission';
+  clearActors(); clearShots();
+  if (MS) for (const g of MS.guards) scene.remove(g.root);
+  MS = { t: 0, weapon: 'pistol', have: { pistol: true, rifle: false }, ammo: { pistol: 7, rifle: 0 }, reserve: { pistol: 28, rifle: 0 }, hp: 100, armor: 0, keycard: false, won: false, shots: 0, hits: 0, kills: 0, heads: 0, hudT: 0 };
+  D = { online: false, score: [0, 0], round: 0, arena: 'Mission' };
+  setCarnival(false); buildMission(); setMissionLook(true);
+  P.stats = { mag: 7, reload: MS_WEAPONS.pistol.reload };
+  Object.assign(P, { x: -21, z: 0, vx: 0, vz: 0, yaw: E_, pitch: 0, alive: true, hp: 100, dashT: 0, dashCd: 0, pushCd: 0, crouch: 0, ammo: 7, rl: 0, dcd: 0 });
+  reloadQueued = false; firing = false;
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeCoop', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === 'modeCampaign')); }
+  state = 'dplay'; tick = 0; msHud(true);
+  msToast('MISSION 1 · FACILITY BREACH', 'ok');
+}
+function leaveMission() {
+  if (!MS) return;
+  for (const g of MS.guards) scene.remove(g.root);
+  MS = null; setMissionLook(false); screenEl.classList.remove('mission');
+}
+function enterMission() {
+  if (G) { clearGallery(); screenEl.classList.remove('gallery'); }
+  if (mode === 'duel') { clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } screenEl.classList.remove('duel'); }
+  leaveMission();
+  mode = 'mission'; state = 'title'; screenEl.classList.add('mission'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; bigText('');
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeCoop', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === 'modeCampaign')); }
+  clearActors();
+  MS = { t: 0, guards: [], doors: [], ray: [], consoles: [], pickups: [], have: { pistol: true }, ammo: { pistol: 7 }, reserve: { pistol: 28 }, weapon: 'pistol', hp: 100, armor: 0, hudT: 0 };
+  P.ammo = 7; P.rl = 0;
+  setCarnival(false); buildMission(); setMissionLook(true);
+  Object.assign(P, { x: -21, z: 0, yaw: E_, pitch: 0 });
+  showOverlay('misIntro');
+  if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
+}
+function msHurt(dmg, sx, sz) {
+  if (MS.won || !P.alive) return;
+  const toArmor = Math.min(MS.armor, dmg); MS.armor -= toArmor; MS.hp -= dmg - toArmor; MS.hudT = 150;
+  SFX.hurt(); hitDir(sx, sz); const h = $('hurt'); h.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove('on')));
+  if (MS.hp <= 0) { MS.hp = 0; P.alive = false; firing = false; state = 'gover'; SFX.lose(); setTimeout(() => { if (mode === 'mission') { if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); } showOverlay('misFail'); } }, 900); }
+}
+function msAlert(g, x, z) { if (!g.alive) return; if (g.state !== 'alert') { g.state = 'alert'; g.cd = Math.max(g.cd, 20); } g.lx = x; g.lz = z; }
+function msNoise(radius) { for (const g of MS.guards) if (g.alive && Math.hypot(g.x - P.x, g.z - P.z) < radius) msAlert(g, P.x, P.z); }
+function msSwitch(w) {
+  if (!MS || !MS.have[w] || MS.weapon === w) return;
+  MS.ammo[MS.weapon] = P.ammo; MS.weapon = w; P.ammo = MS.ammo[w]; P.rl = 0; P.dcd = 12;
+  P.stats = { mag: MS_WEAPONS[w].mag, reload: MS_WEAPONS[w].reload }; tone(500, 0.05, 'square', 0.04); msHud(true);
+}
+function msReload() {
+  const W = MS_WEAPONS[MS.weapon];
+  if (P.rl > 0 || P.ammo >= W.mag || MS.reserve[MS.weapon] <= 0) return;
+  P.rl = W.reload; noise(0.05, 0.12, 3000, 'highpass');
+}
+function msShoot() {
+  const W = MS_WEAPONS[MS.weapon];
+  P.dcd = W.delay; P.ammo--; kick = 1; flashT = 3; W.sound(); MS.shots++;
+  muzzleLight.position.copy(camera.position); muzzleLight.intensity = MS.weapon === 'pistol' ? 0.8 : 3;
+  msNoise(W.loud);
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const sp = W.spread * (Math.hypot(P.vx, P.vz) > 0.03 ? 2 : 1) * (P.crouch > 0.5 ? 0.6 : 1);
+  dir.x += (Math.random() - 0.5) * sp; dir.y += (Math.random() - 0.5) * sp; dir.z += (Math.random() - 0.5) * sp; dir.normalize();
+  const objs = MS.ray.slice(); for (const g of MS.guards) if (g.alive) objs.push(...g.parts);
+  ray.set(camera.position, dir); ray.far = 80;
+  const h = ray.intersectObjects(objs, false)[0];
+  const mz = new THREE.Vector3(0.2, -0.13, -0.75).applyQuaternion(camera.quaternion).add(camera.position);
+  if (MS.weapon === 'rifle') tracer(mz, h ? h.point : camera.position.clone().addScaledVector(dir, 60));
+  if (!h) return;
+  const g = h.object.userData.guard, c = h.object.userData.console;
+  if (g) {
+    const zone = h.object.userData.zone, head = zone === 'head';
+    const dmg = head ? 999 : W.dmg * (zone === 'limb' ? 0.6 : 1);
+    g.hp -= dmg; g.flash = 5; g.stun = Math.max(g.stun, head ? 0 : 14); MS.hits++;
+    puff(h.point, head ? 8 : 4, head ? 0xffb547 : 0xb3132b);
+    msAlert(g, P.x, P.z);
+    const kill = g.hp <= 0;
+    head ? SFX.headshot() : SFX.hit(); hitMarker(kill, head);
+    if (kill) msKill(g, head);
+    return;
+  }
+  if (c && c.alive) {
+    c.hp -= W.dmg; puff(h.point, 5, 0x9fe8ff); SFX.wall();
+    if (c.hp <= 0) {
+      c.alive = false; c.scr.material = new THREE.MeshBasicMaterial({ color: 0x050505 });
+      const p = new THREE.Vector3(c.x, 1.2, c.z); puff(p, 16, 0xffb547); killBurst(p, '#ff9a3d', true); noise(0.6, 0.25, 600); tone(70, 0.6, 'sawtooth', 0.12, 30);
+      msNoise(14);
+      const n = MS.consoles.filter(k => !k.alive).length; msToast(n >= 2 ? 'OBJECTIVE COMPLETE · SERVERS DESTROYED' : 'SERVER CONSOLE DESTROYED · ' + n + '/2', 'ok'); msHud(true);
+    }
+    return;
+  }
+  puff(h.point, 3, 0x6b7480); SFX.wall();
+}
+function msKill(g, head) {
+  g.alive = false; g.deadT = MS.t; g.aimT = 0; MS.kills++; if (head) MS.heads++;
+  // dead guards drop their rifle (or rifle ammo once you have one)
+  setTimeout(() => { if (MS && MS.guards.includes(g)) msPickup(MS.have.rifle ? 'ammo' : 'rifle', g.x, g.z, MS.have.rifle ? 15 : 30); }, 400);
+  for (const o of MS.guards) if (o.alive && Math.hypot(o.x - g.x, o.z - g.z) < 9 && losClear(o.x, o.z, g.x, g.z)) msAlert(o, P.x, P.z);
+}
+function msGuardThink(g) {
+  if (!g.alive) return;
+  if (g.flash > 0) g.flash--;
+  if (g.fireT > 0) g.fireT--;
+  if (g.stun > 0) { g.stun--; return; }
+  const dx = P.x - g.x, dz = P.z - g.z, d = Math.hypot(dx, dz);
+  const see = P.alive && d < 24 && losClear(g.x, g.z, P.x, P.z);
+  if (g.state !== 'alert') {
+    if (see) {
+      const face = Math.atan2(dz, dx), diff = Math.abs(Math.atan2(Math.sin(face - g.a), Math.cos(face - g.a)));
+      if (diff < 1.0 || d < 3) { g.spot += d < 8 ? 3 : 1; if (g.spot > 40) { msAlert(g, P.x, P.z); SFX.warn(); for (const o of MS.guards) if (o !== g && Math.hypot(o.x - g.x, o.z - g.z) < 10) msAlert(o, P.x, P.z); } }
+    } else g.spot = Math.max(0, g.spot - 1);
+    if (g.way) {
+      const [wx, wz] = g.way[g.wi]; const ex = wx - g.x, ez = wz - g.z, ed = Math.hypot(ex, ez);
+      if (ed < 0.4) g.wi = (g.wi + 1) % g.way.length; else { seek(g, wx, wz, 0.032); g.a = Math.atan2(ez, ex); }
+    }
+    return;
+  }
+  if (see) { g.lx = P.x; g.lz = P.z; }
+  if (see && d < 22) {
+    g.a = Math.atan2(dz, dx);
+    if (g.cd > 0) { g.cd--; if (d > 9 && g.cd > 20 && MS.t % 40 < 20) seek(g, P.x, P.z, 0.045); return; }
+    if (g.aimT === 0) { g.aimT = 16; return; }
+    if (--g.aimT > 0) return;
+    // fire
+    g.fireT = 6; SFX.gruntShot();
+    const moving = Math.hypot(P.vx, P.vz) > 0.03, cr = P.crouch > 0.5;
+    let chance = 0.62 - d * 0.02 - (moving ? 0.15 : 0) - (cr ? 0.12 : 0); chance = Math.max(0.12, Math.min(0.75, chance));
+    const [mx, mz] = muzzleOf(g.x, g.z, g.a, 0.7, 0.22);
+    const hit = Math.random() < chance;
+    tracer(new THREE.Vector3(mx, 1.35, mz), new THREE.Vector3(P.x + (hit ? 0 : (Math.random() - 0.5) * 1.6), 1.2 + (hit ? 0 : Math.random() * 0.8), P.z + (hit ? 0 : (Math.random() - 0.5) * 1.6)), 0xffd27a);
+    if (hit) msHurt((4 + Math.random() * 4) * (d < 5 ? 1.5 : 1), g.x, g.z);
+    if (++g.burst < 3) { g.aimT = 6; } else { g.burst = 0; g.cd = 45 + Math.random() * 50; }
+  } else {
+    g.aimT = 0;
+    if (g.lx != null) { seek(g, g.lx, g.lz, 0.058); if (Math.hypot(g.lx - g.x, g.lz - g.z) < 0.6) { g.lx = P.x; g.lz = P.z; } }
+    if (g.lastMove === tick) g.a = Math.atan2((g.path && g.path[0] ? g.path[0][1] : g.lz) - g.z, (g.path && g.path[0] ? g.path[0][0] : g.lx) - g.x);
+  }
+}
+function misTick() {
+  if (!MS || !MS.guards) return;
+  if (state !== 'dplay') return;
+  MS.t++; tick = MS.t; dtick = MS.t;
+  // movement
+  const fwd = (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0);
+  const str = (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0);
+  const fx = -Math.sin(P.yaw), fz = -Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
+  let wx = fx * fwd + rx * str, wz = fz * fwd + rz * str; const wl = Math.hypot(wx, wz) || 1; wx /= wl; wz /= wl;
+  const SPEED = 4.3 / 60 * (1 - 0.45 * (P.crouch || 0)), moving = fwd || str;
+  P.vx += ((moving ? wx * SPEED : 0) - P.vx) * 0.25; P.vz += ((moving ? wz * SPEED : 0) - P.vz) * 0.25;
+  const blocked = (x, z) => solids.some(s => hitsRect(x, z, P.r, s)) || MS.guards.some(g => g.alive && Math.hypot(g.x - x, g.z - z) < 0.7 && Math.hypot(g.x - x, g.z - z) < Math.hypot(g.x - P.x, g.z - P.z));
+  if (!blocked(P.x + P.vx, P.z)) P.x += P.vx; else P.vx = 0;
+  if (!blocked(P.x, P.z + P.vz)) P.z += P.vz; else P.vz = 0;
+  const sp = Math.hypot(P.vx, P.vz) / (4.3 / 60); P.bob += sp * 0.16;
+  if (sp > 0.5 && MS.t >= (P.stepAt || 0)) { SFX.step(); P.stepAt = MS.t + 22; }
+  // weapon
+  const W = MS_WEAPONS[MS.weapon];
+  if (reloadQueued) msReload(); reloadQueued = false;
+  if (P.rl > 0 && --P.rl === 0) { const need = W.mag - P.ammo, take = Math.min(need, MS.reserve[MS.weapon]); P.ammo += take; MS.reserve[MS.weapon] -= take; tone(1100, 0.03, 'square', 0.05); }
+  if (P.dcd > 0) P.dcd--;
+  if (firing && P.dcd <= 0 && P.rl <= 0) { if (P.ammo > 0) msShoot(); else { msReload(); if (P.rl <= 0) { P.dcd = 20; tone(900, 0.03, 'square', 0.03); } } }
+  // doors: open for anyone close; the vault needs the keycard
+  for (const d of MS.doors) {
+    const near = (x, z, r) => Math.hypot(x - d.cx, z - d.cz) < r;
+    const pNear = near(P.x, P.z, 2.8), want = (pNear && (!d.locked || MS.keycard)) || (!d.locked && MS.guards.some(g => g.alive && near(g.x, g.z, 2.4)));
+    if (d.locked && pNear && !MS.keycard && MS.t % 90 === 0) msToast('VAULT DOOR LOCKED · FIND THE KEYCARD', 'bad');
+    const was = d.k; d.k = Math.max(0, Math.min(1, d.k + (want ? 1 : -1) / 18));
+    if (was === 0 && d.k > 0) tone(160, 0.25, 'sawtooth', 0.03, 90);
+    const shouldBlock = d.k < 0.7;
+    if (shouldBlock !== d.closed) { d.closed = shouldBlock; if (shouldBlock) { if (!solids.includes(d.solid) && !hitsRect(P.x, P.z, P.r, d.solid)) solids.push(d.solid); else if (hitsRect(P.x, P.z, P.r, d.solid)) d.closed = false; } else solids = solids.filter(s => s !== d.solid); }
+    msPlaceDoor(d);
+    if (d.lamp) d.lamp.material.color.setHex(MS.keycard ? 0x3cff7a : 0xff3b2e);
+  }
+  // pickups
+  for (const pk of [...MS.pickups]) {
+    pk.g.rotation.y += 0.05;
+    if (Math.hypot(pk.x - P.x, pk.z - P.z) > 0.9) continue;
+    if (pk.kind === 'armor') { if (MS.armor >= 100) continue; MS.armor = Math.min(100, MS.armor + pk.amt); MS.hudT = 150; msToast('BODY ARMOR', 'ok'); }
+    else if (pk.kind === 'key') { MS.keycard = true; msToast('OBJECTIVE COMPLETE · KEYCARD FOUND', 'ok'); }
+    else if (pk.kind === 'rifle') { MS.have.rifle = true; MS.reserve.rifle += pk.amt; if (MS.weapon !== 'rifle') { MS.ammo.rifle = Math.min(MS_WEAPONS.rifle.mag, MS.reserve.rifle); MS.reserve.rifle -= MS.ammo.rifle; msSwitch('rifle'); } msToast('AUTO RIFLE · PRESS 1 / 2 TO SWITCH', 'ok'); }
+    else if (pk.kind === 'ammo') { MS.reserve.rifle += pk.amt; MS.reserve.pistol += 7; msToast('AMMO', ''); }
+    tone(880, 0.06, 'triangle', 0.06); tone(1320, 0.08, 'triangle', 0.05, null, 0.06);
+    roomGroup.remove(pk.g); MS.pickups.splice(MS.pickups.indexOf(pk), 1); msHud(true);
+  }
+  for (const g of MS.guards) msGuardThink(g);
+  // extraction
+  const o = msObjectives();
+  const inLift = P.x > MS.lift.x0 && P.x < MS.lift.x1 && P.z > MS.lift.z0 && P.z < MS.lift.z1;
+  if (inLift && !MS.won) {
+    if (o[0].done && o[1].done) { MS.won = true; state = 'gover'; firing = false; SFX.win(); setTimeout(() => { if (mode === 'mission') { if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); } showOverlay('misWin'); } }, 700); }
+    else if (MS.t % 90 === 0) msToast('DESTROY BOTH SERVERS FIRST', 'bad');
+  }
+  if (MS.hudT > 0) MS.hudT--;
+}
+let msHudKey = '';
+function msHud(force) {
+  if (!MS || !MS.ammo) return;
+  const W = MS_WEAPONS[MS.weapon], key = MS.weapon + P.ammo + '|' + MS.reserve[MS.weapon] + '|' + (P.rl > 0);
+  if (force || key !== msHudKey) { msHudKey = key; $('msWeapon').textContent = W.name.toUpperCase(); $('msAmmo').textContent = P.rl > 0 ? 'RELOADING' : P.ammo + ' | ' + MS.reserve[MS.weapon]; }
+  const show = MS.hudT > 0 || state === 'pause';
+  const arcs = $('msArcs'); arcs.style.opacity = show ? '1' : '0';
+  $('msHp').style.strokeDashoffset = String(100 - Math.max(0, MS.hp)); $('msAr').style.strokeDashoffset = String(100 - MS.armor);
+}
+function misRender() {
+  if (!MS || !MS.guards) return;
+  for (const g of MS.guards) {
+    g.root.position.set(g.x, 0, g.z); g.root.rotation.y = yawFromAng(g.a);
+    animateSoldier(g, animDt);
+    for (const m of g.mats) { m.emissive.setHex(g.flash > 0 ? 0xffffff : 0x000000); m.emissiveIntensity = g.flash > 0 ? 0.6 : 0; }
+  }
+  if (MS.liftRing) MS.liftRing.material.color.setHex(msObjectives()[0].done && MS.keycard ? 0x3cff7a : 0x2a5a3a);
+  msHud(false);
+}
+window.addEventListener('keydown', e => {
+  if (mode !== 'mission' || !MS || state !== 'dplay') return;
+  const k = e.key.toLowerCase();
+  if (k === '1') msSwitch('pistol'); else if (k === '2') msSwitch('rifle'); else if (k === 'q') msSwitch(MS.weapon === 'pistol' ? 'rifle' : 'pistol');
+});
+window.addEventListener('wheel', e => { if (mode === 'mission' && MS && state === 'dplay') msSwitch(MS.weapon === 'pistol' ? 'rifle' : 'pistol'); }, { passive: true });
+// ===== end Paradox Loop missions =====
+
 
 const colorsEl = $('colors');
 for (const [nm, hex] of PCOLORS) {
@@ -2722,6 +3130,7 @@ function myName() { const v = ($('lName').value || '').trim().slice(0, 16); retu
 function lobbyStatus(t) { $('lStatus').textContent = t; }
 
 async function openOnline() {
+  if (mode === 'mission') leaveMission();
   if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); }
   mode = 'duel'; state = 'title'; screenEl.classList.add('duel'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; ov.hidden = true;
   for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeCoop', 'modeOnline']) if ($(id)) $(id).setAttribute('aria-pressed', id === 'modeOnline' ? 'true' : 'false');
@@ -3061,7 +3470,7 @@ await loadSoldier();
 buildRoom(0);
 newRoom();
 showOverlay('intro');
-setInterval(() => { const camp = mode === 'campaign'; $('legend').hidden = !camp; $('keysPL').hidden = !camp; $('keysLL').hidden = mode !== 'gallery'; $('gHud').hidden = !G; }, 250);
+setInterval(() => { const camp = mode === 'campaign'; $('legend').hidden = !camp; $('keysPL').hidden = !camp; $('keysLL').hidden = mode !== 'gallery'; $('keysMS').hidden = mode !== 'mission'; $('keysPL').hidden = true; $('gHud').hidden = !G; }, 250);
 enterGallery(true);
 resize();
 
@@ -3074,6 +3483,7 @@ function frame(now) {
     else if (state === 'rewind') { if (!keys.has('tab') && --rewindT <= 0) { $('rewind').hidden = true; state = 'play'; } }
     else if (mode === 'duel') duelTick();
     else if (mode === 'gallery') galTick();
+    else if (mode === 'mission') misTick();
   }
   render();
   requestAnimationFrame(frame);
