@@ -254,13 +254,26 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 .msammo b { font-family: var(--display); font-size: 30px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
 .mstoast { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); background: rgba(13,15,18,0.8); color: #fff; font-family: var(--display); font-weight: 700; letter-spacing: 0.1em; font-size: 15px; padding: 7px 14px; border-radius: 5px; white-space: nowrap; }
 .mstoast.ok { color: #7ef0a8; } .mstoast.bad { color: #ff8a7f; }
-.card.watch { width: min(440px, 78vmin); aspect-ratio: 1; border-radius: 50%; padding: 54px 46px; align-content: center; background: radial-gradient(circle at 50% 40%, #1e2428, #0c0f11 70%); border: 12px solid #8d9396; box-shadow: 0 0 0 4px #3a4045, inset 0 0 30px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.6); }
+.card.watch { width: min(540px, 88vmin); aspect-ratio: 1; border-radius: 50%; padding: 54px 46px; align-content: center; background: radial-gradient(circle at 50% 40%, #1e2428, #0c0f11 70%); border: 12px solid #8d9396; box-shadow: 0 0 0 4px #3a4045, inset 0 0 30px rgba(0,0,0,0.8), 0 20px 50px rgba(0,0,0,0.6); }
 .card.watch h2 { font-size: 22px; letter-spacing: 0.18em; color: #7ef0a8; }
 .objs { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; text-align: left; font-size: 13px; }
 .objs li { color: #d6dde3; } .objs li.done { color: #7ef0a8; text-decoration: line-through; }
 .mspick { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
 .mspick button { flex: 1 1 120px; font: inherit; font-size: 13px; font-weight: 700; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #d6dde3; cursor: pointer; }
 .mspick button[aria-pressed="true"] { background: #c9a227; border-color: #c9a227; color: #14110a; }
+.msinfo { position: absolute; left: 14px; top: 12px; display: grid; gap: 3px; font-size: 12px; color: #e8e2d0; text-shadow: 0 1px 0 rgba(0,0,0,0.8); max-width: min(360px, 45%); pointer-events: none; }
+.msinfo b { font-family: var(--display); font-size: 12px; letter-spacing: 0.12em; color: #ffd23c; margin-bottom: 2px; }
+.msinfo span::before { content: '\25B8  '; color: #c9a227; }
+.msinfo span.done { color: #7ef0a8; text-decoration: line-through; opacity: 0.75; }
+.msinfo em { font-style: normal; color: #b88cff; font-size: 11px; }
+.msscope { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 0 34vmin, #000 34.4vmin); }
+.msscope::before, .msscope::after { content: ''; position: absolute; left: 50%; top: 50%; background: rgba(0,0,0,0.85); }
+.msscope::before { width: 68vmin; height: 1px; transform: translate(-50%, -50%); }
+.msscope::after { width: 1px; height: 68vmin; transform: translate(-50%, -50%); }
+.msfade { position: absolute; inset: 0; background: #000; opacity: 0; transition: opacity 0.22s; pointer-events: none; }
+.objs.msbrief { max-height: min(24vh, 190px); overflow-y: auto; padding-right: 6px; margin-top: 8px; }
+.objs .msfl { color: #b88cff; font-size: 12px; }
+.objs li { line-height: 1.45; }
 .objs li::before { content: '\25B8  '; color: #c9a227; }
 /* ---- Last Laugh menu ---- */
 .overlay { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; align-items: center; gap: 12px; }
@@ -317,7 +330,7 @@ body { padding: 8px 10px !important; }
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v50</small>
+    <small class="hver">v51</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -375,6 +388,9 @@ body { padding: 8px 10px !important; }
           </svg>
           <div class="msammo"><span id="msWeapon">SILENCED PISTOL</span><b id="msAmmo">7 | 28</b></div>
           <div class="mstoast" id="msToast" hidden></div>
+          <div class="msinfo" id="msInfo"></div>
+          <div class="msscope" id="msScope" hidden></div>
+          <div class="msfade" id="msFade"></div>
         </div>
         <div class="tc" id="touchCtl"><div class="lookpad" id="lookPad"></div><div class="lookhint" id="lookHint">SWIPE TO AIM</div><button type="button" class="firebtn" id="fireBtn" aria-label="Fire">FIRE</button><button type="button" class="duckbtn" id="duckBtn" aria-label="Duck">DUCK</button></div>
         <div class="ammo" id="dAmmo"></div>
@@ -432,7 +448,9 @@ body { padding: 8px 10px !important; }
     <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
     <span>Mouse aim, click shoot</span>
     <span><kbd>R</kbd> reload</span>
-    <span><kbd>1</kbd><kbd>2</kbd> / <kbd>Q</kbd> / wheel switch weapon</span>
+    <span><kbd>1</kbd>–<kbd>6</kbd> / <kbd>Q</kbd> / wheel switch gun</span>
+    <span><kbd>G</kbd> grenade</span>
+    <span>right-click / <kbd>Z</kbd> sniper zoom</span>
     <span><kbd>C</kbd> crouch</span>
     <span><kbd>Esc</kbd> mission status</span>
   </div>
@@ -458,7 +476,7 @@ body { padding: 8px 10px !important; }
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v50</span>
+    <span class="ver">v51</span>
   </div>
 </div>
 
@@ -663,7 +681,7 @@ function gridClear(grid, x0, z0, x1, z1) {
 }
 function losClear(x0, z0, x1, z1) {
   const d = Math.hypot(x1 - x0, z1 - z0), n = Math.ceil(d / 0.2);
-  for (let i = 1; i < n; i++) { const t = i / n, x = x0 + (x1 - x0) * t, z = z0 + (z1 - z0) * t; if (solids.some(s => x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1)) return false; }
+  for (let i = 1; i < n; i++) { const t = i / n, x = x0 + (x1 - x0) * t, z = z0 + (z1 - z0) * t; if (solids.some(s => !s.see && x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1)) return false; }
   return true;
 }
 
@@ -1258,9 +1276,9 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
-  if (kind === 'misIntro') { const m = MISSIONS[misPick]; $('ovEyebrow').textContent = m.tag; $('ovTitle').textContent = m.name; ovBody.innerHTML = '<div class="mspick">' + MISSIONS.map((x, i) => '<button type="button" data-mi="' + i + '" aria-pressed="' + (i === misPick) + '">' + (i + 1) + ' · ' + x.name + '</button>').join('') + '</div>' + m.blurb + ' Armed clowns <b>patrol and notice you</b> if you walk into view, and <b>gunshots bring them running</b>. Your silenced pistol stays quiet; rifles you take off them do not. Headshots drop anyone, but their hats soak up shots.<ul class="objs">' + msStageList(m) + '</ul>'; ovBody.querySelectorAll('.mspick button').forEach(b => b.addEventListener('click', () => { misPick = +b.dataset.mi; enterMission(); })); ovBtn.textContent = 'Start mission'; ovAction = 'misStart'; }
+  if (kind === 'misIntro') { const m = MISSIONS[misPick]; $('ovEyebrow').textContent = m.tag; $('ovTitle').textContent = m.name; ovBody.innerHTML = '<div class="mspick">' + MISSIONS.map((x, i) => '<button type="button" data-mi="' + i + '" aria-pressed="' + (i === misPick) + '">' + (i + 1) + ' · ' + x.name + '</button>').join('') + '</div>' + m.blurb + ' Armed clowns <b>patrol and notice you</b> if you walk into view, and <b>gunshots bring them running</b>. Your silenced pistol stays quiet; the guns you take off them do not. Headshots drop anyone, but their hats soak up shots. Take the <b>stairs</b> to reach other floors.<ul class="objs msbrief">' + msStageList(m) + '</ul>'; ovBody.querySelectorAll('.mspick button').forEach(b => b.addEventListener('click', () => { misPick = +b.dataset.mi; enterMission(); })); ovBtn.textContent = 'Start mission'; ovAction = 'misStart'; }
   if (kind === 'misWin' || kind === 'misFail') { const won = kind === 'misWin', m = MISSIONS[misPick], secsT = (MS.t / 60).toFixed(1); $('ovEyebrow').textContent = m.tag + (m.stages.length > 1 ? ' · stage ' + (MS.stage + 1) + ' of ' + m.stages.length : ''); $('ovTitle').textContent = won ? 'Mission complete' : 'Mission failed'; ovBody.innerHTML = (won ? 'You made it out in <b>' + secsT + 's</b>.' : 'You went down in <b>' + MS.st.name + '</b> after <b>' + secsT + 's</b>.') + ' Kills <b>' + MS.kills + '</b> · headshots <b>' + MS.heads + '</b> · accuracy <b>' + (MS.shots ? Math.round(100 * MS.hits / MS.shots) : 0) + '%</b>.'; if (won && misPick < MISSIONS.length - 1) { ovBtn.textContent = 'Next mission'; ovAction = 'misNext'; ovAlt.hidden = false; ovAlt.textContent = 'Replay mission'; } else { ovBtn.textContent = won ? 'Play again' : 'Try again'; ovAction = 'misRestart'; } }
-  if (kind === 'pause' && mode === 'mission' && MS) { const m = MISSIONS[misPick]; $('ovEyebrow').textContent = m.tag + ' · ' + MS.st.name; $('ovTitle').textContent = 'MISSION STATUS'; ovBody.innerHTML = '<ul class="objs">' + msObjectives().map(o => '<li class="' + (o.done ? 'done' : '') + '">' + o.text + '</li>').join('') + '</ul><p style="margin-top:10px">Health <b>' + Math.ceil(MS.hp) + '</b> · Armor <b>' + Math.ceil(MS.armor) + '</b></p><label class="psens"><span>Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>'; syncSens(); ovBtn.textContent = 'Resume'; ovAction = 'resume'; ovAlt.hidden = false; ovAlt.textContent = 'Abort mission'; return; }
+  if (kind === 'pause' && mode === 'mission' && MS) { const m = MISSIONS[misPick]; $('ovEyebrow').textContent = m.tag + ' · ' + MS.st.name; $('ovTitle').textContent = 'MISSION STATUS'; const fl = MS.floors[MS.fi], left = MS.guards.filter(g => g.alive).length; ovBody.innerHTML = '<p style="margin-bottom:8px">Stage ' + (MS.stage + 1) + ' of ' + m.stages.length + ' · <b>' + fl.def.name + '</b>' + (MS.floors.length > 1 ? ' (' + MS.floors.map(F => F.def.name).join(' · ') + ')' : '') + '</p><ul class="objs">' + msObjectives().map(o => '<li class="' + (o.done ? 'done' : '') + '">' + o.text + (o.where && !o.done && MS.floors.length > 1 ? ' <span class="msfl">' + o.where + '</span>' : '') + '</li>').join('') + '</ul><p style="margin-top:10px">Health <b>' + Math.ceil(MS.hp) + '</b> · Armor <b>' + Math.ceil(MS.armor) + '</b> · Grenades <b>' + MS.nades + '</b><br>Clowns left on this floor <b>' + left + '</b> · Kills <b>' + MS.kills + '</b> · Time <b>' + Math.floor(MS.t / 3600) + ':' + String(Math.floor(MS.t / 60) % 60).padStart(2, '0') + '</b></p><label class="psens"><span>Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>'; syncSens(); ovBtn.textContent = 'Resume'; ovAction = 'resume'; ovAlt.hidden = false; ovAlt.textContent = 'Abort mission'; return; }
   if (kind === 'coopIntro') { $('ovEyebrow').textContent = 'Solo or online with a friend'; $('ovTitle').textContent = 'Co-op'; ovBody.innerHTML = 'Fight through the midway together. Clowns step out and <b>glow red when they wind up a throw</b>: drop them first, or shoot the <b>pie out of the air</b>. Every pie that lands costs the team a life, and you share <b>5</b>. At wave stops, hold <b>C</b> (or Ctrl) to <b>duck behind cover</b>: pies miss you and you reload, but you can\u2019t shoot. The walk <b>stops for waves</b> and moves on once the wave is cleared. Quick kills chain into a <b>combo</b> worth up to 4x points. Play solo here, or with a friend from <b>Online</b>.'; ovBtn.textContent = 'Start'; ovAction = 'coopStart'; ovAlt.hidden = true; }
   if (kind === 'coopOver') { const ok = G.lives > 0; $('ovEyebrow').textContent = 'Last Laugh · co-op · ' + (D.online ? 'online' : 'solo'); $('ovTitle').textContent = ok ? 'You made it out' : 'The clowns had the last laugh'; ovBody.innerHTML = (ok ? 'Out alive with <b>' + G.lives + '</b> of 5 lives.' : 'Out of lives ' + Math.round(100 * (GZ0 - G.wz) / (GZ0 - GZEND)) + '% of the way down the midway.') + ' Your score <b>' + G.score + '</b>' + (D.online ? ' · partner <b>' + G.foeScore + '</b> · team <b>' + (G.score + G.foeScore) + '</b>' : '') + '. Kills <b>' + G.me + '</b>, headshot kills <b>' + G.heads + '</b>, accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'coopStart'; ovAlt.hidden = true; }
   if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Race the AI rival for kills'; $('ovTitle').textContent = '1v1 vs AI'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns step out of the <b>booth doorways</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = true; }
@@ -1344,7 +1362,7 @@ addEventListener('mousemove', e => {
   const mx = e.movementX || 0, my = e.movementY || 0;
   if (Math.abs(mx) > 300 || Math.abs(my) > 300) return;
   const SENS = SENS_BASE * sensMul;
-  P.yaw -= mx * SENS; P.pitch = Math.max(-1.45, Math.min(1.45, P.pitch - my * SENS));
+  const zs = mode === 'mission' && MS && MS.zoom ? 0.3 : 1; P.yaw -= mx * SENS * zs; P.pitch = Math.max(-1.45, Math.min(1.45, P.pitch - my * SENS * zs));
   swayX = Math.max(-1, Math.min(1, swayX + mx * 0.004)); swayY = Math.max(-1, Math.min(1, swayY + my * 0.004));
 });
 cv.addEventListener('mousedown', e => {
@@ -2649,12 +2667,40 @@ let galCoopPick = false;
 $('modeGallery').addEventListener('click', e => { if (mode !== 'gallery' || G || galCoopPick) enterGallery(false); e.currentTarget.blur(); });
 $('modeCoop').addEventListener('click', e => { if (mode !== 'gallery' || G || !galCoopPick) enterGallery(true); e.currentTarget.blur(); });
 // ===== end Hallway mode =====
-// ===== Paradox Loop missions: GoldenEye-style facility (no loops) =====
+// ===== Paradox Loop missions: GoldenEye-style missions in the carnival =====
 let MS = null;
 const MS_WEAPONS = {
-  pistol: { name: 'Silenced pistol', mag: 7, delay: 13, dmg: 34, spread: 0.006, loud: 4, reload: 55, sound: () => { noise(0.08, 0.06, 1800); tone(220, 0.05, 'square', 0.03, 120); } },
-  rifle: { name: 'Auto rifle', mag: 30, delay: 5, dmg: 22, spread: 0.018, loud: 16, reload: 75, sound: () => { SFX.shoot(); } }
+  pistol: { name: 'Silenced pistol', mag: 7, delay: 13, dmg: 34, spread: 0.006, loud: 4, reload: 55, vm: 'revolver', give: 7, sound: () => { noise(0.08, 0.06, 1800); tone(220, 0.05, 'square', 0.03, 120); } },
+  magnum: { name: 'Magnum', mag: 6, delay: 30, dmg: 95, spread: 0.004, loud: 14, reload: 80, vm: 'magnum', give: 6, kick: 2.2, sound: () => { noise(0.18, 0.32, 900); tone(90, 0.18, 'square', 0.1, 40); } },
+  smg: { name: 'SMG', mag: 32, delay: 4, dmg: 15, spread: 0.03, loud: 12, reload: 65, vm: 'smg', give: 32, sound: () => { noise(0.06, 0.16, 2400); tone(260, 0.04, 'square', 0.04, 140); } },
+  rifle: { name: 'Auto rifle', mag: 30, delay: 5, dmg: 22, spread: 0.018, loud: 16, reload: 75, vm: 'rifle', give: 15, sound: () => { SFX.shoot(); } },
+  shotgun: { name: 'Shotgun', mag: 6, delay: 42, dmg: 16, pellets: 8, spread: 0.075, loud: 18, reload: 90, vm: 'shotgun', give: 6, kick: 2.6, sound: () => { noise(0.25, 0.36, 700); tone(70, 0.22, 'sawtooth', 0.09, 35); } },
+  sniper: { name: 'Sniper rifle', mag: 5, delay: 50, dmg: 220, spread: 0.035, zoomSpread: 0, loud: 9, reload: 95, vm: 'sniper', give: 5, kick: 2, sound: () => { noise(0.12, 0.2, 1400); tone(140, 0.12, 'square', 0.06, 60); } }
 };
+const MS_ORDER = ['pistol', 'magnum', 'smg', 'rifle', 'shotgun', 'sniper'];
+// guard weapons: how clowns fire each gun
+const MS_GW = {
+  rifle: { burst: 3, gap: 6, dmg: [4, 8], base: 0.62, fall: 0.02, range: 22, cd: [45, 50] },
+  smg: { burst: 5, gap: 4, dmg: [3, 5], base: 0.55, fall: 0.025, range: 18, cd: [50, 50] },
+  shotgun: { burst: 1, gap: 0, dmg: [6, 9], close: 3, base: 0.78, fall: 0.05, range: 12, cd: [70, 40] },
+  magnum: { burst: 1, gap: 0, dmg: [13, 18], base: 0.6, fall: 0.02, range: 22, cd: [60, 40] }
+};
+// extra first-person guns for the missions (the pistol and rifle reuse the duel revolver and the rifle)
+const msVM = {};
+(() => {
+  const dark = mat(0x4a5058, { roughness: 0.45 }), steel = mat(0xb8c0cc, { roughness: 0.3 }), wood = mat(0x6b4a2e, { roughness: 0.7 }), brass = mat(0xc9a227, { roughness: 0.4 });
+  const mk = (name, parts, flashZ, scale) => {
+    const g = new THREE.Group(); g.visible = false; vmScene.add(g);
+    for (const [geo, m, x, y, z, rx] of parts) { const p = new THREE.Mesh(geo, m); p.position.set(x, y, z); if (rx) p.rotation.x = rx; g.add(p); }
+    const f = flash.clone(); f.position.set(0, 0.02, flashZ); g.add(f); const f2 = flash.clone(); f2.rotation.y = Math.PI / 2; f2.position.copy(f.position); g.add(f2);
+    g.userData.fl = [f, f2]; g.scale.setScalar(scale); msVM[name] = g;
+  };
+  const cyl = (r, l) => new THREE.CylinderGeometry(r, r, l, 12).rotateX(Math.PI / 2), box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+  mk('magnum', [[cyl(0.022, 0.36), steel, 0, 0.035, -0.3], [box(0.03, 0.03, 0.36), dark, 0, 0.062, -0.3], [box(0.055, 0.08, 0.2), dark, 0, 0.015, -0.02], [cyl(0.055, 0.1), steel, 0, 0.02, -0.06], [box(0.05, 0.15, 0.07), wood, 0, -0.085, 0.1, -0.3]], -0.5, 0.85);
+  mk('smg', [[box(0.07, 0.09, 0.32), dark, 0, 0, -0.08], [cyl(0.016, 0.16), steel, 0, 0.01, -0.32], [box(0.04, 0.2, 0.05), dark, 0, -0.14, -0.1, 0.1], [box(0.05, 0.12, 0.05), dark, 0, -0.09, 0.06, -0.3], [box(0.03, 0.03, 0.18), steel, 0, 0.055, -0.06], [box(0.07, 0.012, 0.14), brass, 0, 0.047, -0.12]], -0.42, 0.75);
+  mk('shotgun', [[cyl(0.02, 0.6), steel, 0, 0.03, -0.38], [cyl(0.018, 0.5), dark, 0, -0.01, -0.34], [box(0.08, 0.1, 0.24), dark, 0, 0.01, -0.02], [box(0.07, 0.07, 0.16), wood, 0, -0.015, -0.32], [box(0.06, 0.12, 0.26), wood, 0, -0.06, 0.2, -0.2]], -0.7, 0.62);
+  mk('sniper', [[cyl(0.014, 0.6), dark, 0, 0.02, -0.45], [box(0.07, 0.09, 0.4), wood, 0, -0.01, -0.06], [cyl(0.03, 0.26), dark, 0, 0.1, -0.1], [cyl(0.034, 0.02), steel, 0, 0.1, -0.24], [box(0.05, 0.14, 0.28), wood, 0, -0.06, 0.2, -0.15], [box(0.04, 0.1, 0.05), dark, 0, -0.08, 0.0, 0.3]], -0.78, 0.72);
+})();
 function msTex(kind) {
   const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
   if (kind === 'wall') {
@@ -2718,185 +2764,713 @@ function msPlaceDoor(d) {
   if (d.horiz) { d.a.position.set(d.cx - q - off, 1.3, d.cz); d.b.position.set(d.cx + q + off, 1.3, d.cz); }
   else { d.a.position.set(d.cx, 1.3, d.cz - q - off); d.b.position.set(d.cx, 1.3, d.cz + q + off); }
 }
-function msConsole(x, z, rot) {
+const MS_MAPS = {
+"m1_cellar": [
+"################################################",
+"#^^.....oo#rrrr.rrrr#.........#.......#.......o#",
+"#^^......o#.........#.===..ooo#r..r..r#..===...#",
+"#^^.......#..c...c..#.......oo#r..r..r#..===..G#",
+"#.........#.........#.....g...#r..r..r#........#",
+"#.........#..p......#.........#.......#.g......#",
+"#.........#.........#oo.......#...V...#........#",
+"#.c.......#..c...c..#oox...n..#r.....r#...cc...#",
+"#.cc...M..#.........#.........#r.....r#........#",
+"#.........#.........#.........#.......#........#",
+"####DD########DD########DD#######DD#######DD####",
+"#.....................o........................#",
+"#...p..........................p...............#",
+"#..........o.....................x.............#",
+"#######DD##############DD##############DD#######",
+"#...............#...............#..............#",
+"#.www.......www.#.rrr......rrr..#.oo.oo..oo.oo.#",
+"#.www.......www.#.rrr......rrr..#.oo.oo..oo.oo.#",
+"#...............#.rrr......rrr.M#..............#",
+"#.......g.......#...............#.x..........x.#",
+"#...............#.......p.......#.....g........#",
+"#.www.......www.#..c....c....c..#..............#",
+"#.www.......www.#...............#.oo.oo..oo.oo.#",
+"#...............#...............#..............#",
+"#.....s...s.....#.rrrrr...rrrrr.#..............#",
+"#...............#...............#...+......A...#",
+"#...G...........#...g.......5...#..............#",
+"#...............#...............#.oo..G...oo...#",
+"#......P........#..c.........c..#..............#",
+"################################################"
+],
+"m1_upstairs": [
+"################################################",
+"#.........#..........#vvv#..........#....=====.#",
+"#.==...==.#..rr..rr..#vvv#.===..===.#..........#",
+"#.........#..rr..rr..#vvv#..........#..G.......#",
+"#....g....#..........#...#...p......#..........#",
+"#.==...==.#..rr..rr..D...#..........#.ss...ss..#",
+"#.........#..rr..rr..D...#.===..===.#..........#",
+"#.........#.....p....#...D..........#....K.....#",
+"#V........#..rr..rr..#...D........oo#..........#",
+"#........c#..rr..rr.2#...#.........x#..g...c...#",
+"#.......cc#..........#...#......M...#.......cc.#",
+"#.........#..........#...#..........#..........#",
+"####DD################...################DD#####",
+"#......o.............................o.........#",
+"#..p.......................................p...#",
+"#..........x................................o..#",
+"#####DD###############...#####DD################",
+"#.........#..........#...#.....................#",
+"#.cc...cc.#.=====....#...#.....................#",
+"#.........#..........#.g.#..rrrr..rrrr..rrrr...#",
+"#.cc...cc.#......g...#...#...p.................#",
+"#.........#..........D...#.....................#",
+"#....p....#.=====....D...#..........G..........#",
+"#.........#..........#...#..rrrr..rrrr..rrrr...#",
+"#.cc......D..........#...#.................p...#",
+"#.........D...+......#...D.....................#",
+"#.cc...cc.#.oo....oo.#...D.....................#",
+"#....n....#..........#...#.x.......A.........x.#",
+"#.........#..........#n+.#.....................#",
+"################################################"
+],
+"m2_office": [
+"################################################",
+"################################################",
+"################################################",
+"################################################",
+"#######vv..........#..........#..........#######",
+"#######vv..........#.===..===.#..rrr..rrr#######",
+"#######vv...==.....#..........#..........#######",
+"#######.........g..#..........D......g...#######",
+"#######......==....#....G.....D..rrr..rrr#######",
+"#######............D..........#..........#######",
+"#######..o.........D...ss.....#..........#######",
+"#######oo..........#..........#.........6#######",
+"#######o.....M.....#.......o..#..........#######",
+"#######............#..........#..........#######",
+"############DD######..........#####DD###########",
+"#######............#..........#..........#######",
+"#######.===....===.#..p.......#..c...c...#######",
+"#######............#..........#..........#######",
+"#######....p.......#..........#....g.....#######",
+"#######.===....==..D.===..===.#..........#######",
+"#######............D..........D...===....#######",
+"#######.......x....#...P......D..........#######",
+"#######.c..........#..........#.......n..#######",
+"#######cc......V...#..........#..o....+..#######",
+"#######............#..........#..........#######",
+"#######............#..........#..........#######",
+"################################################",
+"################################################",
+"################################################",
+"################################################"
+],
+"m2_stands": [
+"################################################",
+"#^^^...........................................#",
+"#^^^............................o............3.#",
+"#...r....r....r....r....r....r.ox....ss.....r..#",
+"#..............................................#",
+"#...................n..............g...........#",
+"#.......p.................cc...................#",
+"#...r....r....r....r....r....r....r....r....r..#",
+"#..........................................+...#",
+"#.............####DD#####......................#",
+"#.............#.........#......................#",
+"#...r....r....#.==...==.#....r....r....rg...r..#",
+"#.............#.........#.....oo...............#",
+"#.............#...G.....D......................#",
+"#...g.........#.........D......................#",
+"#...r....r....#..T......#....r....r....r....r..#",
+"#.............#.c.....c.#...........p..........#",
+"#.............#cc.....cc#......................#",
+"#.............###########......................#",
+"#...r....r.....................................#",
+"#.....c.......................##################",
+"#.............................#................#",
+"#.................x...........#.ooo...ooo..x...#",
+"#...r....r....r....r....r.....D................#",
+"#.........p...................D....g.......5...#",
+"#.............................#................#",
+"#...................g.........#.ooo...ooo......#",
+"#.V.r....r....r....r....r.....#...........M....#",
+"#.............................#................#",
+"################################################"
+],
+"m2_catwalks": [
+"################################################",
+"#vv............................................#",
+"#vv.........ss..........p...............o......#",
+"#vv............................................#",
+"#.........____________....____________.........#",
+"#....n....____________....____________..T......#",
+"#.....g...____________....____________...G.....#",
+"#.........____________....____________.........#",
+"#.........____________....____________.........#",
+"#...__________________....__________________...#",
+"#...__________________....__________________...#",
+"#..._______________........g._______________...#",
+"#..._______________.c..B....._______________...#",
+"#..............................................#",
+"#.....p.................c......................#",
+"#..............................................#",
+"#..._______________.g......c._______________...#",
+"#..._______________....4....._______________...#",
+"#...__________________....__________________...#",
+"#...__________________....__________________...#",
+"#...__________________....__________________...#",
+"#.........____________....____________.........#",
+"#.........____________....____________.........#",
+"#.....g...____________....____________...g.....#",
+"#....A....____________....____________....M....#",
+"#.........____________....____________.........#",
+"#..............................................#",
+"#.......x.....................p.....ss.........#",
+"#..............................................#",
+"################################################"
+],
+"m2_train": [
+"################################################",
+"#.......................................#......#",
+"#.................M.......g........+....#..g...#",
+"#...cc..................................#......#",
+"#.........p...................g.........#......#",
+"#...................................x...#......#",
+"#.......................................#.ss...#",
+"#.....wwwww..wwwwww..wwwww..wwwwww..wwww#......#",
+"#.....wwwww..wwwwww..wwwww..wwwwww..wwww#......#",
+"#.....wwwww..wwwwww..wwwww..wwwwww..wwww#......#",
+"#.....wwwww..wwwwww..wwwww..wwwwww..wwww#...G..#",
+"#..........................ss...........#.oo...#",
+"#S.............x....g...................#......#",
+"#....................................g..L.EEEE.#",
+"#........ss.............................L.EEEE.#",
+"#.......................................#.EEEE.#",
+"#.............p...........V.......G.....#......#",
+"#.......................................#......#",
+"#.......................................#...g..#",
+"#.....wwwww..wwwwww..wwwww..wwwwww..wwww#......#",
+"#.....wwwww..wwwwww..wwwww..wwwwww..wwww#..x...#",
+"#.....wwwww..wwwwww..wwwww..wwwwww..wwww#......#",
+"#.3...wwwww..wwwwww..wwwww..wwwwww..wwww#......#",
+"#.......................................#......#",
+"#....................................o..#......#",
+"#.......g............................o..#...c..#",
+"#.....................p.......cc........#..cc..#",
+"#..n............K.......................#......#",
+"#.......................................#......#",
+"################################################"
+],
+"m3_tunnels": [
+"################################################",
+"################################################",
+"##^^^......####################..............###",
+"##^^^......####################.ooo.ooo.ooo..###",
+"##...........................................###",
+"##....o.............p...............g........###",
+"##.......M...................................###",
+"######...######################.ooo.ooo.ooo..###",
+"######...######################..............###",
+"######...######################...n..........###",
+"######................x....#########...#########",
+"######.........p...........#########...#########",
+"######.....................#########...#########",
+"######...#########.............#####...#########",
+"######...#########.===.....===.#####...#########",
+"######.g.#########.............#####...#########",
+"######...#########...G.........#####...#########",
+"######...#########.............#####.p.#########",
+"######...#########......l......#####...#########",
+"######...#########..c.......c..#####...#########",
+"######...#########.cc.......cc................##",
+"######.V.#########..............www.....www...##",
+"######...############...#######.www.....www...##",
+"##......................#######...............##",
+"##.o..........p.........#######.....g.....p...##",
+"##....................g.#######...............##",
+"##.......c....c.........#######..A...l.....o..##",
+"##..5..........+........#######.............ox##",
+"################################################",
+"################################################"
+],
+"m3_maze": [
+"################################################",
+"#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#",
+"#mSS...m..............m.....m..............mT.m#",
+"#mSS...m..............m.....m..............m..m#",
+"#mmmm..mmmmmmm..mmmm..mmmm..m..m..mmmmmmm..m..m#",
+"#m..mM.......m..m..m..m.....mg.m........m.....m#",
+"#m..m........m..m..m..m.....m..m........m.....m#",
+"#m..mmmmmmm..m..m..m..m..mmmm..mmmmmmm..mmmm..m#",
+"#m......g.m........m..............m...p.m.....m#",
+"#m........m........m..............m.....m.....m#",
+"#m..mmmmmmm..m..m..m..mmmmmmmmmmmmm..mmmm..mmmm#",
+"#m...........mp.m......T.m......n....m..m..m..m#",
+"#m...........m..m........m...........m..m..m..m#",
+"#mmmm..m..mmmm..mmmmmmm..m..mmmmmmmmmm..m..m..m#",
+"#m.....m.....m.....m...A.m..m........m...g.m..m#",
+"#m.....m.....m.....m.....m..m........m.....m..m#",
+"#m..m..mmmm..m..m..m..mmmm..m..m..mmmm..mmmm..m#",
+"#m..m5.m.....m..m..m.....mp.m......T....m.....m#",
+"#m..m..m.....m..m..m.....m..m...........m.....m#",
+"#m..m..m..mmmm..m..mmmm..m..mmmm..mmmmmmm..m..m#",
+"#m.....m..m.....m..mg....m.....m..m...G....m+.m#",
+"#m.....m..m.....m..m.....m.....m..m........m..m#",
+"#m..mmmm..mmmmmmm..m..m..mmmm..m..mmmmmmm..m..m#",
+"#m.........T.......m...........m............EEm#",
+"#m.................m...........m............EEm#",
+"#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#",
+"#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#",
+"#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#",
+"#mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm#",
+"################################################"
+],
+"m3_quarters": [
+"################################################",
+"#...............#...............#...........vvv#",
+"#.====...====...#.r.r.r...r.r.r.#..===......vvv#",
+"#...............#.r.r.r...r.r.r.#..===......vvv#",
+"#.....g.........#.......p.......#..............#",
+"#...............#.r.r.r...r.r.r.#....G.........#",
+"#.c..........ss.#.r.r.r...r.r.r.#..............#",
+"#cc.............#.........K.....#o.............#",
+"#...........V...#...............#ox.....M......#",
+"#######DD##############DD##############DD#######",
+"#..............................................#",
+"#...o..............................o...........#",
+"#.....p...............................p........#",
+"#..........s.s.s.s.........s.s.s.s.............#",
+"#..............................................#",
+"#...........................x..................#",
+"#..........G.................................g.#",
+"#...o...............................o..........#",
+"#..............................................#",
+"#######DD##############LL##############DD#######",
+"#...............#...............#..............#",
+"#.rrrr...rrrr...#...===...===...#.www....www...#",
+"#...............#...............#.www....www...#",
+"#...g...........#.......B.......#..............#",
+"#.rrrr...rrrr...#...............#....g.........#",
+"#...............#..G.......G....#..............#",
+"#.......6.......#...............#..A......2....#",
+"#.c.........c...#.ss.......ss...#.o.........o..#",
+"#...............#.......T.......#...........+..#",
+"################################################"
+]
+};
+// ---- Mission data. A stage is one or more floors linked by stairs. A floor is either an ASCII map (MS_MAPS) or
+// coordinate lists: walls [x0,z0,x1,z1]  doors [cx,cz,horiz,locked]  boxes [x,z,w,d,h,kind]  consoles [x,z,rot]
+// pickups [kind,x,z,amt]  guards [x,z,angle,{way,officer,target}]  exit [x0,z0,x1,z1]  stairs {up,down: [x0,z0,x1,z1]}
+const OUTER = [[-24, -15, -24, 15], [24, -15, 24, 15], [-24, 15, 24, 15], [-24, -15, 24, -15]];
+const MISSIONS = [
+  { name: 'Funhouse Breach', tag: 'Mission 1 · Funhouse', blurb: 'Break into the funhouse and stop the music that keeps the clowns dancing.', stages: [
+    { name: 'The Funhouse', sf: 1, obj: ['consoles', 'key'], exitText: 'Reach the trapdoor in the prize vault',
+      brief: 'Three calliopes keep the music going: two on the ground floor and one down in the boiler room. The prize vault is locked, and the master key is somewhere upstairs.',
+      floors: [
+        { name: 'Cellar', theme: 'cellar', map: 'm1_cellar' },
+        { name: 'Ground floor', theme: 'facility', start: [-21, 0, E_],
+          walls: [...OUTER, [-12, -15, -12, 15], [-12, 2.5, 24, 2.5], [-12, -2.5, 24, -2.5], [6, 2.5, 6, 15], [8, -15, 8, -2.5]],
+          doors: [[-12, 0, false], [-3, 2.5, true], [15, 2.5, true], [-1, -2.5, true], [16, -2.5, true, true]],
+          boxes: [[-18, -6, 1.2, 1.2, 1.2, 'crate'], [-16.8, -6, 1.2, 1.2, 1.2, 'crate'], [-18, -4.8, 1.2, 1.2, 2.4, 'crate'], [-17, 7, 1.2, 1.2, 1.2, 'crate'], [-15.5, 9, 1.6, 1.6, 1.6, 'crate'], [-21, 11, 1.2, 1.2, 1.2, 'crate'],
+            [-8.5, 6, 4, 0.8, 2.4, 'rack'], [-8.5, 9.5, 4, 0.8, 2.4, 'rack'], [-8.5, 13, 4, 0.8, 2.4, 'rack'],
+            [10, 7, 2, 1, 0.8, 'desk'], [10, 11, 2, 1, 0.8, 'desk'], [16, 7, 2, 1, 0.8, 'desk'], [16, 11, 2, 1, 0.8, 'desk'], [21, 12.8, 2, 1, 0.8, 'desk'],
+            [-8, -6, 1.2, 1.2, 1.2, 'crate'], [-8, -7.2, 1.2, 1.2, 1.2, 'crate'], [-3, -9, 1.6, 1.6, 2.2, 'crate'], [1, -6, 1.2, 1.2, 1.2, 'crate'], [2.2, -6, 1.2, 1.2, 1.2, 'crate'], [5, -12, 1.6, 1.6, 1.6, 'crate'], [-9.5, -12, 1.2, 1.2, 1.2, 'crate'], [-2, -13.5, 1.2, 1.2, 1.2, 'crate'],
+            [14, -14, 8, 0.9, 2.2, 'rack'], [12, -8.6, 4, 0.8, 1.4, 'crate']],
+          consoles: [[-1.5, 12.8, Math.PI], [3.5, 7.5, -Math.PI / 2]],
+          pickups: [['ammo', 21, 12.8, 1], ['armor', -10.5, -13.5, 100], ['vest', -21.5, 13, 50], ['grenade', -17, 5.5, 2]],
+          barrels: [[-14, -13.5], [11, -11.5]],
+          exit: [20.1, -14.3, 23.5, -10.9],
+          stairs: { up: [6.4, 11.6, 8.6, 14.8], down: [5.6, -6.2, 7.8, -2.9] },
+          guards: [[-13.4, 4.5, 0], [-10, 0, 0, { way: [[-10, 0], [22, 0]] }], [20, -0.5, Math.PI, { way: [[20, -0.5], [4, -0.5]] }], [-8, 11.3, 0], [0, 5.5, Math.PI / 2, { way: [[0, 5.5], [0, 13.5]] }],
+            [19, 9, Math.PI, { officer: true }], [8.5, 4.5, 0, { way: [[8.5, 4.5], [22, 4.5]] }], [13, 13.5, -Math.PI / 2], [-6, -8, 0, { way: [[-6, -8], [4, -11], [-6, -8]] }], [3, -4.2, -Math.PI / 2], [-9.5, -10, Math.PI / 2], [12, -6, -Math.PI / 2], [19, -8.5, Math.PI]] },
+        { name: 'Upstairs', theme: 'facility', map: 'm1_upstairs' }
+      ] }
+  ] },
+  { name: 'Midway Run', tag: 'Mission 2 · Midway', blurb: 'Silence the wagon yard, raid the big top for the golden tickets, then catch the circus train.', stages: [
+    { name: 'Wagon Yard', sf: 0, obj: ['consoles'], exitText: 'Get through the midway gate',
+      brief: 'Two calliopes sit in the huts on the yard and a third is up in the ticket office, reached by the outside stairs in the northwest corner. A sniper rifle was last seen in the office.',
+      floors: [
+        { name: 'Yard', theme: 'yard', outdoor: true, start: [-21, 0, E_],
+          walls: [...OUTER, [-6, 6, 0, 6], [-6, 6, -6, 14], [0, 6, 0, 14], [-6, 14, 0, 14], [8, -6, 14, -6], [8, -14, 8, -6], [14, -14, 14, -6], [8, -14, 14, -14]],
+          doors: [[-3, 6, true], [11, -6, true]],
+          boxes: [[-12, -8, 6, 2.4, 2.6, 'container'], [-12, 8, 2.4, 6, 2.6, 'container'], [4, 1, 2.4, 6, 2.6, 'container'], [16, 7, 6, 2.4, 2.6, 'container'], [-16, -2.5, 0.8, 3, 1, 'sandbag'], [-4, -4, 3, 0.8, 1, 'sandbag'], [10, 3, 3, 0.8, 1, 'sandbag'], [18, -9, 0.8, 3, 1, 'sandbag'], [19, 1, 1.2, 1.2, 1.2, 'crate'], [-20, 10, 1.2, 1.2, 1.2, 'crate'], [-1, -11, 1.6, 1.6, 1.6, 'crate']],
+          consoles: [[-3, 12.5, Math.PI], [11, -12.5, 0]],
+          pickups: [['vest', -20, -12, 50], ['ammo', 2, -8, 1], ['smg', -8, -12, 32]],
+          barrels: [[-9, -4], [15, -3], [2, 12]],
+          exit: [21.5, -2, 23.8, 2],
+          stairs: { up: [-23.8, 11.4, -21.6, 14.8] },
+          guards: [[-10, -4, 0, { way: [[-10, -4], [-10, 4], [2, 4]] }], [-3, 9, Math.PI / 2], [-4.5, 11, Math.PI], [11, -9, -Math.PI / 2], [12.5, -12, 0], [6, -3, Math.PI, { way: [[6, -3], [20, -3]] }],
+            [16, 11, Math.PI, { way: [[16, 11], [22, 11], [22, 4]] }], [20, -12, Math.PI / 2], [-18, 12, 0], [0, -13, Math.PI, { way: [[0, -13], [-8, -13]] }], [21, 6, Math.PI]] },
+        { name: 'Ticket Office', theme: 'facility', map: 'm2_office' }
+      ] },
+    { name: 'Big Top', sf: 1, boss: 'the Head Clown', obj: ['intel', 'target'], exitText: 'Reach the trapdoor',
+      brief: 'Five golden tickets are hidden around the tent: three on the ring floor, one under the stands and one up on the catwalks. The Head Clown runs the show from the center platform up top.',
+      floors: [
+        { name: 'Under the Stands', theme: 'cellar', map: 'm2_stands' },
+        { name: 'Ring floor', theme: 'dam', start: [-21, 0, E_],
+          walls: [...OUTER, [-14, -15, -14, 15], [-14, 4, 10, 4], [-14, -4, 10, -4], [-2, 4, -2, 15], [10, -15, 10, 15], [10, 3, 24, 3]],
+          doors: [[-14, 0, false], [-8, 4, true], [4, 4, true], [-2, -4, true], [6, -4, true], [-2, 10, false], [10, 0, false], [10, 9, false], [17, 3, true]],
+          boxes: [[-19, 8, 3, 1, 0.8, 'desk'], [-19, -8, 1.2, 1.2, 1.2, 'crate'], [-17, -11, 1.6, 1.6, 1.6, 'crate'], [-10, 12, 2, 1, 0.8, 'desk'], [-6, 8, 2, 1, 0.8, 'desk'], [4, 12, 2, 1, 0.8, 'desk'], [6, 7, 2, 1, 0.8, 'desk'],
+            [-9, -8, 6, 0.9, 1.2, 'rack'], [2, -8, 6, 0.9, 1.2, 'rack'], [-4, -13, 8, 0.9, 1.2, 'rack'], [17, 12, 3, 1, 0.8, 'desk'], [14, 8, 1.2, 1.2, 1.2, 'crate'], [14, -8, 1.2, 1.2, 1.2, 'crate'], [18, -5, 1.6, 1.6, 1.6, 'crate']],
+          consoles: [],
+          pickups: [['intel', -10, 12, 1], ['intel', 5, -12, 1], ['intel', 17, 12, 1], ['armor', -21, -13, 100], ['ammo', 0, 0, 1], ['shotgun', -20, 12, 12]],
+          barrels: [[-12, -12], [20, 13]],
+          exit: [20.1, -14.3, 23.5, -10.9],
+          stairs: { up: [7.4, 11.4, 9.6, 14.6], down: [7.4, -14.6, 9.6, -11.2] },
+          guards: [[-16, 4, 0], [-8, 0, 0, { way: [[-8, 0], [8, 0]] }], [-10, 9, Math.PI / 2], [-5, 13, -Math.PI / 2], [6, 10, Math.PI], [2, 6, 0, { way: [[2, 6], [6, 13]] }], [-6, -10, 0, { way: [[-6, -10], [6, -10]] }], [8, -6, Math.PI],
+            [19, 10, Math.PI, { officer: true }], [14, 13, 0], [21, 6, Math.PI / 2], [13, -2, 0, { way: [[13, -2], [21, -2], [21, -8]] }], [16, -12, Math.PI / 2], [20, -7, Math.PI]] },
+        { name: 'Catwalks', theme: 'catwalk', map: 'm2_catwalks' }
+      ] },
+    { name: 'Circus Train', sf: 0, obj: ['key'], exitText: 'Get into the engine shed',
+      brief: 'The train is about to leave. The engine shed at the east end is locked; the yardmaster dropped the key somewhere between the cars.',
+      floors: [{ name: 'Rail yard', theme: 'yard', outdoor: true, map: 'm2_train' }] }
+  ] },
+  { name: 'Sideshow Escape', tag: 'Mission 3 · Sideshow', blurb: 'Free the animals, get through the mirror maze, and take down the Ringmaster.', stages: [
+    { name: 'Animal Cages', sf: 1, obj: ['levers', 'key'], exitText: 'Get out through the back door',
+      brief: 'You start locked in a cage. Pull the three cage levers (one by the cages, two down in the feed tunnels), then grab the key from the guard room to unlock the back door.',
+      floors: [
+        { name: 'Feed Tunnels', theme: 'cellar', map: 'm3_tunnels' },
+        { name: 'Cage block', theme: 'bunker', start: [-21, 6, 0],
+          walls: [...OUTER, [-24, 2.5, 12, 2.5], [-24, 9, 12, 9], [-18, 2.5, -18, 9], [-12, 2.5, -12, 9], [-6, 2.5, -6, 9], [0, 2.5, 0, 9], [6, 2.5, 6, 9], [12, 2.5, 12, 15], [12, 2.5, 24, 2.5], [-24, -2.5, 24, -2.5], [4, -15, 4, -2.5], [16, -15, 16, -2.5]],
+          doors: [[-21, 2.5, true], [-15, 2.5, true], [-9, 2.5, true], [-3, 2.5, true], [3, 2.5, true], [9, 2.5, true], [18, 2.5, true], [-10, -2.5, true], [10, -2.5, true], [20, -2.5, true, true]],
+          boxes: [[-22.5, 8, 1.4, 0.8, 0.5, 'desk'], [-16.5, 8, 1.4, 0.8, 0.5, 'desk'], [-4.5, 8, 1.4, 0.8, 0.5, 'desk'], [16, 12, 3, 1, 0.8, 'desk'], [21, 12.5, 2, 1, 0.8, 'desk'], [20, 6, 1.2, 1.2, 1.2, 'crate'],
+            [-18, -8, 4, 1, 0.8, 'desk'], [-18, -12, 4, 1, 0.8, 'desk'], [-8, -8, 4, 1, 0.8, 'desk'], [-8, -12, 4, 1, 0.8, 'desk'], [8, -14, 6, 0.9, 2.2, 'rack'], [8, -6, 1.2, 1.2, 1.2, 'crate'], [13, -9, 1.6, 1.6, 1.6, 'crate']],
+          consoles: [],
+          pickups: [['key', 21, 12.5, 1], ['armor', 7, -10, 100], ['rifle', 13, -12, 30], ['ammo', -2, -13, 1], ['lever', -9, 8.4, 1], ['magnum', 22, 7, 12]],
+          barrels: [[1, -12], [22, 0.5]],
+          exit: [19, -14.5, 23.5, -10.5],
+          stairs: { down: [-23.6, -14.6, -21.4, -11.2] },
+          guards: [[-9, 0, 0, { way: [[-9, 0], [20, 0]] }], [15, 0, Math.PI, { way: [[15, 0], [-20, 0]] }], [15, 6, 0], [21, 9, Math.PI], [14, 13, -Math.PI / 2], [-14, -6, 0, { way: [[-14, -6], [-2, -14]] }], [-14, -13.6, Math.PI / 2], [-4, -10, Math.PI],
+            [8, -4.5, -Math.PI / 2], [12, -12, Math.PI / 2], [-22, -4, 0], [22, -6, Math.PI]] }
+      ] },
+    { name: 'Mirror Maze', sf: 0, obj: ['intel'], exitText: 'Find the way out of the maze',
+      brief: 'The only way to the office is through the mirror maze. Four golden tickets are hidden in its dead ends. Clowns are hard to spot in here, so listen for footsteps.',
+      floors: [{ name: 'Mirror Maze', theme: 'maze', map: 'm3_maze' }] },
+    { name: 'Ringmaster’s Office', sf: 0, boss: 'the Ringmaster', obj: ['consoles', 'key', 'target'], exitText: 'Reach the trapdoor',
+      brief: 'Smash the three calliopes in the office, then head up the stairs in the northeast room to his private quarters. The Ringmaster is locked in his parlor; his steward carries the key.',
+      floors: [
+        { name: 'Office', theme: 'bunker', start: [-21, 0, E_],
+          walls: [...OUTER, [-8, -8, 8, -8], [-8, 8, 8, 8], [-8, -8, -8, 8], [8, -8, 8, 8], [14, 8, 24, 8], [14, 8, 14, 15], [14, -8, 24, -8], [14, -15, 14, -8], [-16, -15, -16, -6], [-16, 6, -16, 15]],
+          doors: [[0, -8, true], [0, 8, true], [-8, 0, false], [8, 0, false], [19, 8, true], [19, -8, true]],
+          boxes: [[-20, -10, 1.2, 1.2, 1.2, 'crate'], [-20, 10, 1.2, 1.2, 1.2, 'crate'], [-12, 0, 1.2, 3, 1.2, 'crate'], [12, 0, 1.2, 3, 1.2, 'crate'], [0, 12, 4, 0.8, 1.2, 'crate'], [0, -12, 4, 0.8, 1.2, 'crate'], [-4, 0, 1.6, 1.6, 1.0, 'desk'], [21, 11, 3, 1, 0.8, 'desk'], [17, 12.5, 1.2, 1.2, 1.2, 'crate'], [17, -12, 2, 1, 2.2, 'rack']],
+          consoles: [[-5, 5.5, Math.PI], [5, 5.5, Math.PI], [0, -5.5, 0]],
+          pickups: [['armor', -21, 12, 100], ['ammo', -21, -12, 1], ['ammo', 12, 12, 1], ['grenade', -12, -3, 2]],
+          barrels: [[-14, 13], [10, -13]],
+          exit: [20, -14.5, 23.5, -11],
+          stairs: { up: [19.6, 13.0, 23.6, 14.8] },
+          guards: [[-12, 5, 0, { way: [[-12, 5], [-12, 12], [10, 12]] }], [-12, -5, 0, { way: [[-12, -5], [-12, -12], [10, -12]] }], [-3, 2, 0], [4, -2, Math.PI], [3, 6, Math.PI], [-6, -6, 0], [11, 5, Math.PI / 2], [11, -5, -Math.PI / 2],
+            [18, 10, Math.PI, { officer: true }], [16, 10, 0], [22, 9.5, Math.PI / 2], [19, -10.5, Math.PI / 2], [22, -13, Math.PI], [-20, 4, 0], [5, 12.5, Math.PI]] },
+        { name: 'Private Quarters', theme: 'facility', map: 'm3_quarters' }
+      ] }
+  ] }
+];
+const MS_THEMES = { facility: { wall: 0xffffff, floor: 0xffffff }, dam: { wall: 0xffd9c0, floor: 0xffe6cc }, bunker: { wall: 0xd2c4ff, floor: 0xd8d0e8 }, yard: { wall: 0xb8a890, floor: 0xffffff },
+  cellar: { wall: 0xa9b896, floor: 0xa09a8a, dark: true }, catwalk: { wall: 0xffd0e0, floor: 0xffffff }, maze: { wall: 0xe0d8ff, floor: 0xd8d0f0 } };
+let misPick = 0;
+let MS_EXIT_TEX = null;
+const CONT_COLS = [0x9a3b2e, 0x2e5f9a, 0x3d7a45, 0xb08a2a];
+const MS_PICK_NAMES = { armor: 'Body armor', vest: 'Light armor', ammo: 'Ammo', grenade: 'Grenades', med: 'Medkit', key: 'Master key', intel: 'Golden ticket', lever: 'Lever' };
+const msHash = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); };
+// ---- ASCII floor maps: 1 cell = 1 m, column 0 is x = -24, row 0 is z = -15
+const MS_SOLID = '#wsr=m_cCoxPDL';
+function msParseMap(rows) {
+  const H = rows.length, W = rows[0].length, at = (r, c) => (r < 0 || c < 0 || r >= H || c >= W) ? '#' : rows[r][c];
+  const X = c => -24 + c + 0.5, Z = r => -15 + r + 0.5, out = { rects: [], doors: [], consoles: [], pickups: [], guards: [], barrels: [], crates: [], levers: [], stairs: {} };
+  const walk = (r, c) => !MS_SOLID.includes(at(r, c));
+  const run = (r, c, dr, dc) => { let n = 0; while (n < 14 && walk(r + dr * (n + 1), c + dc * (n + 1))) n++; return n; };
+  const used = new Set();
+  for (const ch of '#wsr=m_') for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+    if (rows[r][c] !== ch || used.has(r * W + c)) continue;
+    let c1 = c; while (c1 + 1 < W && rows[r][c1 + 1] === ch && !used.has(r * W + c1 + 1)) c1++;
+    let r1 = r; const rowOk = rr => { for (let k = c; k <= c1; k++) if (rows[rr][k] !== ch || used.has(rr * W + k)) return false; return true; };
+    while (r1 + 1 < H && rowOk(r1 + 1)) r1++;
+    for (let rr = r; rr <= r1; rr++) for (let k = c; k <= c1; k++) used.add(rr * W + k);
+    out.rects.push({ ch, x0: -24 + c, z0: -15 + r, x1: -24 + c1 + 1, z1: -15 + r1 + 1 });
+  }
+  const zone = ch => { let x0 = 99, z0 = 99, x1 = -99, z1 = -99; for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) if (rows[r][c] === ch) { x0 = Math.min(x0, -24 + c); z0 = Math.min(z0, -15 + r); x1 = Math.max(x1, -23 + c); z1 = Math.max(z1, -14 + r); } return x0 < 99 ? [x0, z0, x1, z1] : null; };
+  out.exit = zone('E'); out.stairs.up = zone('^'); out.stairs.down = zone('v');
+  const doorSeen = new Set();
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+    const ch = rows[r][c], x = X(c), z = Z(r);
+    if ((ch === 'D' || ch === 'L') && !doorSeen.has(r * W + c)) {
+      if (at(r, c + 1) === ch) { doorSeen.add(r * W + c + 1); out.doors.push([x + 0.5, z, true, ch === 'L', 1]); }
+      else { doorSeen.add((r + 1) * W + c); out.doors.push([x, z + 0.5, false, ch === 'L', 1]); }
+    }
+    // face down the longest open line of sight
+    const dirs = [[0, 1, 0], [0, -1, Math.PI], [1, 0, Math.PI / 2], [-1, 0, -Math.PI / 2]].map(([dr, dc, a]) => ({ dr, dc, a, n: run(r, c, dr, dc) })).sort((p, q) => q.n - p.n);
+    const faceA = Math.atan2(dirs[0].dr, dirs[0].dc);
+    if (ch === 'S') out.start = [x, z, Math.atan2(-dirs[0].dc, -dirs[0].dr)];
+    if ('gpGB'.includes(ch)) {
+      const o = { officer: ch === 'G' || ch === 'B', target: ch === 'B' };
+      if (ch === 'p') {
+        const h = run(r, c, 0, 1) + run(r, c, 0, -1), v = run(r, c, 1, 0) + run(r, c, -1, 0);
+        o.way = h >= v ? [[X(c - Math.max(0, run(r, c, 0, -1) - 1)), z], [X(c + Math.max(0, run(r, c, 0, 1) - 1)), z]] : [[x, Z(r - Math.max(0, run(r, c, -1, 0) - 1))], [x, Z(r + Math.max(0, run(r, c, 1, 0) - 1))]];
+      }
+      out.guards.push([x, z, faceA, o]);
+    }
+    if (ch === 'P') { const open = dirs.find(d => !walk(r - d.dr, c - d.dc)) || dirs[0]; out.consoles.push([x, z, Math.atan2(open.dc, open.dr)]); }
+    if (ch === 'c' || ch === 'C') out.crates.push([x, z, ch === 'C' ? 2.2 : 1.1]);
+    if (ch === 'o') out.crates.push([x, z, -1]);
+    if (ch === 'x') out.barrels.push([x, z]);
+    const pk = { K: 'key', T: 'intel', A: 'armor', V: 'vest', '+': 'med', M: 'ammo', n: 'grenade', l: 'lever', 2: 'magnum', 3: 'smg', 4: 'rifle', 5: 'shotgun', 6: 'sniper' }[ch];
+    if (pk) out.pickups.push([pk, x, z, pk === 'armor' ? 100 : pk === 'vest' ? 50 : pk === 'grenade' ? 2 : MS_WEAPONS[pk] ? MS_WEAPONS[pk].give * 2 : 1]);
+  }
+  return out;
+}
+// normalize a floor (map or coordinate lists) into one spec
+function msFloorSpec(fl) {
+  if (fl.map) return Object.assign(msParseMap(MS_MAPS[fl.map]), { coord: false });
+  return { coord: true, walls: fl.walls, doors: fl.doors, boxes: fl.boxes, consoles: fl.consoles || [], pickups: fl.pickups || [], guards: fl.guards || [], barrels: fl.barrels || [], crates: [], exit: fl.exit || null, stairs: fl.stairs || {}, start: fl.start };
+}
+function msConsole(c) {
+  const { x, z, rot } = c;
   const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; roomGroup.add(g);
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 0.7), new THREE.MeshStandardMaterial({ color: 0x5e0c18, roughness: 0.6 })); body.position.y = 0.55; g.add(body);
-  const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.7), new THREE.MeshBasicMaterial({ map: msTex('screen') })); scr.position.set(0, 1.45, 0.05); scr.rotation.x = -0.25; g.add(scr);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.7), c.alive ? new THREE.MeshBasicMaterial({ map: msTex('screen') }) : new THREE.MeshBasicMaterial({ color: 0x050505 })); scr.position.set(0, 1.45, 0.05); scr.rotation.x = -0.25; g.add(scr);
   const back = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 0.12), new THREE.MeshStandardMaterial({ color: 0x3a1a10, roughness: 0.7 })); back.position.set(0, 1.45, -0.02); back.rotation.x = -0.25; g.add(back);
-  const c = { g, hp: 80, alive: true, scr, x, z };
+  c.g = g; c.scr = scr;
   for (const m of [body, scr, back]) { m.userData.console = c; MS.ray.push(m); }
-  solids.push({ x0: x - 0.85, x1: x + 0.85, z0: z - 0.45, z1: z + 0.45, h: 1.8 });
-  MS.consoles.push(c);
+  const side = Math.abs(Math.sin(rot)) > 0.5, hx = side ? 0.45 : 0.85, hz = side ? 0.85 : 0.45;
+  solids.push({ x0: x - hx, x1: x + hx, z0: z - hz, z1: z + hz, h: 1.8 });
 }
-function msPickup(kind, x, z, amt) {
-  const col = { armor: 0x3c8cff, ammo: 0xffd23c, rifle: 0xff9a3d, key: 0x3cff7a, intel: 0xf2e6b8 }[kind];
-  // items left on a desk or crate sit on top of it
-  const under = solids.filter(s => x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1 && s.h < 1.6).reduce((m, s) => Math.max(m, s.h), 0);
+const MS_PCOL = { armor: 0x3c8cff, vest: 0x7ab0ff, ammo: 0xffd23c, grenade: 0x6fae4a, med: 0xffffff, key: 0x3cff7a, intel: 0xf2e6b8, lever: 0xff9a3d, magnum: 0xc0c8d0, smg: 0xff9a3d, rifle: 0xff9a3d, shotgun: 0xd08a4a, sniper: 0xb06bff };
+function msPickupMesh(pk) {
+  const { kind, x, z } = pk, col = MS_PCOL[kind] || 0xffffff;
+  const under = solids.filter(s => x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1 && s.h < 1.6 && !s.see).reduce((m, s) => Math.max(m, s.h), 0);
   const g = new THREE.Group(); g.position.set(x, under ? under + 0.06 : 0.45, z); roomGroup.add(g);
-  const m = new THREE.Mesh(kind === 'armor' ? new THREE.BoxGeometry(0.5, 0.6, 0.18) : kind === 'key' ? new THREE.BoxGeometry(0.36, 0.04, 0.24) : kind === 'intel' ? new THREE.BoxGeometry(0.34, 0.06, 0.44) : kind === 'rifle' ? new THREE.BoxGeometry(0.9, 0.12, 0.16) : new THREE.BoxGeometry(0.34, 0.24, 0.24),new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.35, roughness: 0.5 }));
-  g.add(m);
-  MS.pickups.push({ kind, x, z, amt, g, m });
+  const mt = new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.35, roughness: 0.5 });
+  let geo;
+  if (kind === 'lever') {
+    g.position.y = 0;
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.0, 0.3), new THREE.MeshStandardMaterial({ color: 0x3a2418, roughness: 0.8 })); base.position.y = 0.5; g.add(base);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.08), mt); arm.position.set(0, 1.1, 0); arm.rotation.z = pk.on ? -0.9 : 0.9; g.add(arm); pk.arm = arm;
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 8), new THREE.MeshStandardMaterial({ color: 0xd0101c })); knob.position.y = 0.3; arm.add(knob);
+    pk.g = g; pk.m = arm; return;
+  }
+  if (kind === 'armor' || kind === 'vest') geo = new THREE.BoxGeometry(0.5, 0.6, 0.18);
+  else if (kind === 'key') geo = new THREE.BoxGeometry(0.36, 0.04, 0.24);
+  else if (kind === 'intel') geo = new THREE.BoxGeometry(0.44, 0.04, 0.22);
+  else if (kind === 'med') geo = new THREE.BoxGeometry(0.4, 0.28, 0.3);
+  else if (kind === 'grenade') geo = new THREE.SphereGeometry(0.14, 12, 10);
+  else if (MS_WEAPONS[kind]) geo = new THREE.BoxGeometry(kind === 'magnum' ? 0.4 : kind === 'smg' ? 0.55 : 0.95, 0.12, 0.16);
+  else geo = new THREE.BoxGeometry(0.34, 0.24, 0.24);
+  const m = new THREE.Mesh(geo, mt); g.add(m);
+  if (kind === 'med') { const cr = new THREE.MeshBasicMaterial({ color: 0xd0101c }); const a = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.06, 0.31), cr), b = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.22, 0.31), cr); g.add(a, b); }
+  pk.g = g; pk.m = m;
+}
+function msPickup(kind, x, z, amt) { const pk = { kind, x, z, amt }; MS.pickups.push(pk); msPickupMesh(pk); return pk; }
+function msBarrel(b) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.1, 16), new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, 3, 1), color: 0xff6a5a, emissive: 0x300000, roughness: 0.6 }));
+  m.position.set(b.x, 0.55, b.z); m.castShadow = true; roomGroup.add(m);
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(0.41, 0.41, 0.12, 16), new THREE.MeshStandardMaterial({ color: 0xffd23c, emissive: 0x403000 })); band.position.y = 0.2; m.add(band);
+  b.mesh = m; b.solid = { x0: b.x - 0.4, x1: b.x + 0.4, z0: b.z - 0.4, z1: b.z + 0.4, h: 1.1 }; solids.push(b.solid);
+  m.userData.barrel = b; band.userData.barrel = b; MS.ray.push(m, band);
 }
 // Clown enemies: the soldier model recolored with a nose and party hat; they keep their guns here.
 function msClownModel(opts, i) {
   const m = soldierModel('grunt', opts.target ? '#d0101c' : opts.officer ? '#a46bff' : CLOWN_COLORS[i % CLOWN_COLORS.length]);
   carnClown(m); return m;
 }
-function msGuard(x, z, a, opts = {}) {
-  const m = msClownModel(opts, MS.guards.length);
-  const g = { t: 'grunt', id: MS.guards.length, x, z, a, alive: true, pending: false, hp: opts.target ? 160 : opts.officer ? 120 : 100, target: !!opts.target, active: false, stun: 0, aimT: 0, fireT: 0, flash: 0, walk: 0, lastMove: -99, repath: 0, path: null,
-    root: m.root, anim: m.anim, parts: m.parts, mats: m.mats, state: 'idle', way: opts.way || null, wi: 0, spot: 0, cd: 40 + Math.random() * 40, burst: 0, officer: !!opts.officer, deadT: 0 };
+function msGuard(list, x, z, a, opts, fi) {
+  const id = list.length, m = msClownModel(opts, id + fi * 3);
+  const rnd = msHash(fi * 31 + id, id * 7 + 3);
+  const weapon = opts.weapon || (opts.target ? 'magnum' : opts.officer ? (rnd < 0.5 ? 'shotgun' : 'magnum') : (rnd < 0.35 ? 'smg' : 'rifle'));
+  const g = { t: 'grunt', id, x, z, a, alive: true, pending: false, hp: opts.target ? 220 : opts.officer ? 120 : 100, target: !!opts.target, active: false, weapon, stun: 0, aimT: 0, fireT: 0, flash: 0, walk: 0, lastMove: -99, repath: 0, path: null,
+    root: m.root, anim: m.anim, parts: m.parts, mats: m.mats, state: 'idle', way: opts.way || null, wi: 0, spot: 0, cd: 40 + Math.random() * 40, burst: 0, officer: !!opts.officer, deadT: 0, hats: m.hats || [] };
   for (const p of m.parts) p.userData.guard = g;
-  g.hats = m.hats || [];
-  scene.add(g.root); MS.guards.push(g);
-  return g;
+  list.push(g); return g;
 }
-// ---- Mission data. Every stage fits the 48 x 30 m play area. Doors sit on wall lines and cut their own gaps.
-// walls [x0,z0,x1,z1, extraGaps?]  doors [cx,cz,horiz,locked]  boxes [x,z,w,d,h,kind]  consoles [x,z,rot]
-// pickups [kind,x,z,amt]  guards [x,z,angle,{way,officer,target}]  exit [x0,z0,x1,z1]
-const OUTER = [[-24, -15, -24, 15], [24, -15, 24, 15], [-24, 15, 24, 15], [-24, -15, 24, -15]];
-const MISSIONS = [
-  { name: 'Funhouse Breach', tag: 'Mission 1 · Funhouse', blurb: 'Break into the funhouse and stop the music that keeps the clowns dancing.', stages: [{
-    name: 'Back Rooms', theme: 'facility', start: [-21, 0, E_], obj: ['consoles', 'key'], exitText: 'Reach the trapdoor in the prize vault',
-    walls: [...OUTER, [-12, -15, -12, 15], [-12, 2.5, 24, 2.5], [-12, -2.5, 24, -2.5], [6, 2.5, 6, 15], [8, -15, 8, -2.5]],
-    doors: [[-12, 0, false], [-3, 2.5, true], [15, 2.5, true], [-1, -2.5, true], [16, -2.5, true, true]],
-    boxes: [[-18, -6, 1.2, 1.2, 1.2, 'crate'], [-16.8, -6, 1.2, 1.2, 1.2, 'crate'], [-18, -4.8, 1.2, 1.2, 2.4, 'crate'], [-17, 7, 1.2, 1.2, 1.2, 'crate'], [-15.5, 9, 1.6, 1.6, 1.6, 'crate'], [-21, 11, 1.2, 1.2, 1.2, 'crate'],
-      [-8.5, 6, 4, 0.8, 2.4, 'rack'], [-8.5, 9.5, 4, 0.8, 2.4, 'rack'], [-8.5, 13, 4, 0.8, 2.4, 'rack'],
-      [10, 7, 2, 1, 0.8, 'desk'], [10, 11, 2, 1, 0.8, 'desk'], [16, 7, 2, 1, 0.8, 'desk'], [16, 11, 2, 1, 0.8, 'desk'], [21, 12.8, 2, 1, 0.8, 'desk'],
-      [-8, -6, 1.2, 1.2, 1.2, 'crate'], [-8, -7.2, 1.2, 1.2, 1.2, 'crate'], [-3, -9, 1.6, 1.6, 2.2, 'crate'], [1, -6, 1.2, 1.2, 1.2, 'crate'], [2.2, -6, 1.2, 1.2, 1.2, 'crate'], [5, -12, 1.6, 1.6, 1.6, 'crate'], [-9.5, -12, 1.2, 1.2, 1.2, 'crate'], [-2, -13.5, 1.2, 1.2, 1.2, 'crate'],
-      [14, -14, 8, 0.9, 2.2, 'rack'], [12, -8.6, 4, 0.8, 1.4, 'crate']],
-    consoles: [[-1.5, 12.8, Math.PI], [3.5, 7.5, -Math.PI / 2]],
-    pickups: [['key', 21, 12.8, 1], ['armor', -10.5, -13.5, 100], ['armor', -21.5, 13, 50]],
-    exit: [20.1, -14.3, 23.5, -10.9],
-    guards: [[-13.4, 4.5, 0], [-10, 0, 0, { way: [[-10, 0], [22, 0]] }], [20, -0.5, Math.PI, { way: [[20, -0.5], [4, -0.5]] }], [-8, 11.3, 0], [0, 5.5, Math.PI / 2, { way: [[0, 5.5], [0, 13.5]] }],
-      [19, 9, Math.PI, { officer: true }], [8.5, 4.5, 0, { way: [[8.5, 4.5], [22, 4.5]] }], [13, 13.5, -Math.PI / 2], [-6, -8, 0, { way: [[-6, -8], [4, -11], [-6, -8]] }], [3, -4.2, -Math.PI / 2], [-9.5, -10, Math.PI / 2], [12, -6, -Math.PI / 2], [19, -8.5, Math.PI]]
-  }] },
-  { name: 'Midway Run', tag: 'Mission 2 · Midway', blurb: 'Smash the calliopes out on the wagon yard, then raid the big top.', stages: [
-    { name: 'Wagon Yard', theme: 'yard', outdoor: true, start: [-21, 0, E_], obj: ['consoles'], exitText: 'Get through the midway gate',
-      walls: [...OUTER, [-6, 6, 0, 6], [-6, 6, -6, 14], [0, 6, 0, 14], [-6, 14, 0, 14], [8, -6, 14, -6], [8, -14, 8, -6], [14, -14, 14, -6], [8, -14, 14, -14]],
-      doors: [[-3, 6, true], [11, -6, true]],
-      boxes: [[-12, -8, 6, 2.4, 2.6, 'container'], [-12, 8, 2.4, 6, 2.6, 'container'], [4, 1, 2.4, 6, 2.6, 'container'], [16, 7, 6, 2.4, 2.6, 'container'], [-16, -2.5, 0.8, 3, 1, 'sandbag'], [-4, -4, 3, 0.8, 1, 'sandbag'], [10, 3, 3, 0.8, 1, 'sandbag'], [18, -9, 0.8, 3, 1, 'sandbag'], [19, 1, 1.2, 1.2, 1.2, 'crate'], [-20, 10, 1.2, 1.2, 1.2, 'crate'], [-1, -11, 1.6, 1.6, 1.6, 'crate']],
-      consoles: [[-3, 12.5, Math.PI], [11, -12.5, 0]],
-      pickups: [['armor', -20, -12, 50], ['ammo', 2, -8, 15]],
-      exit: [21.5, -2, 23.8, 2], exitGate: true,
-      guards: [[-10, -4, 0, { way: [[-10, -4], [-10, 4], [2, 4]] }], [-3, 9, Math.PI / 2], [-4.5, 11, Math.PI], [11, -9, -Math.PI / 2], [12.5, -12, 0], [6, -3, Math.PI, { way: [[6, -3], [20, -3]] }],
-        [16, 11, Math.PI, { way: [[16, 11], [22, 11], [22, 4]] }], [20, -12, Math.PI / 2], [-18, 12, 0], [0, -13, Math.PI, { way: [[0, -13], [-8, -13]] }], [21, 6, Math.PI]] },
-    { name: 'Big Top', theme: 'dam', boss: 'the Head Clown', start: [-21, 0, E_], obj: ['intel', 'target'], exitText: 'Reach the trapdoor',
-      walls: [...OUTER, [-14, -15, -14, 15], [-14, 4, 10, 4], [-14, -4, 10, -4], [-2, 4, -2, 15], [10, -15, 10, 15], [10, 3, 24, 3]],
-      doors: [[-14, 0, false], [-8, 4, true], [4, 4, true], [-2, -4, true], [6, -4, true], [-2, 10, false], [10, 0, false], [10, 9, false], [17, 3, true]],
-      boxes: [[-19, 8, 3, 1, 0.8, 'desk'], [-19, -8, 1.2, 1.2, 1.2, 'crate'], [-17, -11, 1.6, 1.6, 1.6, 'crate'], [-10, 12, 2, 1, 0.8, 'desk'], [-6, 8, 2, 1, 0.8, 'desk'], [4, 12, 2, 1, 0.8, 'desk'], [6, 7, 2, 1, 0.8, 'desk'],
-        [-9, -8, 6, 0.9, 1.2, 'rack'], [2, -8, 6, 0.9, 1.2, 'rack'], [-4, -13, 8, 0.9, 1.2, 'rack'], [17, 12, 3, 1, 0.8, 'desk'], [14, 8, 1.2, 1.2, 1.2, 'crate'], [14, -8, 1.2, 1.2, 1.2, 'crate'], [18, -5, 1.6, 1.6, 1.6, 'crate']],
-      consoles: [],
-      pickups: [['intel', -10, 12, 1], ['intel', 5, -12, 1], ['intel', 17, 12, 1], ['armor', -21, -13, 100], ['ammo', 0, 0, 20]],
-      exit: [20.1, -14.3, 23.5, -10.9],
-      guards: [[-16, 4, 0], [-8, 0, 0, { way: [[-8, 0], [8, 0]] }], [-10, 9, Math.PI / 2], [-5, 13, -Math.PI / 2], [6, 10, Math.PI], [2, 6, 0, { way: [[2, 6], [8, 13]] }], [-6, -10, 0, { way: [[-6, -10], [7, -10]] }], [8, -6, Math.PI],
-        [19, 10, Math.PI, { officer: true, target: true }], [14, 13, 0], [21, 6, Math.PI / 2], [13, -2, 0, { way: [[13, -2], [21, -2], [21, -8]] }], [16, -12, Math.PI / 2], [20, -7, Math.PI]] }
-  ] },
-  { name: 'Sideshow Escape', tag: 'Mission 3 · Sideshow', blurb: 'Break out of the animal cages, then take down the Ringmaster in his office.', stages: [
-    { name: 'Animal Cages', theme: 'bunker', start: [-21, 6, 0], obj: ['key'], exitText: 'Get out through the back door',
-      walls: [...OUTER, [-24, 2.5, 12, 2.5], [-24, 9, 12, 9], [-18, 2.5, -18, 9], [-12, 2.5, -12, 9], [-6, 2.5, -6, 9], [0, 2.5, 0, 9], [6, 2.5, 6, 9], [12, 2.5, 12, 15], [12, 2.5, 24, 2.5], [-24, -2.5, 24, -2.5], [4, -15, 4, -2.5], [16, -15, 16, -2.5]],
-      doors: [[-21, 2.5, true], [-15, 2.5, true], [-9, 2.5, true], [-3, 2.5, true], [3, 2.5, true], [9, 2.5, true], [18, 2.5, true], [-10, -2.5, true], [10, -2.5, true], [20, -2.5, true, true]],
-      boxes: [[-22.5, 8, 1.4, 0.8, 0.5, 'desk'], [-16.5, 8, 1.4, 0.8, 0.5, 'desk'], [-4.5, 8, 1.4, 0.8, 0.5, 'desk'], [16, 12, 3, 1, 0.8, 'desk'], [21, 12.5, 2, 1, 0.8, 'desk'], [20, 6, 1.2, 1.2, 1.2, 'crate'],
-        [-18, -8, 4, 1, 0.8, 'desk'], [-18, -12, 4, 1, 0.8, 'desk'], [-8, -8, 4, 1, 0.8, 'desk'], [-8, -12, 4, 1, 0.8, 'desk'], [8, -14, 6, 0.9, 2.2, 'rack'], [8, -6, 1.2, 1.2, 1.2, 'crate'], [13, -9, 1.6, 1.6, 1.6, 'crate']],
-      consoles: [],
-      pickups: [['key', 21, 12.5, 1], ['armor', 7, -10, 100], ['rifle', 13, -12, 30], ['ammo', -2, -13, 10]],
-      exit: [19, -14.5, 23.5, -10.5],
-      guards: [[-9, 0, 0, { way: [[-9, 0], [20, 0]] }], [15, 0, Math.PI, { way: [[15, 0], [-20, 0]] }], [15, 6, 0], [21, 9, Math.PI], [14, 13, -Math.PI / 2], [-14, -6, 0, { way: [[-14, -6], [-2, -14]] }], [-20, -13, Math.PI / 2], [-4, -10, Math.PI],
-        [8, -4.5, -Math.PI / 2], [12, -12, Math.PI / 2], [-22, -4, 0], [22, -6, Math.PI]] },
-    { name: 'Ringmaster\u2019s Office', theme: 'bunker', boss: 'the Ringmaster', start: [-21, 0, E_], obj: ['consoles', 'target'], exitText: 'Reach the trapdoor',
-      walls: [...OUTER, [-8, -8, 8, -8], [-8, 8, 8, 8], [-8, -8, -8, 8], [8, -8, 8, 8], [14, 8, 24, 8], [14, 8, 14, 15], [14, -8, 24, -8], [14, -15, 14, -8], [-16, -15, -16, -6], [-16, 6, -16, 15]],
-      doors: [[0, -8, true], [0, 8, true], [-8, 0, false], [8, 0, false], [19, 8, true], [19, -8, true]],
-      boxes: [[-20, -10, 1.2, 1.2, 1.2, 'crate'], [-20, 10, 1.2, 1.2, 1.2, 'crate'], [-12, 0, 1.2, 3, 1.2, 'crate'], [12, 0, 1.2, 3, 1.2, 'crate'], [0, 12, 4, 0.8, 1.2, 'crate'], [0, -12, 4, 0.8, 1.2, 'crate'], [-4, 0, 1.6, 1.6, 1.0, 'desk'], [21, 12, 3, 1, 0.8, 'desk'], [17, 13.5, 1.2, 1.2, 1.2, 'crate'], [17, -12, 2, 1, 2.2, 'rack']],
-      consoles: [[-5, 5.5, Math.PI], [5, 5.5, Math.PI], [0, -5.5, 0]],
-      pickups: [['armor', -21, 12, 100], ['ammo', -21, -12, 30], ['ammo', 12, 12, 20]],
-      exit: [20, -14.5, 23.5, -11],
-      guards: [[-12, 5, 0, { way: [[-12, 5], [-12, 12], [10, 12]] }], [-12, -5, 0, { way: [[-12, -5], [-12, -12], [10, -12]] }], [-3, 2, 0], [4, -2, Math.PI], [3, 6, Math.PI], [-6, -6, 0], [11, 5, Math.PI / 2], [11, -5, -Math.PI / 2],
-        [19, 10.5, Math.PI, { officer: true, target: true }], [16, 10, 0], [22, 10, Math.PI / 2], [19, -10.5, Math.PI / 2], [22, -13, Math.PI], [-20, 4, 0], [5, 12.5, Math.PI]] }
-  ] }
-];
-const MS_THEMES = { facility: { wall: 0xffffff, floor: 0xffffff }, dam: { wall: 0xffd9c0, floor: 0xffe6cc }, bunker: { wall: 0xd2c4ff, floor: 0xd8d0e8 }, yard: { wall: 0xb8a890, floor: 0xffffff } };
-let misPick = 0;
-let MS_EXIT_TEX = null;
-const CONT_COLS = [0x9a3b2e, 0x2e5f9a, 0x3d7a45, 0xb08a2a];
-function msBuildStage(st) {
+// ---- build one floor from its spec and its saved state
+function msBuildFloor(fi) {
+  const F = MS.floors[fi], fl = F.def, sp = F.spec;
   for (const ch of [...roomGroup.children]) { roomGroup.remove(ch); ch.geometry?.dispose(); }
   solids = []; shootables = []; plates = [];
-  MS.ray = []; MS.doors = []; MS.consoles = []; MS.pickups = []; MS.guards = [];
-  const th = MS_THEMES[st.theme] || MS_THEMES.facility; MS.wallCol = th.wall; MS.bulbs = null;
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(48, 30), st.outdoor ? msMat('ground', 12, 7.5) : msMat('floor', 16, 10, { color: th.floor }));
-  if (st.outdoor) { const pts = []; for (let i = 0; i <= 60; i++) { const t = i / 60; pts.push([-23.6 + t * 47.2, 3.4 - Math.sin(t * Math.PI * 6) * 0.25, -14.6], [-23.6 + t * 47.2, 3.4 - Math.sin(t * Math.PI * 6) * 0.25, 14.6]); } MS.bulbs = carnBulbs(pts); } floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; roomGroup.add(floor); MS.ray.push(floor);
-  if (!st.outdoor) {
+  MS.ray = []; MS.doors = [];
+  const th = MS_THEMES[fl.theme] || MS_THEMES.facility; MS.wallCol = th.wall; MS.bulbs = null;
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(48, 30), fl.outdoor ? msMat('ground', 12, 7.5) : msMat('floor', 16, 10, { color: th.floor })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; roomGroup.add(floor); MS.ray.push(floor);
+  if (fl.outdoor) { const pts = []; for (let i = 0; i <= 60; i++) { const t = i / 60; pts.push([-23.6 + t * 47.2, 3.4 - Math.sin(t * Math.PI * 6) * 0.25, -14.6], [-23.6 + t * 47.2, 3.4 - Math.sin(t * Math.PI * 6) * 0.25, 14.6]); } MS.bulbs = carnBulbs(pts); }
+  else {
     const ceil = new THREE.Mesh(new THREE.PlaneGeometry(48, 30), new THREE.MeshStandardMaterial({ map: carnTex(CARN.tent, 24, 1), roughness: 1, side: THREE.DoubleSide })); ceil.rotation.x = Math.PI / 2; ceil.position.y = 3.2; roomGroup.add(ceil);
     const pts = []; for (let z = -12; z <= 12; z += 6) for (let x = -23; x <= 23; x += 0.8) pts.push([x, 3.0 + Math.sin(x * 1.3) * 0.07, z]);
     MS.bulbs = carnBulbs(pts);
   }
-  // walls: each door on a wall line cuts its own gap
-  for (const w of st.walls) {
-    const [x0, z0, x1, z1, extra] = w, horiz = z0 === z1, gaps = (extra || []).slice();
-    for (const d of st.doors) {
-      if (!!d[2] !== horiz) continue;
-      if (horiz && d[1] === z0 && d[0] > Math.min(x0, x1) && d[0] < Math.max(x0, x1)) gaps.push([d[0], 2.2]);
-      if (!horiz && d[0] === x0 && d[1] > Math.min(z0, z1) && d[1] < Math.max(z0, z1)) gaps.push([d[1], 2.2]);
+  if (sp.coord) {
+    for (const w of sp.walls) {
+      const [x0, z0, x1, z1] = w, horiz = z0 === z1, gaps = [];
+      for (const d of sp.doors) {
+        if (!!d[2] !== horiz) continue;
+        if (horiz && d[1] === z0 && d[0] > Math.min(x0, x1) && d[0] < Math.max(x0, x1)) gaps.push([d[0], 2.2]);
+        if (!horiz && d[0] === x0 && d[1] > Math.min(z0, z1) && d[1] < Math.max(z0, z1)) gaps.push([d[1], 2.2]);
+      }
+      msWall(x0, z0, x1, z1, gaps);
     }
-    msWall(x0, z0, x1, z1, gaps);
+    let ci = 0;
+    for (const [x, z, w, d, h, kind] of sp.boxes) {
+      const mt = kind === 'crate' ? msMat('crate', Math.max(w, d) / 1.2, h / 1.2)
+        : kind === 'rack' ? msMat('crate', Math.max(w, d) / 1.2, 2, { color: 0x8a4a3a })
+        : kind === 'desk' ? new THREE.MeshStandardMaterial({ color: 0x6b5a3a, roughness: 0.7 })
+        : kind === 'container' ? msMat('container', Math.max(w, d) / 3, 1, { color: CONT_COLS[ci++ % CONT_COLS.length], roughness: 0.6, metalness: 0.2 })
+        : kind === 'sandbag' ? new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, Math.max(w, d) * 2, 1), roughness: 1 })
+        : msMat('wall', w / 3, 1, { color: th.wall });
+      msBox(x - w / 2, z - d / 2, x + w / 2, z + d / 2, h, mt);
+    }
+  } else {
+    let ci = 0;
+    const voidMat = new THREE.MeshBasicMaterial({ color: 0x07040b }), mirror = new THREE.MeshStandardMaterial({ color: 0xdfe6f5, metalness: 0.35, roughness: 0.12, emissive: 0x1a1f2e });
+    for (const R of sp.rects) {
+      const w = R.x1 - R.x0, d = R.z1 - R.z0;
+      if (R.ch === '#') msBox(R.x0, R.z0, R.x1, R.z1, 3.2, msMat('wall', Math.max(w, d) / 3, 1, { color: th.wall }));
+      else if (R.ch === 'w') msBox(R.x0 + 0.05, R.z0 + 0.05, R.x1 - 0.05, R.z1 - 0.05, 2.6, msMat('container', Math.max(w, d) / 3, 1, { color: CONT_COLS[ci++ % CONT_COLS.length], roughness: 0.6, metalness: 0.2 }));
+      else if (R.ch === 's') msBox(R.x0 + 0.1, R.z0 + 0.1, R.x1 - 0.1, R.z1 - 0.1, 1.0, new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, Math.max(w, d) * 2, 1), roughness: 1 }));
+      else if (R.ch === '=') msBox(R.x0 + 0.08, R.z0 + 0.08, R.x1 - 0.08, R.z1 - 0.08, 0.8, new THREE.MeshStandardMaterial({ color: 0x6b5a3a, roughness: 0.7 }));
+      else if (R.ch === 'r') msBox(R.x0 + 0.1, R.z0 + 0.1, R.x1 - 0.1, R.z1 - 0.1, 2.2, msMat('crate', Math.max(w, d), 2, { color: 0x8a4a3a }));
+      else if (R.ch === 'm') msBox(R.x0 + 0.1, R.z0 + 0.1, R.x1 - 0.1, R.z1 - 0.1, 3.0, mirror);
+      else if (R.ch === '_') {
+        const p = new THREE.Mesh(new THREE.PlaneGeometry(w, d), voidMat); p.rotation.x = -Math.PI / 2; p.position.set((R.x0 + R.x1) / 2, 0.015, (R.z0 + R.z1) / 2); roomGroup.add(p);
+        solids.push({ x0: R.x0, x1: R.x1, z0: R.z0, z1: R.z1, h: 0, see: true });
+      }
+    }
+    // railings where the catwalk meets the drop
+    if (sp.rects.some(R => R.ch === '_')) {
+      const rows = MS_MAPS[fl.map], railMat = new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.4 }), rg = new THREE.BoxGeometry(1, 0.05, 0.05), rgz = new THREE.BoxGeometry(0.05, 0.05, 1);
+      for (let r = 0; r < rows.length; r++) for (let c = 0; c < rows[0].length; c++) {
+        if (rows[r][c] !== '_') continue;
+        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const n = (rows[r + dr] || '')[c + dc]; if (!n || n === '_' || n === '#') continue;
+          for (const y of [0.55, 1.05]) { const m = new THREE.Mesh(dr ? rg : rgz, railMat); m.position.set(-24 + c + 0.5 + dc * 0.5, y, -15 + r + 0.5 + dr * 0.5); roomGroup.add(m); }
+        }
+      }
+    }
+    for (const [x, z, h] of sp.crates) {
+      if (h < 0) { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.0, 14), new THREE.MeshStandardMaterial({ map: carnTex(CARN.planks, 1, 1), color: 0xa07850, roughness: 0.8 })); m.position.set(x, 0.5, z); m.castShadow = true; roomGroup.add(m); solids.push({ x0: x - 0.38, x1: x + 0.38, z0: z - 0.38, z1: z + 0.38, h: 1.0 }); MS.ray.push(m); }
+      else msBox(x - 0.55, z - 0.55, x + 0.55, z + 0.55, h, msMat('crate', 1, h / 1.1));
+    }
+    for (const d of sp.doors) { const [cx, cz, horiz] = d; if (horiz) msBox(cx - 1, cz - 0.5, cx + 1, cz + 0.5, 0.6, msMat('wall', 0.6, 0.2, { color: th.wall }), false).position.y = 2.9; else msBox(cx - 0.5, cz - 1, cx + 0.5, cz + 1, 0.6, msMat('wall', 0.6, 0.2, { color: th.wall }), false).position.y = 2.9; }
   }
-  for (const d of st.doors) msDoor(d[0], d[1], !!d[2], !!d[3]);
-  let ci = 0;
-  for (const [x, z, w, d, h, kind] of st.boxes) {
-    const x0 = x - w / 2, x1 = x + w / 2, z0 = z - d / 2, z1 = z + d / 2;
-    const mt = kind === 'crate' ? msMat('crate', Math.max(w, d) / 1.2, h / 1.2)
-      : kind === 'rack' ? msMat('crate', Math.max(w, d) / 1.2, 2, { color: 0x8a4a3a })
-      : kind === 'desk' ? new THREE.MeshStandardMaterial({ color: 0x6b5a3a, roughness: 0.7 })
-      : kind === 'container' ? msMat('container', Math.max(w, d) / 3, 1, { color: CONT_COLS[ci++ % CONT_COLS.length], roughness: 0.6, metalness: 0.2 })
-      : kind === 'sandbag' ? new THREE.MeshStandardMaterial({ map: carnTex(CARN.awning, Math.max(w, d) * 2, 1), roughness: 1 })
-      : msMat('wall', w / 3, 1, { color: th.wall });
-    msBox(x0, z0, x1, z1, h, mt);
-  }
-  for (const [x, z, r] of st.consoles) msConsole(x, z, r);
-  for (const [k, x, z, a] of st.pickups) msPickup(k, x, z, a);
+  for (const d of sp.doors) msDoor(d[0], d[1], !!d[2], !!d[3]);
+  MS.consoles = F.consoles; for (const c of F.consoles) msConsole(c);
+  MS.barrels = F.barrels; for (const b of F.barrels) if (b.alive) msBarrel(b);
+  MS.pickups = F.pickups; for (const pk of F.pickups) msPickupMesh(pk);
+  // stairs
+  MS.stairs = [];
+  for (const dir of ['up', 'down']) { const z = sp.stairs[dir]; if (z) MS.stairs.push(msStairs(z, dir)); }
   // extraction zone
-  const [ex0, ez0, ex1, ez1] = st.exit, ew = ex1 - ex0, ed = ez1 - ez0, ecx = (ex0 + ex1) / 2, ecz = (ez0 + ez1) / 2;
-  const pad = new THREE.Mesh(new THREE.PlaneGeometry(ew, ed), new THREE.MeshBasicMaterial({ color: 0x1a4a2a })); pad.rotation.x = -Math.PI / 2; pad.position.set(ecx, 0.01, ecz); roomGroup.add(pad);
-  MS.exitMat = new THREE.MeshBasicMaterial({ color: 0x2a5a3a });
-  for (const [bx, bz, bw, bd] of [[ecx, ez0 + 0.08, ew, 0.16], [ecx, ez1 - 0.08, ew, 0.16], [ex0 + 0.08, ecz, 0.16, ed], [ex1 - 0.08, ecz, 0.16, ed]]) { const b = new THREE.Mesh(new THREE.PlaneGeometry(bw, bd), MS.exitMat); b.rotation.x = -Math.PI / 2; b.position.set(bx, 0.02, bz); roomGroup.add(b); }
-  MS.lift = { x0: ex0, x1: ex1, z0: ez0, z1: ez1 };
-  if (!MS_EXIT_TEX) MS_EXIT_TEX = CARN.sign('EXIT', 'this way out');
-  const sign = new THREE.Sprite(new THREE.SpriteMaterial({ map: MS_EXIT_TEX })); sign.scale.set(2.2, 0.69, 1); sign.position.set(ecx, 2.45, ecz); roomGroup.add(sign);
-  MS.lightSpots = [...st.doors.map(d => [d[0], d[1]]), ...st.consoles.map(c => [c[0], c[1]]), [ecx, ecz]]; for (let x = -21; x <= 21; x += 7) for (let z = -12; z <= 12; z += 6) MS.lightSpots.push([x, z]);
-  RM = { name: st.name, loopSec: 999, loops: 1, rules: {}, door: { side: 'e', c: 0 }, spawn: { x: st.start[0], z: st.start[1], yaw: st.start[2] }, plates: [], walls: [], enemies: [] };
+  MS.lift = null; MS.exitMat = null;
+  if (sp.exit) {
+    const [ex0, ez0, ex1, ez1] = sp.exit, ew = ex1 - ex0, ed = ez1 - ez0, ecx = (ex0 + ex1) / 2, ecz = (ez0 + ez1) / 2;
+    const pad = new THREE.Mesh(new THREE.PlaneGeometry(ew, ed), new THREE.MeshBasicMaterial({ color: 0x1a4a2a })); pad.rotation.x = -Math.PI / 2; pad.position.set(ecx, 0.01, ecz); roomGroup.add(pad);
+    MS.exitMat = new THREE.MeshBasicMaterial({ color: 0x2a5a3a });
+    for (const [bx, bz, bw, bd] of [[ecx, ez0 + 0.08, ew, 0.16], [ecx, ez1 - 0.08, ew, 0.16], [ex0 + 0.08, ecz, 0.16, ed], [ex1 - 0.08, ecz, 0.16, ed]]) { const b = new THREE.Mesh(new THREE.PlaneGeometry(bw, bd), MS.exitMat); b.rotation.x = -Math.PI / 2; b.position.set(bx, 0.02, bz); roomGroup.add(b); }
+    MS.lift = { x0: ex0, x1: ex1, z0: ez0, z1: ez1 };
+    if (!MS_EXIT_TEX) MS_EXIT_TEX = CARN.sign('EXIT', 'this way out');
+    const sign = new THREE.Sprite(new THREE.SpriteMaterial({ map: MS_EXIT_TEX })); sign.scale.set(2.2, 0.69, 1); sign.position.set(ecx, 2.45, ecz); roomGroup.add(sign);
+  }
+  MS.lightSpots = [...sp.doors.map(d => [d[0], d[1]]), ...F.consoles.map(c => [c.x, c.z]), ...MS.stairs.map(s => [s.cx, s.cz])];
+  if (MS.lift) MS.lightSpots.push([(MS.lift.x0 + MS.lift.x1) / 2, (MS.lift.z0 + MS.lift.z1) / 2]);
+  for (let x = -21; x <= 21; x += 7) for (let z = -12; z <= 12; z += 6) MS.lightSpots.push([x, z]);
+  MS.lightT = 0;
+  RM = { name: fl.name, loopSec: 999, loops: 1, rules: {}, door: { side: 'e', c: 0 }, spawn: { x: 0, z: 0, yaw: 0 }, plates: [], walls: [], enemies: [] };
   DOOR = { x0: 999, x1: 999.1, z0: 999, z1: 999.1 }; doorC = { x: 999, z: 999 };
   doorMesh = new THREE.Object3D(); guardRing = new THREE.Object3D(); exitSide = 'e';
   // pathfinding ignores doors guards can open; locked doors stay solid for them
   const doorSolids = MS.doors.filter(d => !d.locked).map(d => d.solid); solids = solids.filter(s => !doorSolids.includes(s)); buildGrids(); solids.push(...doorSolids);
-  for (const [x, z, a, o] of st.guards) msGuard(x, z, a, o || {});
+  MS.guards = F.guards;
+  for (const g of F.guards) { g.path = null; g.repath = 0; scene.add(g.root); }
+  MS.fi = fi; F.visited = true;
+  setMissionLook(true, fl.theme, fl.outdoor);
+}
+// a stairway: steps up toward the wall, or a dark stairwell going down
+function msStairs(zr, dir) {
+  const [x0, z0, x1, z1] = zr, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
+  // which end is against a wall? steps run toward it
+  const hit = (x, z) => solids.some(s => !s.see && x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1);
+  const sides = [[1, 0, x1 + 0.35, cz], [-1, 0, x0 - 0.35, cz], [0, 1, cx, z1 + 0.35], [0, -1, cx, z0 - 0.35]].map(([dx, dz, px, pz]) => {
+    let n = 0; for (const t of [-0.35, 0, 0.35]) n += hit(px + (dz ? t * w : 0), pz + (dx ? t * d : 0)) ? 1 : 0;
+    const along = dx ? w >= d : d >= w; return { dx, dz, n, along };
+  });
+  for (const s of sides) { const opp = sides.find(o => o.dx === -s.dx && o.dz === -s.dz); s.score = s.n - 2 * opp.n + (s.along ? 0.5 : 0); }
+  sides.sort((p, q) => q.score - p.score);
+  const s = sides[0], len = s.dx ? w : d, wid = s.dx ? d : w, N = 6;
+  const stepMat = new THREE.MeshStandardMaterial({ map: carnTex(CARN.planks, 1, 0.3), color: dir === 'up' ? 0xd0a070 : 0x70503a, roughness: 0.9 });
+  if (dir === 'up') {
+    for (let i = 0; i < N; i++) {
+      const h = (i + 1) * 0.26, t0 = i / N, m = new THREE.Mesh(new THREE.BoxGeometry(s.dx ? len / N : wid, h, s.dx ? wid : len / N), stepMat);
+      const off = -len / 2 + (t0 + 0.5 / N) * len; m.position.set(cx + s.dx * off, h / 2, cz + s.dz * off); roomGroup.add(m);
+    }
+  } else {
+    const pit = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({ color: 0x050307 })); pit.rotation.x = -Math.PI / 2; pit.position.set(cx, 0.012, cz); roomGroup.add(pit);
+    for (let i = 0; i < N; i++) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(s.dx ? 0.06 : wid * 0.96, 0.02, s.dx ? wid * 0.96 : 0.06), new THREE.MeshBasicMaterial({ color: new THREE.Color(0x8a6a4a).multiplyScalar(1 - i / N) }));
+      const off = -len / 2 + (i + 0.5) / N * len; m.position.set(cx + s.dx * off, 0.02, cz + s.dz * off); roomGroup.add(m);
+    }
+    const railMat = new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.4 });
+    for (const sg of [-1, 1]) { const r = new THREE.Mesh(new THREE.BoxGeometry(s.dx ? len : 0.06, 0.06, s.dx ? 0.06 : len), railMat); r.position.set(cx + (s.dz ? sg * w / 2 : 0), 1.0, cz + (s.dx ? sg * d / 2 : 0)); roomGroup.add(r); }
+  }
+  const label = textSprite(dir === 'up' ? 'UPSTAIRS ▲' : 'DOWNSTAIRS ▼', '#ffd23c', 1.6); label.position.set(cx - s.dx * len * 0.2, 2.5, cz - s.dz * len * 0.2); roomGroup.add(label);
+  // arrival spot: just off the open end, facing away from the stairs
+  const ax = cx - s.dx * (len / 2 + 0.9), az = cz - s.dz * (len / 2 + 0.9);
+  return { dir, x0, z0, x1, z1, cx, cz, ax, az, yaw: Math.atan2(s.dx, s.dz) };
 }
 function setMissionLook(on, theme, outdoor) {
   CARN.on = !on; setCarnival(on);
-  if (on) { hemiLight.intensity = outdoor ? 0.8 : 0.95; sun.intensity = outdoor ? 0.45 : 0.3; scene.fog.near = 10; scene.fog.far = outdoor ? 60 : 50; if (outdoor) scene.background.setHex(0x140c1e); }
+  if (on) {
+    const th = MS_THEMES[theme] || {};
+    hemiLight.intensity = outdoor ? 0.8 : th.dark ? 0.7 : 0.95; sun.intensity = outdoor ? 0.45 : 0.3; scene.fog.near = th.dark ? 6 : 10; scene.fog.far = outdoor ? 60 : th.dark ? 38 : 50;
+    if (outdoor) scene.background.setHex(0x140c1e);
+    if (th.dark) { scene.background.setHex(0x06080a); scene.fog.color.setHex(0x0a0d0c); }
+  }
 }
+// ---- objectives, counted across every floor of the stage
+function msAll(key) { return MS.floors.flatMap((F, i) => F[key].map(o => [o, i])); }
 function msObjectives() {
   const st = MS.st, out = [];
   if (!st) return out;
+  const fname = i => MS.floors.length > 1 ? MS.floors[i].def.name : '';
+  const where = list => { const fs = [...new Set(list.map(([, i]) => i))].filter(i => fname(i)); return fs.length ? fs.map(fname).join(', ') : ''; };
   for (const o of st.obj) {
-    if (o === 'consoles') { const n = MS.consoles.length, k = MS.consoles.filter(c => !c.alive).length; out.push({ text: 'Smash the calliopes (' + k + '/' + n + ')', done: k >= n }); }
-    if (o === 'key') out.push({ text: 'Find the master key', done: MS.keycard });
-    if (o === 'intel') { const n = st.pickups.filter(p => p[0] === 'intel').length; out.push({ text: 'Collect the golden tickets (' + MS.intel + '/' + n + ')', done: MS.intel >= n }); }
-    if (o === 'target') { const t = MS.guards.filter(g => g.target); out.push({ text: 'Take out ' + (st.boss || 'the boss'), done: t.every(g => !g.alive) }); }
+    if (o === 'consoles') { const all = msAll('consoles'), left = all.filter(([c]) => c.alive); out.push({ text: 'Smash the calliopes (' + (all.length - left.length) + '/' + all.length + ')', done: !left.length, where: where(left) }); }
+    if (o === 'key') { const k = msAll('pickups').filter(([p]) => p.kind === 'key'); out.push({ text: 'Find the master key', done: MS.keycard, where: MS.keycard ? '' : where(k) }); }
+    if (o === 'intel') { const left = msAll('pickups').filter(([p]) => p.kind === 'intel'); out.push({ text: 'Collect the golden tickets (' + MS.intel + '/' + MS.intelTotal + ')', done: !left.length, where: where(left) }); }
+    if (o === 'levers') { const all = msAll('pickups').filter(([p]) => p.kind === 'lever'), left = all.filter(([p]) => !p.on); out.push({ text: 'Pull the cage levers (' + (all.length - left.length) + '/' + all.length + ')', done: !left.length, where: where(left) }); }
+    if (o === 'target') { const t = msAll('guards').filter(([g]) => g.target), left = t.filter(([g]) => g.alive); out.push({ text: 'Take out ' + (st.boss || 'the boss'), done: !left.length, where: where(left) }); }
   }
-  out.push({ text: st.exitText, done: MS.won });
+  const ex = MS.floors.findIndex(F => F.spec.exit);
+  out.push({ text: st.exitText, done: MS.won, where: ex >= 0 ? fname(ex) : '' });
   return out;
 }
 function msStageList(m) {
-  const say = { consoles: st => 'smash the ' + st.consoles.length + ' calliopes', key: () => 'find the master key', intel: st => 'grab the ' + st.pickups.filter(p => p[0] === 'intel').length + ' golden tickets', target: st => 'take out ' + st.boss };
-  return m.stages.map((st, i) => '<li><b>' + (m.stages.length > 1 ? 'Stage ' + (i + 1) + ' · ' : '') + st.name + '</b>: ' + [...st.obj.map(o => say[o](st)), st.exitText.charAt(0).toLowerCase() + st.exitText.slice(1)].join(', ') + '</li>').join('');
+  const say = { consoles: st => 'smash the calliopes', key: () => 'find the master key', intel: st => 'collect the golden tickets', target: st => 'take out ' + st.boss, levers: () => 'pull the cage levers' };
+  return m.stages.map((st, i) => {
+    const specs = st.floors.map(msFloorSpec), guns = [...new Set(specs.flatMap(s => s.pickups.filter(p => MS_WEAPONS[p[0]]).map(p => MS_WEAPONS[p[0]].name)))];
+    const clowns = specs.reduce((n, s) => n + s.guards.length, 0);
+    return '<li><b>' + (m.stages.length > 1 ? 'Stage ' + (i + 1) + ' · ' : '') + st.name + '</b> <span class="msfl">' + (st.floors.length > 1 ? st.floors.length + ' floors: ' + st.floors.map(f => f.name).join(' · ') : st.floors[0].name) + ' · about ' + clowns + ' clowns</span><br>' + st.brief +
+      '<br><i>Objectives:</i> ' + [...st.obj.map(o => say[o](st)), st.exitText.charAt(0).toLowerCase() + st.exitText.slice(1)].join(', ') + (guns.length ? '<br><i>Guns to find:</i> ' + guns.join(', ') : '') + '</li>';
+  }).join('');
 }
 function msToast(t, cls) { const el = $('msToast'); el.textContent = t; el.className = 'mstoast ' + (cls || ''); el.hidden = false; clearTimeout(MS.toastT); MS.toastT = setTimeout(() => { el.hidden = true; }, 2600); }
 function msLoadStage(i) {
-  for (const g of MS.guards || []) scene.remove(g.root);
+  if (MS.floors) for (const F of MS.floors) for (const g of F.guards) scene.remove(g.root);
   const st = MISSIONS[misPick].stages[i];
-  MS.stage = i; MS.st = st; MS.keycard = false; MS.intel = 0; MS.won = false;
-  msBuildStage(st); setMissionLook(true, st.theme, st.outdoor);
-  Object.assign(P, { x: st.start[0], z: st.start[1], vx: 0, vz: 0, yaw: st.start[2], pitch: 0 });
+  MS.stage = i; MS.st = st; MS.keycard = false; MS.intel = 0; MS.won = false; MS.trans = null; MS.stairLock = true;
+  MS.floors = st.floors.map((fl, fi) => {
+    const spec = msFloorSpec(fl), list = [];
+    for (const [x, z, a, o] of spec.guards) msGuard(list, x, z, a, o || {}, fi + i * 5);
+    return { def: fl, spec, guards: list, visited: false,
+      consoles: spec.consoles.map(([x, z, rot]) => ({ x, z, rot, hp: 80, alive: true })),
+      barrels: spec.barrels.map(([x, z]) => ({ x, z, alive: true, hp: 20 })),
+      pickups: spec.pickups.map(([kind, x, z, amt]) => ({ kind, x, z, amt })) };
+  });
+  MS.intelTotal = msAll('pickups').filter(([p]) => p.kind === 'intel').length;
+  const sf = st.sf || 0;
+  msBuildFloor(sf);
+  const s = MS.floors[sf].spec.start || [0, 0, 0];
+  Object.assign(P, { x: s[0], z: s[1], vx: 0, vz: 0, yaw: s[2], pitch: 0 });
+  MS.infoKey = '';
+}
+// walking onto stairs: fade out, swap floors, fade in at the matching stairs
+function msGoFloor(to, dir) {
+  for (const g of MS.guards) scene.remove(g.root);
+  msBuildFloor(to);
+  const arrive = MS.stairs.find(s => s.dir === (dir === 'up' ? 'down' : 'up')) || MS.stairs[0];
+  if (arrive) Object.assign(P, { x: arrive.ax, z: arrive.az, yaw: arrive.yaw, pitch: 0, vx: 0, vz: 0 });
+  MS.stairLock = true; MS.infoKey = '';
+  msToast((dir === 'up' ? '▲ ' : '▼ ') + MS.floors[to].def.name.toUpperCase(), 'ok');
 }
 function startMission() {
   if (G) clearGallery();
@@ -2904,8 +3478,9 @@ function startMission() {
   for (const c of ['duel', 'gallery', 'solo']) screenEl.classList.remove(c);
   screenEl.classList.add('mission'); mode = 'mission';
   clearActors(); clearShots();
-  if (MS) for (const g of MS.guards) scene.remove(g.root);
-  MS = { t: 0, guards: [], weapon: 'pistol', have: { pistol: true, rifle: false }, ammo: { pistol: 7, rifle: 0 }, reserve: { pistol: 28, rifle: 0 }, hp: 100, armor: 0, keycard: false, intel: 0, won: false, shots: 0, hits: 0, kills: 0, heads: 0, hudT: 0 };
+  if (MS && MS.floors) for (const F of MS.floors) for (const g of F.guards) scene.remove(g.root);
+  MS = { t: 0, guards: [], weapon: 'pistol', have: { pistol: true }, ammo: { pistol: 7 }, reserve: { pistol: 28 }, nades: 1, hp: 100, armor: 0, keycard: false, intel: 0, won: false, shots: 0, hits: 0, kills: 0, heads: 0, hudT: 0, flying: [], zoom: false };
+  for (const w of MS_ORDER) { MS.ammo[w] = MS.ammo[w] || 0; MS.reserve[w] = MS.reserve[w] || 0; }
   D = { online: false, score: [0, 0], round: 0, arena: 'Mission' };
   msLoadStage(0);
   P.stats = { mag: 7, reload: MS_WEAPONS.pistol.reload };
@@ -2917,12 +3492,13 @@ function startMission() {
 }
 function msNextStage() {
   const m = MISSIONS[misPick];
+  MS.zoom = false;
   if (MS.stage < m.stages.length - 1) {
     state = 'gover'; firing = false; tone(660, 0.12, 'triangle', 0.06); tone(990, 0.16, 'triangle', 0.05, null, 0.12);
-    msToast('STAGE COMPLETE', 'ok');
+    msToast('STAGE COMPLETE', 'ok'); msFade(1);
     setTimeout(() => {
       if (mode !== 'mission' || !MS) return;
-      msLoadStage(MS.stage + 1); P.vx = P.vz = 0; P.rl = 0; state = 'dplay'; msHud(true);
+      msLoadStage(MS.stage + 1); P.vx = P.vz = 0; P.rl = 0; state = 'dplay'; msHud(true); msFade(0);
       msToast('STAGE ' + (MS.stage + 1) + ' · ' + MS.st.name.toUpperCase(), 'ok');
     }, 1100);
     return;
@@ -2930,10 +3506,13 @@ function msNextStage() {
   state = 'gover'; firing = false; SFX.win();
   setTimeout(() => { if (mode === 'mission') { if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); } showOverlay('misWin'); } }, 700);
 }
+function msFade(v) { const f = $('msFade'); if (f) f.style.opacity = String(v); }
 function leaveMission() {
   if (!MS) return;
-  for (const g of MS.guards) scene.remove(g.root);
-  MS = null; setMissionLook(false); screenEl.classList.remove('mission');
+  if (MS.floors) for (const F of MS.floors) for (const g of F.guards) scene.remove(g.root);
+  for (const n of MS.flying || []) scene.remove(n.mesh);
+  MS = null; setMissionLook(false); screenEl.classList.remove('mission'); msFade(0);
+  for (const k in msVM) msVM[k].visible = false;
 }
 function enterMission() {
   if (G) { clearGallery(); screenEl.classList.remove('gallery'); }
@@ -2942,7 +3521,7 @@ function enterMission() {
   mode = 'mission'; state = 'title'; screenEl.classList.add('mission'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; bigText('');
   for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeCoop', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === 'modeCampaign')); }
   clearActors();
-  MS = { t: 0, guards: [], doors: [], ray: [], consoles: [], pickups: [], have: { pistol: true }, ammo: { pistol: 7 }, reserve: { pistol: 28 }, weapon: 'pistol', hp: 100, armor: 0, hudT: 0, intel: 0 };
+  MS = { t: 0, guards: [], doors: [], ray: [], consoles: [], pickups: [], have: { pistol: true }, ammo: { pistol: 7 }, reserve: { pistol: 28 }, weapon: 'pistol', hp: 100, armor: 0, hudT: 0, intel: 0, nades: 1, flying: [], zoom: false };
   P.ammo = 7; P.rl = 0;
   msLoadStage(0);
   showOverlay('misIntro');
@@ -2952,65 +3531,111 @@ function msHurt(dmg, sx, sz) {
   if (MS.won || !P.alive || state !== 'dplay') return;
   const toArmor = Math.min(MS.armor, dmg); MS.armor -= toArmor; MS.hp -= dmg - toArmor; MS.hudT = 150;
   SFX.hurt(); hitDir(sx, sz); const h = $('hurt'); h.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove('on')));
-  if (MS.hp <= 0) { MS.hp = 0; P.alive = false; firing = false; state = 'gover'; SFX.lose(); setTimeout(() => { if (mode === 'mission') { if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); } showOverlay('misFail'); } }, 900); }
+  if (MS.hp <= 0) { MS.hp = 0; P.alive = false; firing = false; MS.zoom = false; state = 'gover'; SFX.lose(); setTimeout(() => { if (mode === 'mission') { if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); } showOverlay('misFail'); } }, 900); }
 }
 function msAlert(g, x, z) { if (!g.alive) return; if (g.state !== 'alert') { g.state = 'alert'; g.cd = Math.max(g.cd, 20); } g.lx = x; g.lz = z; }
-function msNoise(radius) { for (const g of MS.guards) if (g.alive && Math.hypot(g.x - P.x, g.z - P.z) < radius) msAlert(g, P.x, P.z); }
+function msNoise(radius, x = P.x, z = P.z) { for (const g of MS.guards) if (g.alive && Math.hypot(g.x - x, g.z - z) < radius) msAlert(g, P.x, P.z); }
 function msSwitch(w) {
   if (!MS || !MS.have[w] || MS.weapon === w) return;
-  MS.ammo[MS.weapon] = P.ammo; MS.weapon = w; P.ammo = MS.ammo[w]; P.rl = 0; P.dcd = 12;
+  MS.ammo[MS.weapon] = P.ammo; MS.weapon = w; P.ammo = MS.ammo[w]; P.rl = 0; P.dcd = 12; MS.zoom = false;
   P.stats = { mag: MS_WEAPONS[w].mag, reload: MS_WEAPONS[w].reload }; tone(500, 0.05, 'square', 0.04); msHud(true);
 }
+function msCycle(step) { const own = MS_ORDER.filter(w => MS.have[w]); if (own.length < 2) return; const i = own.indexOf(MS.weapon); msSwitch(own[(i + step + own.length) % own.length]); }
 function msReload() {
   const W = MS_WEAPONS[MS.weapon];
   if (P.rl > 0 || P.ammo >= W.mag || MS.reserve[MS.weapon] <= 0) return;
-  P.rl = W.reload; noise(0.05, 0.12, 3000, 'highpass');
+  P.rl = W.reload; MS.zoom = false; noise(0.05, 0.12, 3000, 'highpass');
 }
 function msShoot() {
   const W = MS_WEAPONS[MS.weapon];
-  P.dcd = W.delay; P.ammo--; kick = 1; flashT = 3; W.sound(); MS.shots++;
+  P.dcd = W.delay; P.ammo--; kick = W.kick || 1; flashT = 3; W.sound(); MS.shots++;
   muzzleLight.position.copy(camera.position); muzzleLight.intensity = MS.weapon === 'pistol' ? 0.8 : 3;
   msNoise(W.loud);
-  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
-  const sp = W.spread * (Math.hypot(P.vx, P.vz) > 0.03 ? 2 : 1) * (P.crouch > 0.5 ? 0.6 : 1);
-  dir.x += (Math.random() - 0.5) * sp; dir.y += (Math.random() - 0.5) * sp; dir.z += (Math.random() - 0.5) * sp; dir.normalize();
   const objs = MS.ray.slice(); for (const g of MS.guards) if (g.alive) objs.push(...g.parts, ...g.hats);
-  ray.set(camera.position, dir); ray.far = 80;
-  const h = ray.intersectObjects(objs, false)[0];
   const mz = new THREE.Vector3(0.2, -0.13, -0.75).applyQuaternion(camera.quaternion).add(camera.position);
-  if (MS.weapon === 'rifle') tracer(mz, h ? h.point : camera.position.clone().addScaledVector(dir, 60));
-  if (!h) return;
-  if (h.object.userData.hat) { puff(h.point, 5, 0xffd23c); SFX.wall(); return; } // hats don't count
-  const g = h.object.userData.guard, c = h.object.userData.console;
-  if (g) {
-    const zone = h.object.userData.zone, head = zone === 'head';
-    const dmg = head ? 999 : W.dmg * (zone === 'limb' ? 0.6 : 1);
-    g.hp -= dmg; g.flash = 5; g.stun = Math.max(g.stun, head ? 0 : 14); MS.hits++;
-    puff(h.point, head ? 8 : 4, head ? 0xffb547 : 0xb3132b);
-    msAlert(g, P.x, P.z);
-    const kill = g.hp <= 0;
-    head ? SFX.headshot() : SFX.hit(); hitMarker(kill, head);
-    if (kill) msKill(g, head);
-    return;
-  }
-  if (c && c.alive) {
-    c.hp -= W.dmg; puff(h.point, 5, 0x9fe8ff); SFX.wall();
-    if (c.hp <= 0) {
-      c.alive = false; c.scr.material = new THREE.MeshBasicMaterial({ color: 0x050505 });
-      const p = new THREE.Vector3(c.x, 1.2, c.z); puff(p, 16, 0xffb547); killBurst(p, '#ff9a3d', true); noise(0.6, 0.25, 600); tone(70, 0.6, 'sawtooth', 0.12, 30);
-      msNoise(14);
-      const n = MS.consoles.filter(k => !k.alive).length, N = MS.consoles.length; msToast(n >= N ? 'OBJECTIVE COMPLETE · THE MUSIC STOPS' : 'CALLIOPE SMASHED · ' + n + '/' + N, 'ok'); msHud(true);
+  let hitAny = false;
+  for (let p = 0; p < (W.pellets || 1); p++) {
+    const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+    const base = MS.zoom && W.zoomSpread != null ? W.zoomSpread : W.spread;
+    const sp = base * (Math.hypot(P.vx, P.vz) > 0.03 ? 2 : 1) * (P.crouch > 0.5 ? 0.6 : 1);
+    dir.x += (Math.random() - 0.5) * sp; dir.y += (Math.random() - 0.5) * sp; dir.z += (Math.random() - 0.5) * sp; dir.normalize();
+    ray.set(camera.position, dir); ray.far = 80;
+    const h = ray.intersectObjects(objs, false)[0];
+    if (MS.weapon !== 'pistol' && (p === 0 || Math.random() < 0.3)) tracer(mz, h ? h.point : camera.position.clone().addScaledVector(dir, 60));
+    if (!h) continue;
+    if (h.object.userData.hat) { puff(h.point, 3, 0xffd23c); continue; } // hats don't count
+    const g = h.object.userData.guard, c = h.object.userData.console, b = h.object.userData.barrel;
+    if (g && g.alive) {
+      const zone = h.object.userData.zone, head = zone === 'head';
+      const dmg = head ? 999 : W.dmg * (zone === 'limb' ? 0.6 : 1);
+      g.hp -= dmg; g.flash = 5; g.stun = Math.max(g.stun, head ? 0 : W.pellets ? 20 : 14); if (!hitAny) MS.hits++; hitAny = true;
+      puff(h.point, head ? 8 : 4, head ? 0xffb547 : 0xb3132b);
+      msAlert(g, P.x, P.z);
+      const kill = g.hp <= 0;
+      head ? SFX.headshot() : SFX.hit(); hitMarker(kill, head);
+      if (kill) msKill(g, head);
+      continue;
     }
-    return;
+    if (c && c.alive) { msHitConsole(c, W.dmg, h.point); continue; }
+    if (b && b.alive) { b.hp -= W.dmg; puff(h.point, 3, 0xffd23c); if (b.hp <= 0) msBarrelBoom(b); continue; }
+    puff(h.point, 3, 0x6b7480); if (p === 0) SFX.wall();
   }
-  puff(h.point, 3, 0x6b7480); SFX.wall();
+}
+function msHitConsole(c, dmg, pt) {
+  c.hp -= dmg; if (pt) { puff(pt, 5, 0x9fe8ff); SFX.wall(); }
+  if (c.hp > 0 || !c.alive) return;
+  c.alive = false; if (c.scr) c.scr.material = new THREE.MeshBasicMaterial({ color: 0x050505 });
+  const p = new THREE.Vector3(c.x, 1.2, c.z); puff(p, 16, 0xffb547); killBurst(p, '#ff9a3d', true); noise(0.6, 0.25, 600); tone(70, 0.6, 'sawtooth', 0.12, 30);
+  msNoise(14, c.x, c.z);
+  const all = msAll('consoles'), n = all.filter(([k]) => !k.alive).length; msToast(n >= all.length ? 'OBJECTIVE COMPLETE · THE MUSIC STOPS' : 'CALLIOPE SMASHED · ' + n + '/' + all.length, 'ok'); msHud(true);
 }
 function msKill(g, head) {
   g.alive = false; g.deadT = MS.t; g.aimT = 0; MS.kills++; if (head) MS.heads++;
-  if (g.target && MS.guards.filter(o => o.target).every(o => !o.alive)) msToast('OBJECTIVE COMPLETE · ' + (MS.st.boss || 'BOSS').toUpperCase() + ' DOWN', 'ok');
-  // dead guards drop their rifle (or rifle ammo once you have one)
-  setTimeout(() => { if (MS && MS.guards.includes(g)) msPickup(MS.have.rifle ? 'ammo' : 'rifle', g.x, g.z, MS.have.rifle ? 15 : 30); }, 400);
+  if (g.target && msAll('guards').filter(([o]) => o.target).every(([o]) => !o.alive)) msToast('OBJECTIVE COMPLETE · ' + (MS.st.boss || 'BOSS').toUpperCase() + ' DOWN', 'ok');
+  // dead clowns drop their gun
+  setTimeout(() => { if (MS && MS.guards.includes(g)) msPickup(g.weapon, g.x, g.z, Math.max(4, Math.round(MS_WEAPONS[g.weapon].give * (MS.have[g.weapon] ? 1 : 1.5)))); }, 400);
   for (const o of MS.guards) if (o.alive && Math.hypot(o.x - g.x, o.z - g.z) < 9 && losClear(o.x, o.z, g.x, g.z)) msAlert(o, P.x, P.z);
+}
+// ---- explosions: grenades and explosive barrels
+function msExplode(x, z, R, dmg) {
+  const p = new THREE.Vector3(x, 0.8, z);
+  killBurst(p, '#ff7a1a', true); killBurst(p.clone().setY(1.4), '#ffd23c', true); puff(p, 24, 0xff9a3d);
+  noise(0.8, 0.45, 420); tone(55, 0.7, 'sawtooth', 0.14, 25); kick = Math.max(kick, 2.5 * Math.max(0, 1 - Math.hypot(P.x - x, P.z - z) / 14));
+  for (const g of MS.guards) {
+    if (!g.alive) continue; const d = Math.hypot(g.x - x, g.z - z);
+    if (d < R && losClear(x, z, g.x, g.z)) { g.hp -= dmg * (1 - 0.6 * d / R); g.flash = 6; g.stun = 30; msAlert(g, P.x, P.z); if (g.hp <= 0) { msKill(g, false); hitMarker(true, false); } }
+  }
+  for (const c of MS.consoles) if (c.alive && Math.hypot(c.x - x, c.z - z) < R) msHitConsole(c, dmg, null);
+  for (const b of MS.barrels) if (b.alive && Math.hypot(b.x - x, b.z - z) < R) { b.hp = 0; setTimeout(() => { if (MS && MS.barrels.includes(b) && b.alive) msBarrelBoom(b); }, 160); }
+  const pd = Math.hypot(P.x - x, P.z - z); if (pd < R && losClear(x, z, P.x, P.z)) msHurt(dmg * 0.45 * (1 - pd / R), x, z);
+  for (const g of MS.guards) if (g.alive && Math.hypot(g.x - x, g.z - z) < 18) msAlert(g, P.x, P.z);
+}
+function msBarrelBoom(b) {
+  if (!b.alive) return; b.alive = false;
+  if (b.mesh) { roomGroup.remove(b.mesh); MS.ray = MS.ray.filter(m => m.userData.barrel !== b); }
+  solids = solids.filter(s => s !== b.solid);
+  msExplode(b.x, b.z, 3.6, 170);
+}
+const nadeGeo = new THREE.SphereGeometry(0.11, 10, 8), nadeMat = new THREE.MeshStandardMaterial({ color: 0x4a7a3a, roughness: 0.6, emissive: 0x102008 });
+function msThrow() {
+  if (!MS || MS.nades <= 0 || state !== 'dplay' || !P.alive) return;
+  MS.nades--; msHud(true);
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const m = new THREE.Mesh(nadeGeo, nadeMat); scene.add(m);
+  const n = { x: P.x + dir.x * 0.5, y: 1.4, z: P.z + dir.z * 0.5, vx: dir.x * 0.24 + P.vx, vy: 0.09 + dir.y * 0.22, vz: dir.z * 0.24 + P.vz, t: 100, mesh: m };
+  MS.flying.push(n); tone(300, 0.08, 'triangle', 0.05, 500);
+}
+function msNades() {
+  for (const n of [...MS.flying]) {
+    n.vy -= 0.008; const nx = n.x + n.vx, nz = n.z + n.vz;
+    const hit = (x, z) => solids.some(s => !s.see && n.y < (s.h || 3.2) && x > s.x0 - 0.1 && x < s.x1 + 0.1 && z > s.z0 - 0.1 && z < s.z1 + 0.1);
+    if (hit(nx, n.z)) n.vx *= -0.45; else n.x = nx;
+    if (hit(n.x, nz)) n.vz *= -0.45; else n.z = nz;
+    n.y += n.vy; if (n.y < 0.11) { n.y = 0.11; n.vy *= -0.35; n.vx *= 0.7; n.vz *= 0.7; if (Math.abs(n.vy) > 0.02) tone(900, 0.03, 'square', 0.02); }
+    if (n.y > 3.0) { n.y = 3.0; n.vy = -Math.abs(n.vy) * 0.5; }
+    n.mesh.position.set(n.x, n.y, n.z); n.mesh.rotation.x += 0.2;
+    if (--n.t <= 0) { scene.remove(n.mesh); MS.flying.splice(MS.flying.indexOf(n), 1); msExplode(n.x, n.z, 4.5, 230); }
+  }
 }
 // only the few alert guards closest to you press the attack; the rest hold their spot
 const MS_ATTACKERS = 3;
@@ -3023,6 +3648,7 @@ function msGuardThink(g) {
   if (g.flash > 0) g.flash--;
   if (g.fireT > 0) g.fireT--;
   if (g.stun > 0) { g.stun--; return; }
+  const GW = MS_GW[g.weapon] || MS_GW.rifle;
   const dx = P.x - g.x, dz = P.z - g.z, d = Math.hypot(dx, dz);
   const see = P.alive && d < 24 && losClear(g.x, g.z, P.x, P.z);
   if (g.state !== 'alert') {
@@ -3040,20 +3666,20 @@ function msGuardThink(g) {
     return;
   }
   if (see) { g.lx = P.x; g.lz = P.z; }
-  const range = g.active ? 22 : 12;
+  const range = g.active ? GW.range : Math.min(12, GW.range);
   if (see && d < range) {
     g.a = Math.atan2(dz, dx);
-    if (g.cd > 0) { g.cd--; if (g.active && d > 9 && g.cd > 20 && MS.t % 40 < 20) seek(g, P.x, P.z, 0.045); return; }
+    if (g.cd > 0) { g.cd--; if (g.active && d > (g.weapon === 'shotgun' ? 4 : 9) && g.cd > 20 && MS.t % 40 < 20) seek(g, P.x, P.z, 0.045); return; }
     if (g.aimT === 0) { g.aimT = 16; return; }
     if (--g.aimT > 0) return;
-    g.fireT = 6; SFX.gruntShot();
+    g.fireT = 6; SFX.gruntShot(); if (g.weapon === 'shotgun' || g.weapon === 'magnum') noise(0.12, 0.12, 800);
     const moving = Math.hypot(P.vx, P.vz) > 0.03, cr = P.crouch > 0.5;
-    let chance = 0.62 - d * 0.02 - (moving ? 0.15 : 0) - (cr ? 0.12 : 0); chance = Math.max(0.12, Math.min(0.75, chance));
+    let chance = GW.base - d * GW.fall - (moving ? 0.15 : 0) - (cr ? 0.12 : 0); chance = Math.max(0.1, Math.min(0.8, chance));
     const [mx, mz] = muzzleOf(g.x, g.z, g.a, 0.7, 0.22);
     const hit = Math.random() < chance;
     tracer(new THREE.Vector3(mx, 1.35, mz), new THREE.Vector3(P.x + (hit ? 0 : (Math.random() - 0.5) * 1.6), 1.2 + (hit ? 0 : Math.random() * 0.8), P.z + (hit ? 0 : (Math.random() - 0.5) * 1.6)), 0xffd27a);
-    if (hit) msHurt((4 + Math.random() * 4) * (d < 5 ? 1.5 : 1), g.x, g.z);
-    if (++g.burst < 3) { g.aimT = 6; } else { g.burst = 0; g.cd = g.active ? 45 + Math.random() * 50 : 100 + Math.random() * 60; }
+    if (hit) { let dm = GW.dmg[0] + Math.random() * (GW.dmg[1] - GW.dmg[0]); if (GW.close) dm *= d < 4 ? GW.close : d < 8 ? 1.6 : 0.7; else if (d < 5) dm *= 1.5; msHurt(dm, g.x, g.z); }
+    if (++g.burst < GW.burst) { g.aimT = GW.gap; } else { g.burst = 0; g.cd = g.active ? GW.cd[0] + Math.random() * GW.cd[1] : 100 + Math.random() * 60; }
   } else {
     g.aimT = 0;
     if (g.active && g.lx != null) {
@@ -3077,15 +3703,38 @@ function msSeparate() {
     for (const [g, sx, sz] of [[p, -nx, -nz], [q, nx, nz]]) { const w = g.walk, lm = g.lastMove; moveEnemy(g, sx, sz); g.walk = w; g.lastMove = lm; }
   }
 }
+function msTake(pk) {
+  const k = pk.kind, W = MS_WEAPONS[k];
+  if (k === 'armor' || k === 'vest') { if (MS.armor >= 100) return false; MS.armor = Math.min(100, MS.armor + pk.amt); MS.hudT = 150; msToast(k === 'armor' ? 'BODY ARMOR' : 'LIGHT ARMOR', 'ok'); }
+  else if (k === 'med') { if (MS.hp >= 100) return false; MS.hp = Math.min(100, MS.hp + 50); MS.hudT = 150; msToast('MEDKIT · +50 HEALTH', 'ok'); }
+  else if (k === 'key') { MS.keycard = true; msToast('OBJECTIVE COMPLETE · MASTER KEY FOUND', 'ok'); }
+  else if (k === 'intel') { MS.intel++; msToast(MS.intel >= MS.intelTotal ? 'OBJECTIVE COMPLETE · ALL GOLDEN TICKETS' : 'GOLDEN TICKET · ' + MS.intel + '/' + MS.intelTotal, 'ok'); }
+  else if (k === 'lever') { if (pk.on) return false; pk.on = true; pk.arm.rotation.z = -0.9; noise(0.3, 0.2, 300); tone(120, 0.3, 'square', 0.06, 60); const all = msAll('pickups').filter(([p]) => p.kind === 'lever'), n = all.filter(([p]) => p.on).length; msToast(n >= all.length ? 'OBJECTIVE COMPLETE · CAGES OPEN' : 'CAGE LEVER PULLED · ' + n + '/' + all.length, 'ok'); msHud(true); return 'stay'; }
+  else if (k === 'grenade') { MS.nades += pk.amt; msToast('GRENADES +' + pk.amt + ' · PRESS G TO THROW', 'ok'); }
+  else if (k === 'ammo') { for (const w of MS_ORDER) if (MS.have[w]) MS.reserve[w] += MS_WEAPONS[w].give; msToast('AMMO', ''); }
+  else if (W) {
+    const had = MS.have[k]; MS.have[k] = true; MS.reserve[k] += pk.amt;
+    if (!had) { MS.ammo[k] = Math.min(W.mag, MS.reserve[k]); MS.reserve[k] -= MS.ammo[k]; msSwitch(k); msToast(W.name.toUpperCase() + ' · ' + (MS_ORDER.indexOf(k) + 1) + ' TO SELECT', 'ok'); }
+    else msToast(W.name.toUpperCase() + ' AMMO', '');
+  }
+  return true;
+}
 function misTick() {
-  if (!MS || !MS.guards) return;
+  if (!MS || !MS.guards || !MS.floors) return;
   if (state !== 'dplay') return;
   MS.t++; tick = MS.t; dtick = MS.t;
+  if (MS.trans) {
+    const T = MS.trans; T.t++; P.vx *= 0.5; P.vz *= 0.5; firing = false;
+    if (T.t === 14) msGoFloor(T.to, T.dir);
+    if (T.t === 18) msFade(0);
+    if (T.t >= 26) MS.trans = null;
+    return;
+  }
   const fwd = (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0);
   const str = (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0);
   const fx = -Math.sin(P.yaw), fz = -Math.cos(P.yaw), rx = Math.cos(P.yaw), rz = -Math.sin(P.yaw);
   let wx = fx * fwd + rx * str, wz = fz * fwd + rz * str; const wl = Math.hypot(wx, wz) || 1; wx /= wl; wz /= wl;
-  const SPEED = 4.3 / 60 * (1 - 0.45 * (P.crouch || 0)), moving = fwd || str;
+  const SPEED = 4.3 / 60 * (1 - 0.45 * (P.crouch || 0)) * (MS.zoom ? 0.6 : 1), moving = fwd || str;
   P.vx += ((moving ? wx * SPEED : 0) - P.vx) * 0.25; P.vz += ((moving ? wz * SPEED : 0) - P.vz) * 0.25;
   const blocked = (x, z) => solids.some(s => hitsRect(x, z, P.r, s)) || MS.guards.some(g => g.alive && Math.hypot(g.x - x, g.z - z) < 0.7 && Math.hypot(g.x - x, g.z - z) < Math.hypot(g.x - P.x, g.z - P.z));
   if (!blocked(P.x + P.vx, P.z)) P.x += P.vx; else P.vx = 0;
@@ -3098,7 +3747,17 @@ function misTick() {
   if (P.dcd > 0) P.dcd--;
   if (firing && P.dcd <= 0 && P.rl <= 0) { if (P.ammo > 0) msShoot(); else { msReload(); if (P.rl <= 0) { P.dcd = 20; tone(900, 0.03, 'square', 0.03); } } }
   if (state !== 'dplay') return;
-  // doors open for anyone close; locked ones need this stage's keycard
+  msNades();
+  if (state !== 'dplay') return;
+  // stairs
+  const inZone = s => P.x > s.x0 && P.x < s.x1 && P.z > s.z0 && P.z < s.z1;
+  const st = MS.stairs.find(inZone);
+  if (!st) MS.stairLock = false;
+  else if (!MS.stairLock) {
+    const to = MS.fi + (st.dir === 'up' ? 1 : -1);
+    if (MS.floors[to]) { MS.trans = { t: 0, to, dir: st.dir }; MS.zoom = false; msFade(1); for (const n of MS.flying) scene.remove(n.mesh); MS.flying = []; tone(220, 0.2, 'triangle', 0.04, st.dir === 'up' ? 440 : 110); return; }
+  }
+  // doors open for anyone close; locked ones need this stage's key
   for (const d of MS.doors) {
     const near = (x, z, r) => Math.hypot(x - d.cx, z - d.cz) < r;
     const pNear = near(P.x, P.z, 2.8), want = (pNear && (!d.locked || MS.keycard)) || (!d.locked && MS.guards.some(g => g.alive && near(g.x, g.z, 2.4)));
@@ -3111,35 +3770,42 @@ function misTick() {
     if (d.lamp) d.lamp.material.color.setHex(MS.keycard ? 0x3cff7a : 0xff3b2e);
   }
   for (const pk of [...MS.pickups]) {
-    pk.g.rotation.y += 0.05;
+    if (pk.kind !== 'lever') pk.g.rotation.y += 0.05;
     if (Math.hypot(pk.x - P.x, pk.z - P.z) > 0.9) continue;
-    if (pk.kind === 'armor') { if (MS.armor >= 100) continue; MS.armor = Math.min(100, MS.armor + pk.amt); MS.hudT = 150; msToast('BODY ARMOR', 'ok'); }
-    else if (pk.kind === 'key') { MS.keycard = true; msToast('OBJECTIVE COMPLETE · MASTER KEY FOUND', 'ok'); }
-    else if (pk.kind === 'intel') { MS.intel++; const n = MS.st.pickups.filter(p => p[0] === 'intel').length; msToast(MS.intel >= n ? 'OBJECTIVE COMPLETE · ALL GOLDEN TICKETS' : 'GOLDEN TICKET · ' + MS.intel + '/' + n, 'ok'); }
-    else if (pk.kind === 'rifle') { const had = MS.have.rifle; MS.have.rifle = true; MS.reserve.rifle += pk.amt; if (!had) { MS.ammo.rifle = Math.min(MS_WEAPONS.rifle.mag, MS.reserve.rifle); MS.reserve.rifle -= MS.ammo.rifle; msSwitch('rifle'); msToast('AUTO RIFLE · PRESS 1 / 2 TO SWITCH', 'ok'); } else msToast('AMMO', ''); }
-    else if (pk.kind === 'ammo') { MS.reserve.rifle += pk.amt; MS.reserve.pistol += 7; msToast('AMMO', ''); }
+    const r = msTake(pk); if (!r) continue;
     tone(880, 0.06, 'triangle', 0.06); tone(1320, 0.08, 'triangle', 0.05, null, 0.06);
-    roomGroup.remove(pk.g); MS.pickups.splice(MS.pickups.indexOf(pk), 1); msHud(true);
+    if (r !== 'stay') { roomGroup.remove(pk.g); MS.pickups.splice(MS.pickups.indexOf(pk), 1); }
+    msHud(true); MS.infoKey = '';
   }
   if (MS.t % 15 === 1) msPickAttackers();
   for (const g of MS.guards) msGuardThink(g);
   msSeparate();
-  const o = msObjectives(), ready = o.slice(0, -1).every(x => x.done);
-  const inExit = P.x > MS.lift.x0 && P.x < MS.lift.x1 && P.z > MS.lift.z0 && P.z < MS.lift.z1;
-  if (inExit && !MS.won && state === 'dplay') {
-    if (ready) { MS.won = true; msNextStage(); }
-    else if (MS.t % 90 === 0) msToast('FINISH YOUR OBJECTIVES FIRST', 'bad');
+  if (MS.lift) {
+    const o = msObjectives(), ready = o.slice(0, -1).every(x => x.done);
+    const inExit = P.x > MS.lift.x0 && P.x < MS.lift.x1 && P.z > MS.lift.z0 && P.z < MS.lift.z1;
+    if (inExit && !MS.won && state === 'dplay') {
+      if (ready) { MS.won = true; msNextStage(); }
+      else if (MS.t % 90 === 0) msToast('FINISH YOUR OBJECTIVES FIRST', 'bad');
+    }
   }
   if (MS.hudT > 0) MS.hudT--;
 }
 let msHudKey = '';
 function msHud(force) {
   if (!MS || !MS.ammo) return;
-  const W = MS_WEAPONS[MS.weapon], key = MS.weapon + P.ammo + '|' + MS.reserve[MS.weapon] + '|' + (P.rl > 0);
-  if (force || key !== msHudKey) { msHudKey = key; $('msWeapon').textContent = W.name.toUpperCase(); $('msAmmo').textContent = P.rl > 0 ? 'RELOADING' : P.ammo + ' | ' + MS.reserve[MS.weapon]; }
+  const W = MS_WEAPONS[MS.weapon], key = MS.weapon + P.ammo + '|' + MS.reserve[MS.weapon] + '|' + (P.rl > 0) + '|' + MS.nades;
+  if (force || key !== msHudKey) { msHudKey = key; $('msWeapon').textContent = W.name.toUpperCase() + (MS.nades ? '  ·  GRENADES ' + MS.nades : ''); $('msAmmo').textContent = P.rl > 0 ? 'RELOADING' : P.ammo + ' | ' + MS.reserve[MS.weapon]; }
   const show = MS.hudT > 0 || state === 'pause';
   const arcs = $('msArcs'); arcs.style.opacity = show ? '1' : '0';
   $('msHp').style.strokeDashoffset = String(100 - Math.max(0, MS.hp)); $('msAr').style.strokeDashoffset = String(100 - MS.armor);
+  // objective tracker
+  $('msInfo').hidden = state === 'title';
+  if (MS.floors && (MS.t % 20 === 0 || force || !MS.infoKey)) {
+    const m = MISSIONS[misPick], o = msObjectives(), multi = MS.floors.length > 1;
+    const head = 'STAGE ' + (MS.stage + 1) + '/' + m.stages.length + ' · ' + MS.st.name.toUpperCase() + (multi ? ' · ' + MS.floors[MS.fi].def.name.toUpperCase() : '');
+    const html = '<b>' + head + '</b>' + o.map(x => '<span class="' + (x.done ? 'done' : '') + '">' + x.text + (x.where && !x.done && multi ? ' <em>' + x.where + '</em>' : '') + '</span>').join('');
+    if (html !== MS.infoKey) { MS.infoKey = html; $('msInfo').innerHTML = html; }
+  }
 }
 function misRender() {
   if (!MS || !MS.guards) return;
@@ -3156,14 +3822,31 @@ function misRender() {
     CARN.carry.position.set(P.x, 2.9, P.z);
   }
   if (MS.exitMat && MS.st) MS.exitMat.color.setHex(msObjectives().slice(0, -1).every(x => x.done) ? 0x3cff7a : 0x2a5a3a);
+  // first-person gun for the current weapon
+  if (MS.ammo) {
+    const vm = MS_WEAPONS[MS.weapon].vm, z = !!MS.zoom, fl = flash.visible || rflash.visible;
+    rifle.visible = vm === 'rifle' && !z; revolver.visible = vm === 'revolver' && !z;
+    flash.visible = flash2.visible = fl && vm === 'rifle'; rflash.visible = rflash2.visible = fl && vm === 'revolver';
+    const rmax = MS_WEAPONS[MS.weapon].reload, rk = P.rl > 0 ? Math.sin(Math.PI * Math.min(1, 1 - P.rl / rmax)) : 0;
+    for (const k in msVM) {
+      const g = msVM[k]; g.visible = vm === k && !z; if (!g.visible) continue;
+      g.position.set(rifle.position.x, rifle.position.y - rk * 0.08, rifle.position.z); g.rotation.set(kick * 0.12 + rk * 0.7, rifle.rotation.y, rifle.rotation.z + rk * 0.4);
+      for (const f of g.userData.fl) { f.visible = fl; f.rotation.z = Math.random() * Math.PI; }
+    }
+    const fov = z ? 22 : camera.fov; if (z && Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    $('msScope').hidden = !z;
+  }
   msHud(false);
 }
 window.addEventListener('keydown', e => {
   if (mode !== 'mission' || !MS || state !== 'dplay') return;
-  const k = e.key.toLowerCase();
-  if (k === '1') msSwitch('pistol'); else if (k === '2') msSwitch('rifle'); else if (k === 'q') msSwitch(MS.weapon === 'pistol' ? 'rifle' : 'pistol');
+  const k = e.key.toLowerCase(), n = +k;
+  if (n >= 1 && n <= 6) msSwitch(MS_ORDER[n - 1]); else if (k === 'q') msCycle(1);
+  else if (k === 'g' && !e.repeat) msThrow();
+  else if (k === 'z' && !e.repeat && MS_WEAPONS[MS.weapon].zoomSpread != null && P.rl <= 0) MS.zoom = !MS.zoom;
 });
-window.addEventListener('wheel', e => { if (mode === 'mission' && MS && state === 'dplay') msSwitch(MS.weapon === 'pistol' ? 'rifle' : 'pistol'); }, { passive: true });
+window.addEventListener('wheel', e => { if (mode === 'mission' && MS && state === 'dplay') msCycle(e.deltaY > 0 ? 1 : -1); }, { passive: true });
+window.addEventListener('mousedown', e => { if (e.button === 2 && mode === 'mission' && MS && state === 'dplay' && MS_WEAPONS[MS.weapon].zoomSpread != null && P.rl <= 0) MS.zoom = !MS.zoom; });
 // ===== end Paradox Loop missions =====
 
 
