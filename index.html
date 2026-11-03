@@ -208,6 +208,14 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .lrow .play:disabled { opacity: 0.4; cursor: default; }
 .lempty { margin: 0; color: var(--dim); font-size: 13px; }
 .wtext { margin: 0; color: var(--dim); }
+.lcolors { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--wall); border-radius: 6px; background: #15181c; }
+.lcrow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.lcrow > span { font-size: 12px; color: var(--dim); min-width: 92px; }
+.lcrow em { font-style: normal; font-size: 13px; color: var(--text); }
+.wsw { display: flex; flex-wrap: wrap; gap: 8px; }
+.wsw .sw { width: 28px; height: 28px; }
+.wsw .sw:disabled { opacity: 0.2; cursor: not-allowed; }
+.pdot { display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; }
 .play:disabled { opacity: 0.45; cursor: default; }
 .lstatus { margin: 0; min-height: 1.2em; font-size: 12px; color: var(--amber); }
 .overlay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(13,15,18,0.8); padding: 16px; overflow: auto; }
@@ -230,7 +238,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v38</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v39</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -294,6 +302,10 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
             <p class="eyebrow" id="wEye">Online · Duel · first to 5</p>
             <h2 id="wTitle">Lobby</h2>
             <p class="wtext" id="wText"></p>
+            <div class="lcolors">
+              <div class="lcrow"><span>Your color</span><div class="wsw" id="wMyColors"></div></div>
+              <div class="lcrow"><span id="wPeerLbl">Waiting for opponent</span><b class="pdot" id="wPeerColor" hidden></b><em id="wPeerName"></em></div>
+            </div>
             <div class="btns lbtns"><button type="button" class="play" id="wStart">Start match</button><button type="button" class="play alt" id="wLeave">Leave lobby</button></div>
           </div>
           <p class="lstatus" id="lStatus" role="status"></p>
@@ -338,7 +350,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v38</span>
+    <span class="ver">v39</span>
   </div>
 </div>
 
@@ -2108,7 +2120,7 @@ function startGallery(seed, online) {
 // Kill burst in the killer's color: a bright flash, a shockwave ring and a spray of sparks.
 const burstGeo = new THREE.SphereGeometry(1, 16, 12), ringGeo = new THREE.RingGeometry(0.8, 1, 40), sparkGeo = new THREE.BoxGeometry(0.06, 0.06, 0.06);
 function killBurst(pos, hex, big) {
-  const c = new THREE.Color(hex), hot = c.clone().lerp(new THREE.Color(0xffffff), 0.55), s = big ? 1.35 : 1;
+  const c = new THREE.Color(hex), hot = c.clone().lerp(new THREE.Color(0xffffff), 0.55), s = big ? 0.55 : 0.42;
   const core = new THREE.Mesh(burstGeo, new THREE.MeshBasicMaterial({ color: hot, transparent: true, opacity: 0.95, depthWrite: false, fog: false }));
   core.userData.shared = true; core.position.copy(pos); addFx(core, 16, (o, k) => { o.scale.setScalar((0.15 + (1 - k) * 0.9) * s); o.material.opacity = 0.95 * k * k; });
   const glow = new THREE.Mesh(burstGeo, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.5, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
@@ -2119,16 +2131,16 @@ function killBurst(pos, hex, big) {
     addFx(ring, 20, (o, k) => { o.scale.setScalar((0.2 + (1 - k) * 2.2) * s); o.material.opacity = 0.9 * k; });
   }
   const sm = new THREE.MeshBasicMaterial({ color: c, fog: false });
-  for (let i = 0; i < (big ? 34 : 24); i++) {
+  for (let i = 0; i < (big ? 18 : 12); i++) {
     const p = new THREE.Mesh(sparkGeo, i % 3 ? sm : new THREE.MeshBasicMaterial({ color: hot, fog: false }));
     p.userData.shared = true; p.position.copy(pos);
     const v = new THREE.Vector3(Math.random() - 0.5, Math.random() * 0.9 - 0.2, Math.random() - 0.5).normalize().multiplyScalar((0.07 + Math.random() * 0.09) * s);
     addFx(p, 34 + (Math.random() * 14 | 0), (o, k) => { o.position.add(v); v.y -= 0.005; v.multiplyScalar(0.96); o.rotation.x += 0.3; o.rotation.y += 0.2; o.scale.setScalar(0.4 + k); });
   }
 }
-function galKill(t, head, mine, at) {
+function galKill(t, head, mine, at, pt) {
   t.alive = false; t.st = 'dead'; t.deadT = G.t; t.aimT = 0; t.by = mine ? 'me' : 'foe'; t.killT = at ?? G.t; t.head = head;
-  const kp = new THREE.Vector3(t.x, t.y + (head ? 1.55 : 1.1) * t.sc, t.z);
+  const kp = pt ? new THREE.Vector3(pt[0], pt[1], pt[2]) : new THREE.Vector3(t.x, t.y + (head ? 1.55 : 1.1) * t.sc, t.z);
   killBurst(kp, mine ? myColor : G.foeColor, head);
   if (mine) { G.me++; if (head) G.heads++; } else G.foe++;
   galHud(true);
@@ -2160,7 +2172,8 @@ function galShoot() {
   const kill = t.hp <= 0;
   head ? SFX.headshot() : SFX.hit(); hitMarker(kill, head);
   puff(h.point, 4, head ? 0xffb547 : COL.foe);
-  if (kill) { galKill(t, head, true); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head, at: G.t }); }
+  const pt = [+h.point.x.toFixed(2), +h.point.y.toFixed(2), +h.point.z.toFixed(2)];
+  if (kill) { galKill(t, head, true, G.t, pt); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head, at: G.t, p: pt }); }
   else if (D.online) netSend('gh', { i: t.i, dmg });
 }
 function galBot() {
@@ -2179,7 +2192,7 @@ function galBot() {
   tracer(new THREE.Vector3(mx, 1.35, mz), new THREE.Vector3(tgt.x + (hit ? 0 : (Math.random() - 0.5) * 2), aimY, tgt.z + (hit ? 0 : (Math.random() - 0.5) * 2)), 0xff8a7f);
   if (!hit) return;
   tgt.flash = 5; tgt.hp -= head ? 2 : 1;
-  if (tgt.hp <= 0) galKill(tgt, head, false); else tgt.botAt = G.t + 12;
+  if (tgt.hp <= 0) galKill(tgt, head, false, G.t, [tgt.x, aimY, tgt.z]); else tgt.botAt = G.t + 12;
 }
 function galTargets(wz) {
   for (const t of G.targets) {
@@ -2244,10 +2257,10 @@ function galFinish() {
 }
 // Online: both players can kill the same target a moment apart. Each side applies the same rule,
 // so both screens agree: the earlier kill wins, and an exact tie goes to the host.
-function galRemoteKill(i, head, at) {
+function galRemoteKill(i, head, at, p) {
   if (!G) return;
   const t = G.targets[i]; if (!t) return;
-  if (t.alive) { galKill(t, head, false, at); return; }
+  if (t.alive) { galKill(t, head, false, at, Array.isArray(p) && p.length === 3 ? p : null); return; }
   if (t.by === 'me' && (at < t.killT || (at === t.killT && !G.host))) {
     G.me--; if (t.head) G.heads--; G.foe++; t.by = 'foe'; t.killT = at; galHud(true);
   }
@@ -2522,8 +2535,30 @@ async function joinLobby(l) {
   netSend('join', { name, color: myColor }, l.hostId);
   setTimeout(() => { if (ON && ON.pending && ON.lobbyId === l.lobbyId) { lobbyStatus('The host didn’t answer. The lobby may have closed.'); leaveGame(); } }, 6000);
 }
+// Lobby colors: each player picks a color in the lobby and sees the other player's pick live.
+function pickLobbyColor(hex) {
+  if (ON && ON.peerColor === hex) return;
+  const sw = document.querySelector('#colors .sw[data-hex="' + hex + '"]'); if (sw) sw.click(); else myColor = hex;
+  if (ON && ON.peer) netSend('color', { color: hex }, ON.peer);
+  renderLobbyColors();
+}
+function renderLobbyColors() {
+  const box = $('wMyColors'); if (!box || !ON) return;
+  box.innerHTML = '';
+  for (const [nm, hex] of PCOLORS) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sw'; b.title = nm; b.setAttribute('aria-label', nm); b.style.background = hex;
+    const taken = ON.peer && ON.peerColor === hex;
+    b.setAttribute('aria-pressed', String(hex === myColor)); b.disabled = !!taken; if (taken) b.title = nm + ' (taken)';
+    b.addEventListener('click', () => pickLobbyColor(hex));
+    box.appendChild(b);
+  }
+  const pd = $('wPeerColor'), pl = $('wPeerLbl');
+  if (ON.peer && ON.peerColor) { pd.style.background = ON.peerColor; pd.hidden = false; pl.textContent = (ON.peerName || 'Opponent') + ' is'; const n = PCOLORS.find(p => p[1] === ON.peerColor); $('wPeerName').textContent = n ? n[0] : ''; }
+  else { pd.hidden = true; pl.textContent = 'Waiting for opponent'; $('wPeerName').textContent = ''; }
+}
 function waitView() {
   showLobby('wait');
+  renderLobbyColors();
   $('wEye').textContent = ON.gameMode === 'gallery' ? 'Online · Last Laugh · most kills wins' : 'Online · Duel · first to 5';
   $('wTitle').textContent = ON.lobbyName;
   const start = $('wStart');
@@ -2564,7 +2599,7 @@ function onNetMsg(m) {
       if (!ON.isHost) return;
       if (ON.peer && ON.peer !== m.from) { netSend('full', {}, m.from); return; }
       ON.peer = m.from; ON.peerName = d.name || 'Player'; ON.peerColor = d.color; ON.lastSeen = Date.now(); ON.peerHere = undefined; netSend('welcome', { name: ON.me, color: myColor }, m.from); announce(); waitView(); SFX.plateOn(); { const pid = m.from; setTimeout(() => { if (ON && ON.isHost && ON.peer === pid) startRTC(true, pid); }, 400); } return;
-    case 'welcome': if (ON.isHost) return; ON.pending = false; ON.peer = m.from; ON.lastSeen = Date.now(); ON.peerName = d.name; ON.peerColor = d.color; lobbyStatus(''); waitView(); SFX.plateOn(); return;
+    case 'welcome': if (ON.isHost) return; ON.pending = false; ON.peer = m.from; ON.lastSeen = Date.now(); ON.peerName = d.name; ON.peerColor = d.color; if (d.color === myColor) pickLobbyColor((PCOLORS.find(p => p[1] !== d.color) || PCOLORS[0])[1]); lobbyStatus(''); waitView(); SFX.plateOn(); return;
     case 'full': ON.pending = false; leaveGame(); lobbyStatus('That lobby just filled up.'); return;
     case 'start': if (!ON.isHost) { if (d.mode) ON.gameMode = d.mode; beginOnlineMatch(d.seed); } return;
     case 'st': if (ON.inMatch && !(d.q <= (ON.lastQ || 0))) { ON.lastQ = d.q || 0; ON.remote = { ...d, at: performance.now() }; } return;
@@ -2587,7 +2622,8 @@ function onNetMsg(m) {
     }
     case 'round': if (!ON.isHost) { D.round = d.r; bigText(''); $('cards').hidden = true; startRound(); } return;
     case 'rematch': if (!ON.isHost) beginOnlineMatch(d.seed); return;
-    case 'gk': if (ON.inMatch) galRemoteKill(d.i | 0, !!d.head, +d.at || 0); return;
+    case 'gk': if (ON.inMatch) galRemoteKill(d.i | 0, !!d.head, +d.at || 0, d.p); return;
+    case 'color': if (PCOLORS.some(p => p[1] === d.color)) { ON.peerColor = d.color; if (!ON.inMatch) renderLobbyColors(); } return;
     case 'gh': if (ON.inMatch) galRemoteHit(d.i | 0, d.dmg | 0); return;
     case 'gs': if (ON.inMatch) galRemoteShot(d.yaw, d.pitch); return;
     case 'gy': if (ON.inMatch) galRemoteYaw(d.yaw); return;
