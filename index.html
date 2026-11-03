@@ -229,7 +229,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v34</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v35</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -337,7 +337,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v34</span>
+    <span class="ver">v35</span>
   </div>
 </div>
 
@@ -352,6 +352,7 @@ const screenEl = document.getElementById('screen');
 const $ = id => document.getElementById(id);
 
 const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+renderer.localClippingEnabled = true;
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -2061,9 +2062,16 @@ function buildGallery(seed) {
     const o = sp.o, m = soldierModel('grunt', CLOWN_COLORS[(sp.oi * 7 + i * 3) % CLOWN_COLORS.length]), s = o.side;
     carnClown(m);
     m.root.scale.setScalar(sp.sc);
-    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL + 0.32 : GWALL - 1.2), uz: o.z, lean: o.type === 'window' ? 0.95 : 0, mx: s * (GWALL + 1.0), win: o.type === 'window', y: 0, yHide: sp.yOff - (sp.yOff + 1.75 * sp.sc - 0.85),
+    const t = { i, o, sp, oi: sp.oi, sc: sp.sc, yOff: sp.yOff, kMax: sp.peek, side: s, t: 'grunt', x: s * (GWALL + 1.2), z: o.z + sp.dir * 2.0, hx: s * (GWALL + 1.2), hz: o.z + sp.dir * 2.0, ux: s * (o.type === 'window' ? GWALL - 0.45 : GWALL - 1.2), uz: o.z, lean: 0, mx: s * (GWALL + 1.0), win: o.type === 'window', y: 0, yHide: sp.yOff - (sp.yOff + 1.75 * sp.sc - 0.85),
       st: 'wait', k: 0, hp: 2, alive: true, pending: false, stun: 0, aimT: 1, fireT: 0, flash: 0, lastMove: -99, upT: 0, deadT: 0, botAt: 0, by: null, killT: 0, root: m.root, anim: m.anim, parts: m.parts, hats: m.hats || [], mats: m.mats };
-    if (t.win) { t.x = t.side * (GWALL + 0.75); t.z = t.uz; t.y = t.yHide; t.leanK = 0; }
+    if (t.win) {
+      t.x = t.ux; t.z = t.uz; t.y = t.yHide; t.leanK = 0;
+      // Window clowns stand in front of the wall, but everything below the window sill is cut away,
+      // so from any angle they read as popping up over the sill and both players see them the same.
+      const clip = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.97)];
+      for (const mm of t.mats) mm.clippingPlanes = clip;
+      t.root.traverse(o => { if (o.isMesh && o.material && o.material !== hitMat && !o.material.clippingPlanes) { o.material = o.material.clone(); o.material.clippingPlanes = clip; } });
+    }
     m.root.visible = false; for (const p of m.parts) p.userData.gt = t;
     roomGroup.add(m.root);
     return t;
@@ -2119,6 +2127,7 @@ function galShoot() {
   if (D.online) netSend('gs', { yaw: +P.yaw.toFixed(3), pitch: +P.pitch.toFixed(3) });
   if (!h) return;
   const t = h.object.userData.gt;
+  if (t && t.win && h.point.y < 0.97) { puff(h.point, 3, 0x6b7480); SFX.wall(); return; } // below the sill there's only wall
   if (h.object.userData.hat) { puff(h.point, 5, 0xffd23c); SFX.wall(); return; } // hats don't count: shot is wasted
   if (!t || !t.alive) { puff(h.point, 3, 0x6b7480); SFX.wall(); return; }
   const head = h.object.userData.zone === 'head';
@@ -2164,8 +2173,7 @@ function galTargets(wz) {
     if (t.alive) {
       if (t.win) {
         // windows: rise up inside the room first, then step to the window and lean out
-        const a = Math.min(1, t.k * 2), b = Math.max(0, t.k * 2 - 1), back = t.side * (GWALL + 0.75);
-        t.z = t.uz; t.y = t.yHide + (t.yOff - t.yHide) * a; t.x = back + (t.ux - back) * b; t.leanK = b;
+        t.x = t.ux; t.z = t.uz; t.y = t.yHide + (t.yOff - t.yHide) * Math.min(1, t.k); t.leanK = 0;
       }
       else {
         // doors: slide over to the doorway inside the room, then step out into the hallway
