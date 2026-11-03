@@ -144,6 +144,7 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .firebtn.on { background: rgba(255,59,46,0.85); transform: scale(0.95); }
 .ghud { display: none; position: absolute; left: 50%; top: 14px; transform: translateX(-50%); gap: 10px; align-items: stretch; }
 .screen.gallery .ghud { display: flex; }
+.screen.gallery .dhud { display: none !important; }
 .gside { background: rgba(13,15,18,0.78); padding: 6px 14px; border-radius: 6px; display: grid; justify-items: center; min-width: 92px; color: #fff; }
 .gside span { font-size: 11px; letter-spacing: 0.14em; color: #b9c2ff; }
 .gside.foe span { color: #ffb0a8; }
@@ -229,7 +230,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v35</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v36</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
@@ -337,7 +338,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v35</span>
+    <span class="ver">v36</span>
   </div>
 </div>
 
@@ -2086,7 +2087,7 @@ function clearGallery() {
   G = null;
 }
 function startGallery(seed, online) {
-  if (mode !== 'gallery') { screenEl.classList.remove('duel'); screenEl.classList.add('gallery'); mode = 'gallery'; }
+  screenEl.classList.remove('duel'); screenEl.classList.add('gallery'); mode = 'gallery';
   clearActors(); clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; }
   D = { online: !!online, score: [0, 0], round: 0, arena: 'Hallway' };
   G = { seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: -Math.PI / 2 };
