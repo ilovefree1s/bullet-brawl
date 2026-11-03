@@ -280,13 +280,20 @@ body { padding: 8px 10px !important; }
 .screen { aspect-ratio: auto !important; height: calc(100vh - 80px); height: calc(100dvh - 80px); min-height: 340px; }
 .stage.full .screen { width: 100vw !important; height: 100vh !important; height: 100dvh !important; }
 .keys { gap: 6px 18px; }
+
+/* ---- big separate mode buttons ---- */
+.menutop .modes { gap: 14px !important; padding: 0 !important; border: 0 !important; background: none !important; flex-wrap: wrap; justify-content: center; }
+.menutop .modes .rbtn { min-width: 150px; padding: 14px 24px !important; font-family: var(--display); font-size: 20px !important; font-weight: 700 !important; letter-spacing: 0.06em; color: var(--text) !important; background: rgba(13,15,18,0.72) !important; border: 2px solid rgba(255,210,60,0.35) !important; border-radius: 12px !important; box-shadow: 0 6px 18px rgba(0,0,0,0.45); transition: transform 0.12s, border-color 0.12s; }
+.menutop .modes .rbtn:hover { transform: translateY(-2px); border-color: #ffd23c !important; }
+.menutop .modes .rbtn[aria-pressed="true"] { color: var(--ink) !important; background: #ffd23c !important; border-color: #ffd23c !important; box-shadow: 0 0 22px rgba(255,210,60,0.45); }
+@media (max-width: 700px) { .menutop .modes { gap: 8px !important; } .menutop .modes .rbtn { min-width: 0; padding: 10px 14px !important; font-size: 15px !important; } }
 </style>
 
 <div class="wrap">
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v43</small>
+    <small class="hver">v44</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -411,7 +418,7 @@ body { padding: 8px 10px !important; }
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v43</span>
+    <span class="ver">v44</span>
   </div>
 </div>
 
