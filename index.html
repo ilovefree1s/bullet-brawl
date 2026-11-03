@@ -239,6 +239,14 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 .ver { letter-spacing: 0.1em; font-variant-numeric: tabular-nums; margin-left: auto; }
 
 /* ---- Last Laugh menu ---- */
+.overlay { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; align-items: center; gap: 12px; }
+.menutop { display: grid; justify-items: center; gap: 12px; padding-top: 6px; }
+.menutop .brand { justify-content: center; align-items: center; flex-direction: column; gap: 4px; }
+.menutop .brand .hver { display: none; }
+.menubot { display: flex; gap: 8px; align-items: center; justify-content: center; padding-bottom: 4px; }
+.menubot .setpanel { top: auto; bottom: calc(100% + 6px); right: auto; left: 50%; transform: translateX(-50%); text-align: left; }
+.menubot .mver { font-family: var(--mono); font-size: 12px; color: var(--dim); margin-left: 6px; }
+.menutop .rooms { justify-content: center; }
 .brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; justify-content: flex-start; }
 .logo { font-family: "Creepster", var(--display); font-weight: 400; font-size: clamp(40px, 6vw, 64px); letter-spacing: 0.06em; color: #ffd23c; text-shadow: 0 0 18px rgba(255,59,46,0.55), 3px 3px 0 #7a0c18; line-height: 0.95; margin: 0; }
 .brand .tag { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
@@ -271,7 +279,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v41</small>
+    <small class="hver">v42</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -396,7 +404,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v41</span>
+    <span class="ver">v42</span>
   </div>
 </div>
 
@@ -1195,9 +1203,9 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
-  if (kind === 'coopIntro') { $('ovEyebrow').textContent = 'Last Laugh · co-op'; $('ovTitle').textContent = 'Last Laugh: Co-op'; ovBody.innerHTML = 'Fight through the midway together. Clowns step out and <b>glow red when they wind up a throw</b>: drop them first, or shoot the <b>pie out of the air</b>. Every pie that lands costs the team a life, and you share <b>5</b>. The walk <b>stops for waves</b> and moves on once the wave is cleared. Quick kills chain into a <b>combo</b> worth up to 4x points. Play solo here, or with a friend from <b>Online</b>.'; ovBtn.textContent = 'Start'; ovAction = 'coopStart'; ovAlt.hidden = true; }
+  if (kind === 'coopIntro') { $('ovEyebrow').textContent = 'Solo or online with a friend'; $('ovTitle').textContent = 'Co-op'; ovBody.innerHTML = 'Fight through the midway together. Clowns step out and <b>glow red when they wind up a throw</b>: drop them first, or shoot the <b>pie out of the air</b>. Every pie that lands costs the team a life, and you share <b>5</b>. The walk <b>stops for waves</b> and moves on once the wave is cleared. Quick kills chain into a <b>combo</b> worth up to 4x points. Play solo here, or with a friend from <b>Online</b>.'; ovBtn.textContent = 'Start'; ovAction = 'coopStart'; ovAlt.hidden = true; }
   if (kind === 'coopOver') { const ok = G.lives > 0; $('ovEyebrow').textContent = 'Last Laugh · co-op · ' + (D.online ? 'online' : 'solo'); $('ovTitle').textContent = ok ? 'You made it out' : 'The clowns had the last laugh'; ovBody.innerHTML = (ok ? 'Out alive with <b>' + G.lives + '</b> of 5 lives.' : 'Out of lives ' + Math.round(100 * (GZ0 - G.wz) / (GZ0 - GZEND)) + '% of the way down the midway.') + ' Your score <b>' + G.score + '</b>' + (D.online ? ' · partner <b>' + G.foeScore + '</b> · team <b>' + (G.score + G.foeScore) + '</b>' : '') + '. Kills <b>' + G.me + '</b>, headshot kills <b>' + G.heads + '</b>, accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'coopStart'; ovAlt.hidden = true; }
-  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Last Laugh · 1v1 vs AI'; $('ovTitle').textContent = 'Last Laugh: 1v1'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns step out of the <b>booth doorways</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = true; }
+  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Race the AI rival for kills'; $('ovTitle').textContent = '1v1 vs AI'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns step out of the <b>booth doorways</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = true; }
   if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Last Laugh · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.targets.length + ' targets. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = true; }
   if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and throw up a quick <b>shield</b> with <b>Q</b> to block bullets. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelOver') { const won = D.score[0] > D.score[1]; $('ovEyebrow').textContent = 'Duel · match over'; $('ovTitle').textContent = won ? 'You win the match' : 'The rival wins'; ovBody.innerHTML = 'Final score <b>' + D.score[0] + ' – ' + D.score[1] + '</b>. Your cards: <b>' + (P.cards.join(', ') || 'none') + '</b>. Rival cards: <b>' + (B.cards.join(', ') || 'none') + '</b>.'; ovBtn.textContent = 'Rematch'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
@@ -1217,6 +1225,17 @@ ovBtn.addEventListener('click', () => {
   begin(true);
 });
 ovAlt.addEventListener('click', () => { if (mode === 'duel' || mode === 'gallery') { leaveDuel(); return; } begin(true); });
+// The menu lives inside the game screen: logo and mode tabs on top, settings and full screen at the bottom.
+(() => {
+  const verTxt = document.querySelector('.hver').textContent;
+  const top = document.createElement('div'); top.className = 'menutop';
+  top.append(document.querySelector('header.brand'), document.querySelector('.topbar .modes'), $('rooms'));
+  const bot = document.createElement('div'); bot.className = 'menubot';
+  bot.append(document.querySelector('.topbar .tools'));
+  const v = document.createElement('span'); v.className = 'mver'; v.textContent = verTxt; bot.append(v);
+  ov.prepend(top); ov.append(bot);
+  document.querySelector('.topbar').remove();
+})();
 
 function requestLock() {
   if (fallback) return;
@@ -2933,7 +2952,7 @@ for (const [id, m] of [['lmGal', 'gallery'], ['lmCoop', 'coop']]) $(id).addEvent
 syncHostMode();
 for (const id of ['modeGallery', 'modeCoop']) $(id).addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } }, true);
 $('lHost').addEventListener('click', hostLobby);
-$('lBack').addEventListener('click', () => { netLeave(); leaveDuel(); });
+$('lBack').addEventListener('click', () => { netLeave(); leaveDuel(); enterGallery(true); });
 $('wStart').addEventListener('click', hostStart);
 $('wLeave').addEventListener('click', () => { leaveGame(); showLobby('browse'); lobbyStatus(''); renderLobbies(); });
 ovBtn.addEventListener('click', e => {
