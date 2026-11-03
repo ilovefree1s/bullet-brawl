@@ -330,7 +330,7 @@ body { padding: 8px 10px !important; }
   <header class="brand">
     <h1 class="logo">Last Laugh</h1>
     <span class="tag">A creepy carnival shooter</span>
-    <small class="hver">v52</small>
+    <small class="hver">v53</small>
   </header>
   <div class="topbar">
     <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Paradox Loop</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
@@ -476,7 +476,7 @@ body { padding: 8px 10px !important; }
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v52</span>
+    <span class="ver">v53</span>
   </div>
 </div>
 
@@ -2140,7 +2140,7 @@ let GZEND = -86;
 // Gameplay still runs on a straight "virtual" hallway (x across, z along); mapV() bends it into the real route.
 let ROUTE = null;
 function galRoute(seed) {
-  const r = galRng(seed ^ 0x51ed270b), lens = [24, 22, 24, 22, 20], segs = [];
+  const r = galRng(seed ^ 0x51ed270b), lens = [40, 38, 34], segs = [];
   let h = 0, x = 0, z = 0, S = 0, turn = r() < 0.5 ? 1 : -1;
   lens.forEach((L, i) => {
     segs.push({ i, h, ax: x, az: z, S, L, turn: i < lens.length - 1 ? turn : 0, c: Math.cos(h), sn: Math.sin(h) });
@@ -2204,8 +2204,10 @@ function galSpawnsCoop(seed, plan) {
   const r = galRng(seed ^ 0x2c1b3c6d), out = [], stops = [];
   const mk = (oi, extra) => { const o = plan[oi], roll = r(), sc = roll < 0.2 ? 0.7 + r() * 0.12 : roll > 0.82 ? 1.2 + r() * 0.16 : 0.9 + r() * 0.2; return Object.assign({ oi, o, sc, yOff: 0, peek: 1, dir: r() < 0.5 ? 1 : -1, who: r() < 0.5 ? 0 : 1 }, extra); };
   plan.forEach((o, oi) => { if (r() < 0.45) { const late = oi / plan.length; out.push(mk(oi, { ahead: 12 + r() * 8, up: 400, atk: r() < 0.75 ? Math.round((70 + r() * 60) * (1 - 0.3 * late)) : 0 })); } });
-  ROUTE.segs.slice(1).forEach((g, k) => {
-    const z = GZ0 - (g.S + GJW / 2 + 4.5); stops.push({ z, done: false, seg: g.i });
+  // 4 wave stops: halfway down the first hall, just round each corner, and halfway down the middle hall
+  const at = [[0, 20], [1, GJW / 2 + 4.5], [1, 21], [2, GJW / 2 + 4.5]];
+  at.forEach(([si, a], k) => {
+    const g = ROUTE.segs[si], z = GZ0 - (g.S + a); stops.push({ z, done: false, seg: g.i });
     const doors = plan.map((o, oi) => oi).filter(oi => plan[oi].seg === g.i && plan[oi].z < z - 2.5 && plan[oi].z > z - 17);
     if (!doors.length) return;
     const n = 5 + k + (r() * 2 | 0);
