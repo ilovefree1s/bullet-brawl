@@ -145,6 +145,7 @@ canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 .ghud { display: none; position: absolute; left: 50%; top: 14px; transform: translateX(-50%); gap: 10px; align-items: stretch; }
 .screen.gallery .ghud { display: flex; }
 .screen.gallery .dhud { display: none !important; }
+.screen.gallery.solo .gside.foe { display: none; }
 .gside { background: rgba(13,15,18,0.78); padding: 6px 14px; border-radius: 6px; display: grid; justify-items: center; min-width: 92px; color: #fff; }
 .gside span { font-size: 11px; letter-spacing: 0.14em; color: #b9c2ff; }
 .gside.foe span { color: #ffb0a8; }
@@ -238,11 +239,11 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
 
 <div class="wrap">
   <header>
-    <h1>Paradox <span>Loop</span> 3D <small class="hver">v39</small></h1>
+    <h1>Paradox <span>Loop</span> 3D <small class="hver">v40</small></h1>
     <div class="sub">Milestone 4 · Abilities and awareness</div>
   </header>
   <div class="topbar">
-    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">Last Laugh vs AI</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online · Last Laugh</button></div>
+    <div class="modes" role="group" aria-label="Game mode"><button type="button" class="rbtn" id="modeCampaign" aria-pressed="true">Campaign</button><button type="button" class="rbtn" id="modeGallery" aria-pressed="false">Last Laugh 1v1 vs AI</button><button type="button" class="rbtn" id="modeCoop" aria-pressed="false">Last Laugh Co-op</button><button type="button" class="rbtn" id="modeDuel" aria-pressed="false">Duel vs AI</button><button type="button" class="rbtn" id="modeOnline" aria-pressed="false">Online</button></div>
     <div class="rooms" id="rooms" role="group" aria-label="Choose a room"></div>
     <label class="sens"><span class="clbl">Look sensitivity</span><input type="range" class="sensIn" min="0.2" max="3" step="0.05" aria-label="Look sensitivity"><b class="sensVal"></b></label>
     <div class="colors" id="colors" role="group" aria-label="Your color"><span class="clbl">Color</span></div>
@@ -293,7 +294,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
             <p class="eyebrow">Online</p>
             <h2>Lobbies</h2>
             <div class="lname"><label for="lName">Your name</label><input id="lName" maxlength="16" placeholder="Freebird" autocomplete="off"></div>
-            <div class="lmode" hidden role="group" aria-label="Mode for your lobby"><span>Host mode</span><button type="button" class="rbtn" id="lmDuel" aria-pressed="true">Duel · first to 5</button><button type="button" class="rbtn" id="lmGal" aria-pressed="false">Last Laugh · most kills</button></div>
+            <div class="lmode" role="group" aria-label="Mode for your lobby"><span>Host mode</span><button type="button" class="rbtn" id="lmGal" aria-pressed="true">1v1 · most kills</button><button type="button" class="rbtn" id="lmCoop" aria-pressed="false">Co-op · survive together</button></div>
             <div class="btns lbtns"><button type="button" class="play" id="lHost">Host a lobby</button><button type="button" class="play alt" id="lBack">Back</button></div>
             <h3>Open lobbies</h3>
             <div class="llist" id="lList"></div>
@@ -350,7 +351,7 @@ kbd { font-family: var(--mono); color: var(--text); border: 1px solid var(--wall
   </div>
   <div class="foot">
     <span>Best in Chrome on a computer. Click the game to capture your mouse, Esc to release it.</span>
-    <span class="ver">v39</span>
+    <span class="ver">v40</span>
   </div>
 </div>
 
@@ -1149,7 +1150,9 @@ function showOverlay(kind) {
     ovBody.innerHTML = 'Clear time <b>' + secs(totalTicks) + '</b>, the total of every loop you played. You got out on loop ' + loop + ' of ' + RM.loops + '. ' + (newBest ? '<b>New best for this room.</b>' : 'Your best here is <b>' + secs(best[RM.name]) + '</b>.');
     if (levelIdx < ROOMS.length - 1) { ovBtn.textContent = 'Next room'; ovAction = 'next'; ovAlt.hidden = false; } else { ovBody.innerHTML += ' That\'s every room in this build.'; ovBtn.textContent = 'Replay room'; ovAction = 'start'; }
   }
-  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Last Laugh · vs AI'; $('ovTitle').textContent = 'Last Laugh'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns step out of the <b>booth doorways</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'coopIntro') { $('ovEyebrow').textContent = 'Last Laugh · co-op'; $('ovTitle').textContent = 'Last Laugh: Co-op'; ovBody.innerHTML = 'Fight through the midway together. Clowns step out and <b>glow red when they wind up a throw</b>: drop them first, or shoot the <b>pie out of the air</b>. Every pie that lands costs the team a life, and you share <b>5</b>. The walk <b>stops for waves</b> and moves on once the wave is cleared. Quick kills chain into a <b>combo</b> worth up to 4x points. Play solo here, or with a friend from <b>Online</b>.'; ovBtn.textContent = 'Start'; ovAction = 'coopStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'coopOver') { const ok = G.lives > 0; $('ovEyebrow').textContent = 'Last Laugh · co-op · ' + (D.online ? 'online' : 'solo'); $('ovTitle').textContent = ok ? 'You made it out' : 'The clowns had the last laugh'; ovBody.innerHTML = (ok ? 'Out alive with <b>' + G.lives + '</b> of 5 lives.' : 'Out of lives ' + Math.round(100 * (GZ0 - G.wz) / (GZ0 - GZEND)) + '% of the way down the midway.') + ' Your score <b>' + G.score + '</b>' + (D.online ? ' · partner <b>' + G.foeScore + '</b> · team <b>' + (G.score + G.foeScore) + '</b>' : '') + '. Kills <b>' + G.me + '</b>, headshot kills <b>' + G.heads + '</b>, accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'coopStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
+  if (kind === 'galIntro') { $('ovEyebrow').textContent = 'Last Laugh · 1v1 vs AI'; $('ovTitle').textContent = 'Last Laugh: 1v1'; ovBody.innerHTML = 'The carnival\u2019s closed, but the clowns didn\u2019t leave. You and a rival walk the midway side by side. Clowns step out of the <b>booth doorways</b> on both walls for a moment, then duck back in. You\u2019re fighting over the same targets, so be quick. A <b>headshot</b> drops them in one hit; anywhere else takes <b>two</b>. Whoever lands the killing shot gets the point. Most kills by the end wins. <b>R</b> reloads.'; ovBtn.textContent = 'Start'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'galOver') { const won = G.me > G.foe, draw = G.me === G.foe, opp = D.online ? 'Opponent' : 'Rival'; $('ovEyebrow').textContent = 'Last Laugh · ' + (D.online ? 'online' : 'vs AI') + ' · finished'; $('ovTitle').textContent = draw ? 'Draw' : won ? 'You win' : opp + ' wins'; ovBody.innerHTML = 'Kills <b>' + G.me + ' – ' + G.foe + '</b> out of ' + G.targets.length + ' targets. Your accuracy <b>' + (G.shots ? Math.round(100 * G.hits / G.shots) : 0) + '%</b> · headshot kills <b>' + G.heads + '</b>.'; ovBtn.textContent = 'Run it again'; ovAction = 'galStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelIntro') { $('ovEyebrow').textContent = 'Duel · experimental mode'; $('ovTitle').textContent = 'Duel'; ovBody.innerHTML = 'One on one against a rival soldier. Bullets are visible, so dodge with <b>Shift</b> and throw up a quick <b>shield</b> with <b>Q</b> to block bullets. First to win <b>5 rounds</b> takes the match. Whoever loses a round picks a <b>card</b> that powers them up for the rest of the match, so the match stays close. Your gun is a <b>6-shot revolver</b>: press <b>R</b> to reload early. Hold <b>Ctrl</b> to crouch behind low cover. Watch for the rare <b>Paradox Clone</b>: a decoy of you that draws enemy fire.'; ovBtn.textContent = 'Start match'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
   if (kind === 'duelOver') { const won = D.score[0] > D.score[1]; $('ovEyebrow').textContent = 'Duel · match over'; $('ovTitle').textContent = won ? 'You win the match' : 'The rival wins'; ovBody.innerHTML = 'Final score <b>' + D.score[0] + ' – ' + D.score[1] + '</b>. Your cards: <b>' + (P.cards.join(', ') || 'none') + '</b>. Rival cards: <b>' + (B.cards.join(', ') || 'none') + '</b>.'; ovBtn.textContent = 'Rematch'; ovAction = 'duelStart'; ovAlt.hidden = false; ovAlt.textContent = 'Back to campaign'; }
@@ -1161,6 +1164,7 @@ function begin(fresh) {
   ov.hidden = true; $('rewind').hidden = true; state = 'play'; requestLock();
 }
 ovBtn.addEventListener('click', () => {
+  if (ovAction === 'coopStart') { unlockAudio(); ov.hidden = true; startGallery((Math.random() * 1e9) | 0, false, true); requestLock(); return; }
   if (ovAction === 'galStart') { unlockAudio(); ov.hidden = true; startGallery((Math.random() * 1e9) | 0, false); requestLock(); return; }
   if (ovAction === 'duelStart') { unlockAudio(); ov.hidden = true; startMatch(); requestLock(); return; }
   if (ovAction === 'next') { pickRoom(levelIdx + 1); return; }
@@ -1841,7 +1845,7 @@ function renderAmmo() {
 }
 function enterDuel() {
   if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); }
-  if ($('modeGallery')) $('modeGallery').setAttribute('aria-pressed', 'false');
+  for (const id of ['modeGallery', 'modeCoop']) if ($(id)) $(id).setAttribute('aria-pressed', 'false');
   mode = 'duel'; state = 'title'; screenEl.classList.add('duel'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true;
   $('modeCampaign').setAttribute('aria-pressed', 'false'); $('modeDuel').setAttribute('aria-pressed', 'true');
   clearActors(); clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } D = { score: [0, 0], round: 0, arena: '' }; P.stats = baseStats(); P.ammo = 6; P.rl = 0;
@@ -1852,7 +1856,7 @@ function enterDuel() {
 }
 function leaveDuel() {
   if (mode === 'gallery') clearGallery();
-  screenEl.classList.remove('gallery'); if ($('modeGallery')) $('modeGallery').setAttribute('aria-pressed', 'false');
+  screenEl.classList.remove('gallery'); for (const id of ['modeGallery', 'modeCoop']) if ($(id)) $(id).setAttribute('aria-pressed', 'false');
   for (const m of bubbles) m.visible = false;
   mode = 'campaign'; screenEl.classList.remove('duel'); $('rooms').hidden = false; $('cards').hidden = true; bigText('');
   $('modeCampaign').setAttribute('aria-pressed', 'true'); $('modeDuel').setAttribute('aria-pressed', 'false');
@@ -2018,6 +2022,21 @@ function galSpawns(seed, plan) {
   });
   return out;
 }
+// Co-op plan: fewer stragglers on the walk, plus 4 stops where a whole wave bursts out of nearby doors.
+// Every clown also gets an attack time and which player he throws at, all from the seed so both screens match.
+function galSpawnsCoop(seed, plan) {
+  const r = galRng(seed ^ 0x2c1b3c6d), out = [], stops = [];
+  const mk = (oi, extra) => { const o = plan[oi], roll = r(), sc = roll < 0.2 ? 0.7 + r() * 0.12 : roll > 0.82 ? 1.2 + r() * 0.16 : 0.9 + r() * 0.2; return Object.assign({ oi, o, sc, yOff: 0, peek: 1, dir: r() < 0.5 ? 1 : -1, who: r() < 0.5 ? 0 : 1 }, extra); };
+  plan.forEach((o, oi) => { if (r() < 0.45) { const late = oi / plan.length; out.push(mk(oi, { ahead: 12 + r() * 8, up: 400, atk: r() < 0.75 ? Math.round((70 + r() * 60) * (1 - 0.3 * late)) : 0 })); } });
+  [0.22, 0.45, 0.68, 0.88].forEach((f, k) => {
+    const z = GZ0 - f * (GZ0 - GZEND); stops.push({ z, done: false });
+    const doors = plan.map((o, oi) => oi).filter(oi => plan[oi].z < z - 2.5 && plan[oi].z > z - 17);
+    if (!doors.length) return;
+    const n = 5 + k + (r() * 2 | 0);
+    for (let j = 0; j < n; j++) out.push(mk(doors[(r() * doors.length) | 0], { stop: k, delay: Math.round(j * 30 + r() * 25), up: 400, atk: Math.round((60 + r() * 60) * (1 - 0.08 * k)) }));
+  });
+  return { spawns: out, stops };
+}
 function buildGallery(seed) {
   for (const ch of [...roomGroup.children]) { roomGroup.remove(ch); ch.geometry?.dispose(); }
   solids = []; shootables = []; plates = [];
@@ -2070,7 +2089,7 @@ function buildGallery(seed) {
   G.bulbs = [mb, sb];
   setCarnival(true);
   // one shared set of targets, on both walls
-  G.spawns = galSpawns(seed, G.plan);
+  if (G.coop) { const cp = galSpawnsCoop(seed, G.plan); G.spawns = cp.spawns; G.stops = cp.stops; } else { G.spawns = galSpawns(seed, G.plan); G.stops = []; }
   G.targets = G.spawns.map((sp, i) => {
     const o = sp.o, m = soldierModel('grunt', CLOWN_COLORS[(sp.oi * 7 + i * 3) % CLOWN_COLORS.length]), s = o.side;
     carnClown(m);
@@ -2098,22 +2117,24 @@ function clearGallery() {
   if (B) { scene.remove(B.root); B = null; }
   G = null;
 }
-function startGallery(seed, online) {
+function startGallery(seed, online, coop) {
   screenEl.classList.remove('duel'); screenEl.classList.add('gallery'); mode = 'gallery';
   clearActors(); clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; }
   D = { online: !!online, score: [0, 0], round: 0, arena: 'Hallway' };
-  G = { foeColor: online && typeof netPeerColor === 'function' ? netPeerColor() : '#ff6157', seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: -Math.PI / 2 };
+  G = { coop: !!coop, wz: GZ0, stopK: -1, stopT: 0, goGot: new Set(), lives: 5, score: 0, foeScore: 0, combo: 0, lastKillT: -999, pies: [], foeColor: online && typeof netPeerColor === 'function' ? netPeerColor() : '#ff6157', seed, t: 0, me: 0, foe: 0, shots: 0, hits: 0, heads: 0, online: !!online, endT: 0, ryaw: -Math.PI / 2 };
   buildGallery(seed);
   G.host = !(online && typeof netIsHost === 'function' && !netIsHost());
-  G.mySide = G.host ? -1 : 1;
+  G.mySide = G.host ? -1 : 1; G.myIdx = G.host ? 0 : 1;
   P.stats = baseStats(); P.cards = []; P.ammo = P.stats.mag; P.rl = 0; P.dcd = 0; reloadQueued = false; firing = false;
   Object.assign(P, { x: G.mySide * GLANE, z: GZ0, vx: 0, vz: 0, yaw: 0, pitch: 0, alive: true, hp: 100, dashT: 0, dashCd: 0, pushCd: 0, shieldT: 0, crouch: 0 });
   B = makeBot(online && typeof netPeerColor === 'function' ? netPeerColor() : null);
   B.hpBar.visible = false; B.stats = baseStats();
   Object.assign(B, { x: -G.mySide * GLANE, z: GZ0, a: -Math.PI / 2, alive: true, stun: 0, aimT: 0, ammo: 6, rl: 0, cd: 0, shieldT: 0 });
   resetBotAnim();
-  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === (online ? 'modeOnline' : 'modeGallery'))); }
-  $('gFoeName').textContent = online ? 'OPPONENT' : 'RIVAL';
+  B.root.visible = !(G.coop && !online);
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeCoop', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === (online ? 'modeOnline' : G.coop ? 'modeCoop' : 'modeGallery'))); }
+  $('gFoeName').textContent = G.coop ? 'PARTNER' : online ? 'OPPONENT' : 'RIVAL';
+  screenEl.classList.toggle('solo', G.coop && !online);
   state = 'dcount'; dTimer = 150; dtick = 0; tick = 0; SFX.spawn();
   galHud(true);
 }
@@ -2143,6 +2164,11 @@ function galKill(t, head, mine, at, pt) {
   const kp = pt ? new THREE.Vector3(pt[0], pt[1], pt[2]) : new THREE.Vector3(t.x, t.y + (head ? 1.55 : 1.1) * t.sc, t.z);
   killBurst(kp, mine ? myColor : G.foeColor, head);
   if (mine) { G.me++; if (head) G.heads++; } else G.foe++;
+  if (G.coop && mine) {
+    G.combo = G.t - G.lastKillT <= 120 ? G.combo + 1 : 1; G.lastKillT = G.t;
+    t.pts = (100 + (head ? 50 : 0)) * Math.min(4, G.combo); G.score += t.pts;
+    if (G.combo > 1) { bigText('x' + Math.min(4, G.combo) + ' COMBO', 'ok'); clearTimeout(G.cbT); G.cbT = setTimeout(() => { if (G && state === 'dplay') bigText(''); }, 600); }
+  }
   galHud(true);
 }
 function galShoot() {
@@ -2152,7 +2178,8 @@ function galShoot() {
   G.shots++;
   const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
   const objs = G.rayObjs.slice();
-  for (const t of G.targets) if (t.alive && (t.st === 'up' || t.st === 'in' || t.st === 'out')) objs.push(...(t.win ? t.parts.slice(0, 2) : t.parts), ...(t.hats || []));
+  for (const pi of G.pies) objs.push(pi.mesh);
+  for (const t of G.targets) if (t.alive && (t.st === 'up' || t.st === 'in' || t.st === 'out' || t.st === 'wind')) objs.push(...(t.win ? t.parts.slice(0, 2) : t.parts), ...(t.hats || []));
   ray.set(camera.position, dir); ray.far = 70;
   const h = ray.intersectObjects(objs, false)[0];
   const mz = new THREE.Vector3(0.2, -0.13, -0.75).applyQuaternion(camera.quaternion).add(camera.position);
@@ -2161,6 +2188,7 @@ function galShoot() {
   tracer(mz, end);
   if (D.online) netSend('gs', { yaw: +P.yaw.toFixed(3), pitch: +P.pitch.toFixed(3) });
   if (!h) return;
+  if (h.object.userData.pie) { popPie(h.object.userData.pie, true); SFX.hit(); hitMarker(false, false); return; }
   const t = h.object.userData.gt;
   if (t && t.win && h.point.y < 0.97) { puff(h.point, 3, 0x6b7480); SFX.wall(); return; } // below the sill there's only wall
   if (h.object.userData.hat) { puff(h.point, 5, 0xffd23c); SFX.wall(); return; } // hats don't count: shot is wasted
@@ -2173,7 +2201,7 @@ function galShoot() {
   head ? SFX.headshot() : SFX.hit(); hitMarker(kill, head);
   puff(h.point, 4, head ? 0xffb547 : COL.foe);
   const pt = [+h.point.x.toFixed(2), +h.point.y.toFixed(2), +h.point.z.toFixed(2)];
-  if (kill) { galKill(t, head, true, G.t, pt); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head, at: G.t, p: pt }); }
+  if (kill) { galKill(t, head, true, G.t, pt); SFX.kill(); if (D.online) netSend('gk', { i: t.i, head, at: G.t, p: pt, pts: t.pts || 0 }); }
   else if (D.online) netSend('gh', { i: t.i, dmg });
 }
 function galBot() {
@@ -2198,11 +2226,16 @@ function galTargets(wz) {
   for (const t of G.targets) {
     if (t.st === 'wait') {
       const busy = G.targets.some(u => u !== t && u.oi === t.oi && u.root.visible);
-      if (!busy && wz <= t.o.z + t.sp.ahead) { t.st = 'in'; t.k = 0; t.root.visible = true; tone(520, 0.05, 'square', 0.03); }
+      const go = t.sp.stop !== undefined ? (G.stopK === t.sp.stop && G.stopT >= t.sp.delay) : wz <= t.o.z + t.sp.ahead;
+      if (!busy && go) { t.st = 'in'; t.k = 0; t.root.visible = true; tone(520, 0.05, 'square', 0.03); }
       continue;
     }
     if (t.st === 'in') { t.k = Math.min(t.kMax, t.k + 1 / 12); if (t.k >= t.kMax) { t.st = 'up'; t.upT = t.sp.up; } }
-    else if (t.st === 'up') { if (--t.upT <= 0) t.st = 'out'; }
+    else if (t.st === 'up') {
+      if (G.coop && t.sp.atk) { t.atkT = (t.atkT || 0) + 1; if (t.atkT >= t.sp.atk) { t.st = 'wind'; t.windT = 48; tone(300, 0.6, 'sawtooth', 0.05, 900); } }
+      else if (--t.upT <= 0) t.st = 'out';
+    }
+    else if (t.st === 'wind') { if (--t.windT <= 0) { throwPie(t); t.st = 'out'; } }
     else if (t.st === 'out') { t.k = Math.max(0, t.k - 1 / 12); if (t.k <= 0) { t.st = 'gone'; t.root.visible = false; } }
     else if (t.st === 'dead') { if (G.t - t.deadT > 100) t.root.visible = false; }
     if (t.flash > 0) t.flash--;
@@ -2225,8 +2258,19 @@ function galTick() {
   if (state !== 'dplay' && state !== 'gend') return;
   G.t++; tick = G.t; dtick = G.t;
   if (state === 'dplay') touchAim();
-  const wz = Math.max(GZEND, GZ0 - G.t * GSPEED);
-  const moving = wz > GZEND;
+  if (G.stopK >= 0) {
+    G.stopT++;
+    const k = G.stopK, waveDone = G.targets.every(t => t.sp.stop !== k || t.st === 'gone' || t.st === 'dead');
+    if (waveDone && G.waveDoneAt == null) G.waveDoneAt = G.t;
+    // guest follows the host's go signal; if it somehow never arrives, it moves on 4s after its own wave is clear
+    if ((!D.online || G.host) ? waveDone && G.stopT > 30 : (G.goGot.has(k) || (waveDone && G.t - G.waveDoneAt > 240))) { G.waveDoneAt = null; G.stops[k].done = true; G.stopK = -1; if (D.online && G.host) netSend('go', { k }); bigText('MOVE', 'ok'); setTimeout(() => { if (G && state === 'dplay' && G.stopK < 0) bigText(''); }, 600); }
+  } else {
+    const ns = G.stops.findIndex(s => !s.done);
+    if (ns >= 0 && G.wz - GSPEED <= G.stops[ns].z) { G.wz = G.stops[ns].z; G.stopK = ns; G.stopT = 0; bigText('WAVE ' + (ns + 1), 'bad'); SFX.warn(); }
+    else G.wz = Math.max(GZEND, G.wz - GSPEED);
+  }
+  const wz = G.wz;
+  const moving = wz > GZEND && G.stopK < 0;
   P.z = wz; P.vz = moving ? -GSPEED : 0; P.vx = 0; P.x = G.mySide * GLANE;
   P.bob += moving ? 0.07 : 0;
   if (moving && G.t >= (P.stepAt || 0)) { SFX.step(); P.stepAt = G.t + 24; }
@@ -2241,14 +2285,60 @@ function galTick() {
     if (D.online) {
       if (G.t % 3 === 0) netSend('gy', { yaw: +P.yaw.toFixed(3), pitch: +P.pitch.toFixed(3) });
       B.a += Math.atan2(Math.sin(G.ryaw - B.a), Math.cos(G.ryaw - B.a)) * 0.3;
-    } else galBot();
+    } else if (!G.coop) galBot();
     if (B.fireT > 0) B.fireT--;
+    if (G.coop) stepPies();
+    if (G.coop && G.lives <= 0) { galFinish(); return; }
     const allDone = G.targets.every(t => t.st === 'gone' || t.st === 'dead');
-    if (!moving && allDone) { state = 'gend'; G.endT = G.t; firing = false; bigText('FINISH', 'ok'); if (D.online) netSend('gend', { k: G.me }); }
+    if (!moving && G.stopK < 0 && allDone && !G.pies.length) { state = 'gend'; G.endT = G.t; firing = false; bigText('FINISH', 'ok'); if (D.online) netSend('gend', { k: G.me, s: G.score }); }
   } else if (state === 'gend' && G.t - G.endT > 90) galFinish();
 }
+// Pies: a clown that finishes his wind-up throws one at a player. Shoot it out of the air or lose a team life.
+const pieGeo = new THREE.CylinderGeometry(0.17, 0.13, 0.07, 18), pieTop = new THREE.CircleGeometry(0.15, 18);
+function throwPie(t) {
+  if (!t.alive) return;
+  const who = D.online ? t.sp.who : 0, mine = who === G.myIdx;
+  const mesh = new THREE.Group();
+  const tin = new THREE.Mesh(pieGeo, new THREE.MeshStandardMaterial({ color: 0xc9a227, metalness: 0.5, roughness: 0.4 })); mesh.add(tin);
+  const cream = new THREE.Mesh(pieTop, new THREE.MeshBasicMaterial({ color: 0xffe9f2 })); cream.rotation.x = -Math.PI / 2; cream.position.y = 0.04; mesh.add(cream);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 6), hitMat); mesh.add(hit);
+  const pi = { mesh: hit, group: mesh, ti: t.i, mine, t: 0, dur: 46, from: new THREE.Vector3(t.x, (t.y || 0) + 1.35 * t.sc, t.z) };
+  hit.userData.pie = pi; mesh.position.copy(pi.from); scene.add(mesh); G.pies.push(pi);
+  t.fireT = 10; tone(180, 0.18, 'triangle', 0.08, 90);
+}
+function popPie(pi, byMe) {
+  const i = G.pies.indexOf(pi); if (i < 0) return;
+  G.pies.splice(i, 1); scene.remove(pi.group);
+  puff(pi.group.position.clone(), 10, 0xffe9f2);
+  if (byMe && D.online) netSend('pie', { i: pi.ti });
+}
+function stepPies() {
+  for (const pi of [...G.pies]) {
+    pi.t++;
+    const u = pi.t / pi.dur, to = pi.mine ? new THREE.Vector3(P.x, 1.45, P.z) : new THREE.Vector3(B.x, 1.4, B.z);
+    pi.group.position.lerpVectors(pi.from, to, u); pi.group.position.y += Math.sin(u * Math.PI) * 0.8;
+    pi.group.rotation.x += 0.35; pi.group.rotation.z += 0.12;
+    if (u >= 1) { popPie(pi, false); if (pi.mine) pieHit(pi.ti); }
+  }
+}
+function pieHit(ti) {
+  G.lives--; SFX.hurt(); const h = $('hurt'); h.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove('on')));
+  splat();
+  G.combo = 0; galHud(true);
+  if (D.online) netSend('hurt', { i: ti });
+}
+function splat() {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:3;background:radial-gradient(circle at ' + (30 + Math.random() * 40) + '% ' + (30 + Math.random() * 40) + '%, rgba(255,240,246,0.92) 0 14%, rgba(255,200,220,0.55) 22%, rgba(255,255,255,0) 40%);transition:opacity 1.2s';
+  screenEl.appendChild(el); setTimeout(() => { el.style.opacity = '0'; }, 400); setTimeout(() => el.remove(), 1700);
+}
+function galRemoteHurt(i) { if (!G) return; G.lives--; const pi = G.pies.find(p => p.ti === i); if (pi) popPie(pi, false); galHud(true); }
+function galRemotePie(i) { if (!G) return; const pi = G.pies.find(p => p.ti === i); if (pi) popPie(pi, false); }
+function galRemoteGo(k) { if (G) G.goGot.add(k); }
 function galFinish() {
   state = 'gover'; bigText('');
+  for (const pi of [...(G.pies || [])]) popPie(pi, false);
+  if (G.coop) { SFX[G.lives > 0 ? 'win' : 'lose'](); if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); } showOverlay('coopOver'); if (D.online && typeof netGalOver === 'function') netGalOver(); return; }
   const won = G.me > G.foe, draw = G.me === G.foe;
   SFX[won ? 'win' : draw ? 'blip' : 'lose']();
   if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
@@ -2257,10 +2347,11 @@ function galFinish() {
 }
 // Online: both players can kill the same target a moment apart. Each side applies the same rule,
 // so both screens agree: the earlier kill wins, and an exact tie goes to the host.
-function galRemoteKill(i, head, at, p) {
+function galRemoteKill(i, head, at, p, pts) {
   if (!G) return;
   const t = G.targets[i]; if (!t) return;
-  if (t.alive) { galKill(t, head, false, at, Array.isArray(p) && p.length === 3 ? p : null); return; }
+  if (t.alive) { galKill(t, head, false, at, Array.isArray(p) && p.length === 3 ? p : null); if (G.coop) { G.foeScore += Math.max(0, +pts || 0); galHud(true); } return; }
+  if (G.coop) return;
   if (t.by === 'me' && (at < t.killT || (at === t.killT && !G.host))) {
     G.me--; if (t.head) G.heads--; G.foe++; t.by = 'foe'; t.killT = at; galHud(true);
   }
@@ -2274,13 +2365,20 @@ function galRemoteShot(yaw, pitch) {
   tracer(o, o.clone().addScaledVector(d, 12), 0xff8a7f);
 }
 function galRemoteYaw(yaw) { if (G) G.ryaw = Math.atan2(-Math.cos(yaw), -Math.sin(yaw)); }
-function galRemoteEnd(k) { if (G && k > G.foe) { G.foe = k; galHud(true); } }
+function galRemoteEnd(k, sc) { if (G && k > G.foe) { G.foe = k; galHud(true); } if (G && G.coop && sc > G.foeScore) { G.foeScore = sc; galHud(true); } }
 let lastGal = '';
 function galHud(force) {
   if (!G) return;
   const total = G.plan.length, done = G.targets.filter(t => t.st === 'gone' || t.st === 'dead').length;
-  const key = G.me + '|' + G.foe + '|' + done;
+  const key = G.me + '|' + G.foe + '|' + done + '|' + G.score + '|' + G.foeScore + '|' + G.lives + '|' + G.combo;
   if (!force && key === lastGal) return; lastGal = key;
+  if (G.coop) {
+    $('gMe').textContent = G.score; $('gFoe').textContent = G.foeScore;
+    $('gMe').previousElementSibling.textContent = G.combo > 1 ? 'YOU \u00b7 x' + Math.min(4, G.combo) : 'YOU';
+    $('gLeft').textContent = '\u2665'.repeat(Math.max(0, G.lives)) + '\u2661'.repeat(Math.max(0, 5 - G.lives)) + '  \u00b7  KILLS ' + (G.me + G.foe);
+    return;
+  }
+  $('gMe').previousElementSibling.textContent = 'YOU';
   $('gMe').textContent = G.me; $('gFoe').textContent = G.foe;
   $('gLeft').textContent = 'TARGETS ' + done + ' / ' + G.targets.length;
   $('gMe').parentElement.classList.toggle('lead', G.me > G.foe); $('gFoe').parentElement.classList.toggle('lead', G.foe > G.me);
@@ -2324,7 +2422,8 @@ function galRender() {
     animateSoldier(t, animDt);
     leanSpine(t);
     fitHeadBox(t);
-    for (const m of t.mats) { m.emissive.setHex(t.flash > 0 ? 0xffffff : 0x000000); m.emissiveIntensity = t.flash > 0 ? 0.6 : 0; }
+    const wind = t.st === 'wind' && t.alive, pulse = wind ? 0.5 + 0.5 * Math.sin(performance.now() / 45) : 0;
+    for (const m of t.mats) { m.emissive.setHex(t.flash > 0 ? 0xffffff : wind ? 0xff1a1a : 0x000000); m.emissiveIntensity = t.flash > 0 ? 0.6 : wind ? 0.3 + pulse * 0.9 : 0; }
   }
   B.root.position.set(B.x, 0, B.z); B.root.rotation.y = yawFromAng(B.a);
   animateSoldier(B, animDt);
@@ -2334,17 +2433,20 @@ function galRender() {
   renderAmmo();
   carnFrame(performance.now() / 16.7);
 }
-function enterGallery() {
+function enterGallery(coop) {
+  galCoopPick = !!coop;
   if (mode === 'duel') { clearShots(); clearClones(); if (B) { scene.remove(B.root); B = null; } screenEl.classList.remove('duel'); }
   mode = 'gallery'; state = 'title'; screenEl.classList.add('gallery'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; bigText('');
-  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === 'modeGallery')); }
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeCoop', 'modeOnline']) { const b = $(id); if (b) b.setAttribute('aria-pressed', String(id === (coop ? 'modeCoop' : 'modeGallery'))); }
   clearActors();
   G = { rayObjs: [] }; buildGallery(1); G = null;
   Object.assign(P, { x: -GLANE, z: GZ0, yaw: 0, pitch: 0 });
-  showOverlay('galIntro');
+  showOverlay(coop ? 'coopIntro' : 'galIntro');
   if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
 }
-$('modeGallery').addEventListener('click', e => { if (mode !== 'gallery' || G) enterGallery(); e.currentTarget.blur(); });
+let galCoopPick = false;
+$('modeGallery').addEventListener('click', e => { if (mode !== 'gallery' || G || galCoopPick) enterGallery(false); e.currentTarget.blur(); });
+$('modeCoop').addEventListener('click', e => { if (mode !== 'gallery' || G || !galCoopPick) enterGallery(true); e.currentTarget.blur(); });
 // ===== end Hallway mode =====
 
 const colorsEl = $('colors');
@@ -2467,7 +2569,7 @@ function lobbyStatus(t) { $('lStatus').textContent = t; }
 async function openOnline() {
   if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); }
   mode = 'duel'; state = 'title'; screenEl.classList.add('duel'); $('rooms').hidden = true; $('rewind').hidden = true; $('cards').hidden = true; ov.hidden = true;
-  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeOnline']) if ($(id)) $(id).setAttribute('aria-pressed', id === 'modeOnline' ? 'true' : 'false');
+  for (const id of ['modeCampaign', 'modeDuel', 'modeGallery', 'modeCoop', 'modeOnline']) if ($(id)) $(id).setAttribute('aria-pressed', id === 'modeOnline' ? 'true' : 'false');
   clearActors(); clearShots(); if (B) { scene.remove(B.root); B = null; } D = { score: [0, 0], round: 0, arena: '' };
   buildArena(0); Object.assign(P, { x: -AX + 3, z: 0, yaw: E_, pitch: 0 });
   if (document.pointerLockElement) { quietUnlock = true; document.exitPointerLock(); }
@@ -2490,7 +2592,7 @@ function showLobby(view) {
 }
 function renderLobbies() {
   const box = $('lList'); if (!box) return;
-  const open = lobbies.filter(l => l && l.lobbyId && l.hostId !== myId && l.mode === 'gallery').sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || a.at - b.at);
+  const open = lobbies.filter(l => l && l.lobbyId && l.hostId !== myId && (l.mode === 'gallery' || l.mode === 'coop')).sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || a.at - b.at);
   const key = open.map(l => l.lobbyId + l.name + l.players + l.status).join('|');
   if (key === box.dataset.key && box.children.length) return;
   box.dataset.key = key;
@@ -2500,7 +2602,7 @@ function renderLobbies() {
     const row = document.createElement('div'); row.className = 'lrow';
     const info = document.createElement('div'); info.className = 'linfo';
     const nm = document.createElement('b'); nm.textContent = l.name;
-    const sub = document.createElement('span'); sub.textContent = (l.mode === 'gallery' ? 'Last Laugh · most kills' : 'Duel · first to 5') + ' · ' + l.players + '/2 · ' + (l.status === 'open' ? 'waiting for a player' : 'match in progress');
+    const sub = document.createElement('span'); sub.textContent = (l.mode === 'coop' ? 'Last Laugh · co-op' : 'Last Laugh · 1v1') + ' · ' + l.players + '/2 · ' + (l.status === 'open' ? 'waiting for a player' : 'match in progress');
     info.append(nm, sub);
     const b = document.createElement('button'); b.type = 'button'; b.className = 'play'; b.textContent = 'Join'; b.disabled = l.status !== 'open';
     b.addEventListener('click', () => joinLobby(l));
@@ -2559,7 +2661,7 @@ function renderLobbyColors() {
 function waitView() {
   showLobby('wait');
   renderLobbyColors();
-  $('wEye').textContent = ON.gameMode === 'gallery' ? 'Online · Last Laugh · most kills wins' : 'Online · Duel · first to 5';
+  $('wEye').textContent = ON.gameMode === 'coop' ? 'Online · Last Laugh · co-op' : 'Online · Last Laugh · 1v1 · most kills wins';
   $('wTitle').textContent = ON.lobbyName;
   const start = $('wStart');
   if (ON.isHost) {
@@ -2622,12 +2724,15 @@ function onNetMsg(m) {
     }
     case 'round': if (!ON.isHost) { D.round = d.r; bigText(''); $('cards').hidden = true; startRound(); } return;
     case 'rematch': if (!ON.isHost) beginOnlineMatch(d.seed); return;
-    case 'gk': if (ON.inMatch) galRemoteKill(d.i | 0, !!d.head, +d.at || 0, d.p); return;
+    case 'gk': if (ON.inMatch) galRemoteKill(d.i | 0, !!d.head, +d.at || 0, d.p, d.pts); return;
+    case 'hurt': if (ON.inMatch) galRemoteHurt(d.i | 0); return;
+    case 'pie': if (ON.inMatch) galRemotePie(d.i | 0); return;
+    case 'go': if (ON.inMatch) galRemoteGo(d.k | 0); return;
     case 'color': if (PCOLORS.some(p => p[1] === d.color)) { ON.peerColor = d.color; if (!ON.inMatch) renderLobbyColors(); } return;
     case 'gh': if (ON.inMatch) galRemoteHit(d.i | 0, d.dmg | 0); return;
     case 'gs': if (ON.inMatch) galRemoteShot(d.yaw, d.pitch); return;
     case 'gy': if (ON.inMatch) galRemoteYaw(d.yaw); return;
-    case 'gend': if (ON.inMatch) galRemoteEnd(d.k | 0); return;
+    case 'gend': if (ON.inMatch) galRemoteEnd(d.k | 0, d.s | 0); return;
     case 'pushed': if (ON.inMatch) { P.vx = d.kx; P.vz = d.kz; } return;
     case 'shield': if (ON.inMatch && B) { B.shieldT = Math.min(120, d.t | 0); SFX.shield(0.5); } return;
     case 'bye': peerLeft(); return;
@@ -2637,7 +2742,7 @@ function beginOnlineMatch(seed) {
   if (!ON) return;
   ON.inMatch = true; netOn = true; ON.remote = null;
   $('lobby').hidden = true; ov.hidden = true; unlockAudio();
-  if (ON.gameMode === 'gallery') startGallery(seed || 1, true);
+  if (ON.gameMode === 'gallery' || ON.gameMode === 'coop') startGallery(seed || 1, true, ON.gameMode === 'coop');
   else { if (mode === 'gallery') { clearGallery(); screenEl.classList.remove('gallery'); screenEl.classList.add('duel'); mode = 'duel'; } startMatch(); }
   requestLock();
 }
@@ -2775,11 +2880,13 @@ function netLeave() {
 }
 $('modeOnline').addEventListener('click', e => { if (!(mode === 'duel' && !$('lobby').hidden)) openOnline(); e.currentTarget.blur(); });
 $('modeDuel').addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } $('modeOnline').setAttribute('aria-pressed', 'false'); }, true);
-// Duel (the card-based mode) is retired; online lobbies are Last Laugh only.
-const hostMode = 'gallery';
-function syncHostMode() { $('lmDuel').setAttribute('aria-pressed', String(hostMode === 'duel')); $('lmGal').setAttribute('aria-pressed', String(hostMode === 'gallery')); }
+// Online lobbies are Last Laugh: 1v1 ('gallery') or co-op ('coop'). Duel is retired.
+let hostMode = 'gallery';
+try { if (localStorage.getItem('bb-mode') === 'coop') hostMode = 'coop'; } catch (e) {}
+function syncHostMode() { $('lmGal').setAttribute('aria-pressed', String(hostMode === 'gallery')); $('lmCoop').setAttribute('aria-pressed', String(hostMode === 'coop')); }
+for (const [id, m] of [['lmGal', 'gallery'], ['lmCoop', 'coop']]) $(id).addEventListener('click', e => { hostMode = m; try { localStorage.setItem('bb-mode', m); } catch (err) {} syncHostMode(); e.currentTarget.blur(); });
 syncHostMode();
-$('modeGallery').addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } }, true);
+for (const id of ['modeGallery', 'modeCoop']) $(id).addEventListener('click', () => { if (ON || lobbyCh || !$('lobby').hidden) { netLeave(); mode = 'campaign'; } }, true);
 $('lHost').addEventListener('click', hostLobby);
 $('lBack').addEventListener('click', () => { netLeave(); leaveDuel(); });
 $('wStart').addEventListener('click', hostStart);
